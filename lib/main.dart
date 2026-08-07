@@ -368,8 +368,8 @@ class HomeScreen extends StatelessWidget {
                   width: 130,
                   height: 75,
                   decoration: BoxDecoration(
-                    color: const Color(0xff2D8CFF).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                  color: const Color(0xff2D8CFF).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(
                     child:
@@ -383,8 +383,8 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(4),
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       item['duration']!,
@@ -618,7 +618,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                   // ब्राइटनेस ओवरले
                   IgnorePointer(
                     child: Container(
-                      color: Colors.black.withValues(alpha: 1.0 - _brightness),
+                      child: Container(
+                       color: Colors.black.withOpacity(1.0 - _brightness),
                     ),
                   ),
 
@@ -699,8 +700,9 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withValues(alpha: 0.85),
-                              Colors.transparent
+                              colors: [
+                              Colors.black.withOpacity(0.85),
+                             Colors.transparent
                             ],
                           ),
                         ),
