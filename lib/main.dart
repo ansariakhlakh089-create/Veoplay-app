@@ -609,7 +609,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
               child: Stack(
                 children: [
                   // ----- वीडियो -----
-                  Center(
+                   Center(
                     child: AspectRatio(
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller),
@@ -618,11 +618,9 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                   // ब्राइटनेस ओवरले
                   IgnorePointer(
                     child: Container(
-                      child: Container(
-                       color: Colors.black.withOpacity(1.0 - _brightness),
+                      color: Colors.black.withOpacity(1.0 - _brightness),
                     ),
                   ),
-
                   // ----- टॉप बार -----
                   if (_showControls)
                     Positioned(
@@ -700,7 +698,6 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              colors: [
                               Colors.black.withOpacity(0.85),
                              Colors.transparent
                             ],
