@@ -802,13 +802,13 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   Future<void> _saveProgress() async {
+    final position = _controller.value.position.inSeconds;
+    final duration = _controller.value.duration.inSeconds;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('recent_title', widget.title);
     await prefs.setString('recent_url', widget.videoUrl);
-    await prefs.setInt(
-        'recent_position', _controller.value.position.inSeconds);
-    await prefs.setInt(
-        'recent_duration', _controller.value.duration.inSeconds);
+    await prefs.setInt('recent_position', position);
+    await prefs.setInt('recent_duration', duration);
   }
 
   @override
