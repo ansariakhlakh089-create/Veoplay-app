@@ -890,7 +890,14 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             onPressed: () async {
                               await _saveProgress();
                               if (context.mounted) {
-                                Navigator.pop(context);
+                                Navigator.pop(context, {
+                                  'title': widget.title,
+                                  'url': widget.videoUrl,
+                                  'position':
+                                      _controller.value.position.inSeconds,
+                                  'duration':
+                                      _controller.value.duration.inSeconds,
+                                });
                               }
                             },
                           ),
