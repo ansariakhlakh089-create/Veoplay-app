@@ -475,8 +475,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => RealVideoPlayer(
@@ -485,6 +485,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           );
+          _loadRecent();
         },
         child: Row(
           children: [
