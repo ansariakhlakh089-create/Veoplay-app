@@ -359,6 +359,71 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (_recentTitle != null) ...[
+                            const Text("Recent",
+                                style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 15),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => RealVideoPlayer(
+                                      videoUrl: _recentUrl!,
+                                      title: _recentTitle!,
+                                      startPosition: _recentPosition,
+                                    ),
+                                  ),
+                                ).then((_) => _loadRecent());
+                              },
+                              child: Container(
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xff2D8CFF),
+                                      Color(0xff6B4DFF)
+                                    ],
+                                  ),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    const Center(
+                                      child: Icon(Icons.play_circle_fill,
+                                          color: Colors.white, size: 70),
+                                    ),
+                                    Positioned(
+                                      left: 18,
+                                      bottom: 18,
+                                      right: 18,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text("Continue Watching",
+                                              style: TextStyle(
+                                                  color: Colors.white70)),
+                                          const SizedBox(height: 5),
+                                          Text(_recentTitle!,
+                                              maxLines: 1,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight:
+                                                      FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 25),
+                          ],
                           const Text("Videos",
                               style: TextStyle(
                                   fontSize: 22, fontWeight: FontWeight.bold)),
