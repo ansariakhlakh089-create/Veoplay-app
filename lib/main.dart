@@ -648,6 +648,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   @override
   void initState() {
     super.initState();
+    // वॉल्यूम लेना (एरर हैंडलिंग के साथ)
     VolumeController().getVolume().then((v) {
       if (mounted) setState(() => _volume = v);
     }).catchError((_) {});
@@ -777,6 +778,28 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     setState(() => _isFullscreen = !_isFullscreen);
   }
 
+  void _showSpeedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Playback Speed'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
+            return ListTile(
+              title: Text('${speed}x'),
+              onTap: () {
+                _controller.setSpeed(speed);
+                setState(() => _speed = speed);
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('recent_title', widget.title);
@@ -795,7 +818,6 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
 
   @override
   void dispose() {
-    // पहले डेटा निकालें, फिर dispose करें
     final title = widget.title;
     final url = widget.videoUrl;
     final position = _controller.value.position.inSeconds;
@@ -816,23 +838,6 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    // आपका पूरा UI कोड (जैसा पहले लिखा था) यहाँ रखें
-    // ...
-  }
-}
-
-  Future<void> _saveProgress() async {
-    final position = _controller.value.position.inSeconds;
-    final duration = _controller.value.duration.inSeconds;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('recent_title', widget.title);
-    await prefs.setString('recent_url', widget.videoUrl);
-    await prefs.setInt('recent_position', position);
-    await prefs.setInt('recent_duration', duration);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: !_isInitialized
@@ -842,18 +847,22 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
           : GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _toggleControls,
-              // ऊपर-नीचे swipe: left = brightness, right = volume
               onVerticalDragUpdate: (details) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 final dx = details.globalPosition.dx;
                 final delta = -details.delta.dy / 200;
                 if (dx < screenWidth / 2) {
-                  _setBrightness((_brightness + delta).clamp(0.0, 1.0));
+                  // brightness (सिर्फ़ UI में दिखाने के लिए, असली ब्राइटनेस बदलने के लिए प्लगइन चाहिए)
+                  setState(() {
+                    _brightness = (_brightness + delta).clamp(0.0, 1.0);
+                  });
                 } else {
-                  _setVolume((_volume + delta).clamp(0.0, 1.0));
+                  // volume
+                  double newVol = (_volume + delta).clamp(0.0, 1.0);
+                  VolumeController().setVolume(newVol);
+                  setState(() => _volume = newVol);
                 }
               },
-              // बाएं-दाएं swipe: वीडियो सीक
               onHorizontalDragStart: (details) {
                 setState(() {
                   _isDraggingSeek = true;
@@ -879,29 +888,23 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                   _dragSeekSeconds = 0;
                 });
               },
-              child: Stack (
+              child: Stack(
                 children: [
-                  // ----- वीडियो -----
-                   Center(
+                  // वीडियो डिस्प्ले
+                  Center(
                     child: AspectRatio(
                       aspectRatio: _controller.value.aspectRatio,
                       child: VideoPlayer(_controller),
                     ),
                   ),
-                  // ब्राइटनेस ओवरले
-                  IgnorePointer(
-                    child: Container(
-                      color: Colors.black.withOpacity(1.0 - _brightness),
-                    ),
-                  ),
-                  // सीक इंडिकेटर
+
+                  // ड्रैग सीक इंडिकेटर
                   if (_isDraggingSeek)
                     Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.black87,
+                          color: Colors.black54,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -915,6 +918,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                         ),
                       ),
                     ),
+
                   // ----- टॉप बार -----
                   if (_showControls)
                     Positioned(
@@ -924,18 +928,15 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                       child: Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.arrow_back,
-                                color: Colors.white),
+                            icon: const Icon(Icons.arrow_back, color: Colors.white),
                             onPressed: () async {
                               await _saveProgress();
                               if (context.mounted) {
                                 Navigator.pop(context, {
                                   'title': widget.title,
                                   'url': widget.videoUrl,
-                                  'position':
-                                      _controller.value.position.inSeconds,
-                                  'duration':
-                                      _controller.value.duration.inSeconds,
+                                  'position': _controller.value.position.inSeconds,
+                                  'duration': _controller.value.duration.inSeconds,
                                 });
                               }
                             },
@@ -943,8 +944,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                           Expanded(
                             child: Text(
                               widget.title,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
+                              style: const TextStyle(color: Colors.white, fontSize: 16),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -953,24 +953,21 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             onPressed: () {},
                           ),
                           IconButton(
-                            icon: const Icon(Icons.closed_caption,
-                                color: Colors.white),
+                            icon: const Icon(Icons.closed_caption, color: Colors.white),
                             onPressed: () {},
                           ),
                           PopupMenuButton(
-                            icon: const Icon(Icons.more_vert,
-                                color: Colors.white),
+                            icon: const Icon(Icons.more_vert, color: Colors.white),
                             itemBuilder: (_) => const [
                               PopupMenuItem(value: 1, child: Text('Share')),
-                              PopupMenuItem(
-                                  value: 2, child: Text('Download')),
+                              PopupMenuItem(value: 2, child: Text('Download')),
                             ],
                           ),
                         ],
                       ),
                     ),
 
-                  // ----- साइड पैनल (स्पीड) -----
+                  // ----- स्पीड इंडिकेटर -----
                   if (_showControls)
                     Positioned(
                       right: 12,
@@ -991,127 +988,54 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                       ),
                     ),
 
-                  // ----- नीचे कंट्रोल बार -----
+                  // ----- प्ले कंट्रोल्स (नीचे) -----
                   if (_showControls)
                     Positioned(
-                      bottom: 0,
+                      bottom: 40,
                       left: 0,
                       right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.85),
-                             Colors.transparent
-                            ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.skip_previous,
+                                color: _hasPrevious ? Colors.white : Colors.white24, size: 28),
+                            onPressed: _hasPrevious ? _playPrevious : null,
                           ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // सीक बार
-                            Row(
-                              children: [
-                                Text(
-                                    _formatDuration(
-                                        _controller.value.position),
-                                    style: const TextStyle(
-                                        color: Colors.white70)),
-                                Expanded(
-                                  child: SliderTheme(
-                                    data: SliderThemeData(
-                                      trackHeight: 3,
-                                      thumbShape:
-                                          const RoundSliderThumbShape(
-                                              enabledThumbRadius: 7),
-                                      activeTrackColor:
-                                          const Color(0xff2D8CFF),
-                                      inactiveTrackColor: Colors.white24,
-                                      thumbColor: const Color(0xff2D8CFF),
-                                    ),
-                                    child: Slider(
-                                      value: _controller
-                                          .value.position.inSeconds
-                                          .toDouble()
-                                          .clamp(
-                                              0,
-                                              _controller.value.duration
-                                                  .inSeconds
-                                                  .toDouble()),
-                                      min: 0,
-                                      max: _controller.value.duration.inSeconds
-                                          .toDouble(),
-                                      onChanged: _seekTo,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                    _formatDuration(
-                                        _controller.value.duration),
-                                    style: const TextStyle(
-                                        color: Colors.white70)),
-                              ],
+                          const SizedBox(width: 12),
+                          IconButton(
+                            icon: const Icon(Icons.replay_10, color: Colors.white, size: 30),
+                            onPressed: _skipBackward,
+                          ),
+                          const SizedBox(width: 20),
+                          GestureDetector(
+                            onTap: _togglePlay,
+                            child: Container(
+                              width: 56,
+                              height: 56,
+                              decoration: const BoxDecoration(
+                                color: Color(0xff2D8CFF),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 30,
+                              ),
                             ),
-                            const SizedBox(height: 6),
-                            // प्ले कंट्रोल्स
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.skip_previous,
-                                      color: _hasPrevious
-                                          ? Colors.white
-                                          : Colors.white24,
-                                      size: 28),
-                                  onPressed: _hasPrevious ? _playPrevious : null,
-                                ),
-                                const SizedBox(width: 12),
-                                IconButton(
-                                  icon: const Icon(Icons.replay_10,
-                                      color: Colors.white, size: 30),
-                                  onPressed: _skipBackward,
-                                ),
-                                const SizedBox(width: 20),
-                                GestureDetector(
-                                  onTap: _togglePlay,
-                                  child: Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xff2D8CFF),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      _controller.value.isPlaying
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                      color: Colors.white,
-                                      size: 30,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                IconButton(
-                                  icon: const Icon(Icons.forward_10,
-                                      color: Colors.white, size: 30),
-                                  onPressed: _skipForward,
-                                ),
-                                const SizedBox(width: 12),
-                                IconButton(
-                                  icon: Icon(Icons.skip_next,
-                                      color: _hasNext
-                                          ? Colors.white
-                                          : Colors.white24,
-                                      size: 28),
-                                  onPressed: _hasNext ? _playNext : null,
-                                ),
-                              ],
-                            ),
-                          ], 
-                        ),
+                          ),
+                          const SizedBox(width: 20),
+                          IconButton(
+                            icon: const Icon(Icons.forward_10, color: Colors.white, size: 30),
+                            onPressed: _skipForward,
+                          ),
+                          const SizedBox(width: 12),
+                          IconButton(
+                            icon: Icon(Icons.skip_next,
+                                color: _hasNext ? Colors.white : Colors.white24, size: 28),
+                            onPressed: _hasNext ? _playNext : null,
+                          ),
+                        ],
                       ),
                     ),
                 ],
