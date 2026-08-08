@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:volume_controller/volume_controller.dart';
 void main() {
   runApp(const VeoPlay());
 }
