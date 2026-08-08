@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-
+import 'package:photo_manager/photo_manager.dart';
+import 'dart:io';
 void main() {
   runApp(const VeoPlay());
 }
@@ -185,48 +186,76 @@ class _SplashScreenState extends State<SplashScreen>
 }
 
 // ==================== होम स्क्रीन ====================
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // असली वीडियो URLs के साथ डेटा
-  final List<Map<String, String>> videoList = const [
-    {
-      "title": "Big Buck Bunny",
-      "res": "1080p",
-      "size": "2.35GB",
-      "source": "Movies",
-      "duration": "02:07",
-      "url":
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-    },
-    {
-      "title": "Elephants Dream",
-      "res": "1080p",
-      "size": "1.2GB",
-      "source": "Downloads",
-      "duration": "10:53",
-      "url":
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-    },
-    {
-      "title": "For Bigger Blazes",
-      "res": "720p",
-      "size": "897.82MB",
-      "source": "Remove AD",
-      "duration": "01:20",
-      "url":
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-    },
-    {
-      "title": "Sintel Trailer",
-      "res": "4K",
-      "size": "4.50GB",
-      "source": "Downloads",
-      "duration": "03:02",
-      "url":
-          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-    },
-  ];
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, String>> videoList = [];
+  bool _isLoading = true;
+  bool _permissionDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVideos();
+  }
+
+  Future<void> _loadVideos() async {
+    final PermissionState permission =
+        await PhotoManager.requestPermissionExtend();
+    if (!permission.isAuth) {
+      setState(() {
+        _isLoading = false;
+        _permissionDenied = true;
+      });
+      return;
+    }
+
+    final List<AssetPathEntity> albums =
+        await PhotoManager.getAssetPathList(
+      type: RequestType.video,
+      onlyAll: true,
+    );
+
+    if (albums.isEmpty) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    final int count = await albums[0].assetCountAsync;
+    final List<AssetEntity> assets =
+        await albums[0].getAssetListRange(start: 0, end: count);
+
+    final List<Map<String, String>> loaded = [];
+    for (final asset in assets) {
+      final file = await asset.file;
+      if (file == null) continue;
+      final duration = asset.videoDuration;
+      final minutes = duration.inMinutes.toString().padLeft(2, '0');
+      final seconds =
+          (duration.inSeconds % 60).toString().padLeft(2, '0');
+      loaded.add({
+        "title": asset.title ?? "Unknown",
+        "res": "${asset.width}x${asset.height}",
+        "size": "",
+        "source": "Device",
+        "duration": "$minutes:$seconds",
+        "url": file.path,
+        "isLocal": "true",
+      });
+    }
+
+    setState(() {
+      videoList = loaded;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -263,75 +292,64 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Center(
-                child: Text("Remove AD",
-                    style: TextStyle(color: Colors.white54)),
-              ),
-            ),
-            const SizedBox(height: 25),
-            const Text("Recent",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
-                ),
-              ),
-              child: Stack(
-                children: const [
-                  Center(
-                    child: Icon(Icons.play_circle_fill,
-                        color: Colors.white, size: 90),
-                  ),
-                  Positioned(
-                    left: 18,
-                    bottom: 18,
+             ),
+             body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.blue),
+            )
+          : _permissionDenied
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Continue Watching",
-                            style: TextStyle(color: Colors.white70)),
-                        SizedBox(height: 5),
-                        Text("Movie Name.mp4",
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        const Icon(Icons.folder_off,
+                            color: Colors.white54, size: 60),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Video access permission चाहिए",
+                          style: TextStyle(
+                              color: Colors.white, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => PhotoManager.openSetting(),
+                          child: const Text("Settings खोलें"),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
-            const Text("Videos",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: videoList.length,
-              itemBuilder: (context, index) {
-                final item = videoList[index];
-                return _buildVideoTile(context, item);
-              },
-            ),
-          ],
-        ),
-      ),
+                )
+              : videoList.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "कोई वीडियो नहीं मिला",
+                        style: TextStyle(color: Colors.white54, fontSize: 16),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Videos",
+                              style: TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 15),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: videoList.length,
+                            itemBuilder: (context, index) {
+                              final item = videoList[index];
+                              return _buildVideoTile(context, item);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
         destinations: const [
