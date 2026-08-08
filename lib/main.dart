@@ -619,6 +619,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   double _brightness = 0.8;
   double _dragSeekSeconds = 0;
   bool _isDraggingSeek = false;
+    bool _isFullscreen = false;
 
  @override
   void initState() {
