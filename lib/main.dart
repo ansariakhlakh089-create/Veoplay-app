@@ -755,7 +755,33 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                   _setVolume((_volume + delta).clamp(0.0, 1.0));
                 }
               },
-              child: Stack(
+              // बाएं-दाएं swipe: वीडियो सीक
+              onHorizontalDragStart: (details) {
+                setState(() {
+                  _isDraggingSeek = true;
+                  _dragSeekSeconds = 0;
+                });
+              },
+              onHorizontalDragUpdate: (details) {
+                setState(() {
+                  _dragSeekSeconds += details.delta.dx / 5;
+                });
+              },
+              onHorizontalDragEnd: (details) {
+                final newPos = _controller.value.position +
+                    Duration(seconds: _dragSeekSeconds.toInt());
+                var target = newPos;
+                if (target < Duration.zero) target = Duration.zero;
+                if (target > _controller.value.duration) {
+                  target = _controller.value.duration;
+                }
+                _controller.seekTo(target);
+                setState(() {
+                  _isDraggingSeek = false;
+                  _dragSeekSeconds = 0;
+                });
+              },
+              child: Stack (
                 children: [
                   // ----- वीडियो -----
                    Center(
