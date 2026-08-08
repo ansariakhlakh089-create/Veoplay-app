@@ -619,6 +619,13 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     _startHideTimer();
   }
 
+  void _startHideTimer() {
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _showControls = false);
+    });
+  }
+
   void _toggleControls() {
     setState(() {
       _showControls = !_showControls;
