@@ -836,9 +836,11 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                           IconButton(
                             icon: const Icon(Icons.arrow_back,
                                 color: Colors.white),
-                            onPressed: () {
-                              _saveProgress();
-                              Navigator.pop(context);
+                            onPressed: () async {
+                              await _saveProgress();
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
                             },
                           ),
                           Expanded(
