@@ -796,6 +796,27 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                       color: Colors.black.withOpacity(1.0 - _brightness),
                     ),
                   ),
+                  // सीक इंडिकेटर
+                  if (_isDraggingSeek)
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _dragSeekSeconds >= 0
+                              ? "+${_dragSeekSeconds.toInt()}s"
+                              : "${_dragSeekSeconds.toInt()}s",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
                   // ----- टॉप बार -----
                   if (_showControls)
                     Positioned(
