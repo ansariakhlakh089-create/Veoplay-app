@@ -170,10 +170,10 @@ class _SplashScreenState extends State<SplashScreen>
                   child: const Text(
                     'PLAY·WATCH·ENJOY',
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF94A3B8),
-                      letterSpacing: 3.0,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFB8C4D9),
+                      letterSpacing: 3.5,
                     ),
                   ),
                 ),
