@@ -733,6 +733,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
               child: CircularProgressIndicator(color: Colors.cyanAccent),
             )
           : GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: _toggleControls,
               // ऊपर-नीचे swipe: left = brightness, right = volume
               onVerticalDragUpdate: (details) {
