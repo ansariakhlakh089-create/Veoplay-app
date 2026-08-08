@@ -656,7 +656,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   void _setVolume(double volume) {
-    VolumeController.instance.setVolume(volume);
+    VolumeController().setVolume(volume);
     setState(() => _volume = volume);
   }
 
