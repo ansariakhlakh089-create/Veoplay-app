@@ -478,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
         onTap: () async {
-          await Navigator.push(
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => RealVideoPlayer(
@@ -489,7 +489,16 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           );
-          _loadRecent();
+          if (result != null && result is Map) {
+            setState(() {
+              _recentTitle = result['title'];
+              _recentUrl = result['url'];
+              _recentPosition = result['position'];
+              _recentDuration = result['duration'];
+            });
+          } else {
+            _loadRecent();
+          }
         },
         child: Row(
           children: [
