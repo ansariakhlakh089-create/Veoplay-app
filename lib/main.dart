@@ -516,54 +516,41 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---- थंबनेल भाग (बदला हुआ) ----
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 130,
-                height: 75,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // असली वीडियो थंबनेल
-                    VideoThumbnail(
-                      videoUrl: item['url']!,
-                      thumbnailPath: '',
-                      imageFormat: ImageFormat.PNG,
-                      maxHeight: 150,
-                      quality: 75,
-                      errorWidget: Container(
-                        color: const Color(0xff2D8CFF).withOpacity(0.2),
-                        child: const Icon(Icons.videocam, color: Colors.white54),
-                      ),
-                    ),
-                    // प्ले आइकन
-                    const Center(
-                      child: Icon(Icons.play_circle_fill, color: Colors.white, size: 32),
-                    ),
-                    // ड्यूरेशन बैज
-                    Positioned(
-                      bottom: 4,
-                      right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item['duration']!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            Stack(
+              children: [
+                Container(
+                  width: 130,
+                  height: 75,
+                  decoration: BoxDecoration(
+                    color: const Color(0xff2D8CFF).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child:
+                        Icon(Icons.play_arrow, color: Colors.white, size: 32),
+                  ),
                 ),
-              ),
+                Positioned(
+                  bottom: 4,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      item['duration']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 12),
             // ---- जानकारी वाला भाग (टाइटल, res, size, source + more_vert) ----
