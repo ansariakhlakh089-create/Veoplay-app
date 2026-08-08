@@ -572,11 +572,17 @@ class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final String title;
   final int startPosition;
-  const RealVideoPlayer(
-      {super.key,
-      required this.videoUrl,
-      required this.title,
-      this.startPosition = 0});
+  final List<Map<String, String>>? playlist;   // ये जोड़ें
+  final int? currentIndex;                     // ये जोड़ें
+
+  const RealVideoPlayer({
+    Key? key,
+    required this.videoUrl,
+    required this.title,
+    this.startPosition = 0,
+    this.playlist,
+    this.currentIndex,
+  }) : super(key: key);
 
   @override
   State<RealVideoPlayer> createState() => _RealVideoPlayerState();
