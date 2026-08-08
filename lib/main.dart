@@ -385,8 +385,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 15),
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                final result = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => RealVideoPlayer(
@@ -395,7 +395,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                       startPosition: _recentPosition,
                                     ),
                                   ),
-                                ).then((_) => _loadRecent());
+                                );
+                                if (result != null && result is Map) {
+                                  setState(() {
+                                    _recentTitle = result['title'];
+                                    _recentUrl = result['url'];
+                                    _recentPosition = result['position'];
+                                    _recentDuration = result['duration'];
+                                  });
+                                } else {
+                                  _loadRecent();
+                                }
                               },
                               child: Container(
                                 height: 150,
