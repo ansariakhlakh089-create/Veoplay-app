@@ -473,6 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
+    final index = videoList.indexOf(item);
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(
@@ -483,6 +484,8 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (_) => RealVideoPlayer(
                 videoUrl: item['url']!,
                 title: item['title']!,
+                playlist: videoList,
+                currentIndex: index,
               ),
             ),
           );
