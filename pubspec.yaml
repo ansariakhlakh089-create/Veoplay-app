@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   video_player: ^2.8.1
   cupertino_icons: ^1.0.6
+  permission_handler: ^11.3.1
+  photo_manager: ^3.1.4
 
 dev_dependencies:
   flutter_test:
