@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';   // 👈 यहाँ जोड़ें
 import 'package:photo_manager/photo_manager.dart';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
@@ -1030,6 +1031,65 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                 ],
               ),
             ),
+    );
+  }
+}
+// ==================== वीडियो थंबनेल विजेट ====================
+class VideoThumbnailWidget extends StatefulWidget {
+  final String videoPath;
+  const VideoThumbnailWidget({super.key, required this.videoPath});
+
+  @override
+  State<VideoThumbnailWidget> createState() => _VideoThumbnailWidgetState();
+}
+
+class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
+  Uint8List? _thumbnailBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateThumbnail();
+  }
+
+  Future<void> _generateThumbnail() async {
+    try {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: widget.videoPath,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 200,
+        quality: 50,
+      );
+      if (mounted) {
+        setState(() {
+          _thumbnailBytes = bytes;
+        });
+      }
+    } catch (e) {
+      // थंबनेल नहीं बन पाया, आइकन दिखेगा
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_thumbnailBytes != null) {
+      return Image.memory(
+        _thumbnailBytes!,
+        width: 130,
+        height: 75,
+        fit: BoxFit.cover,
+      );
+    }
+    return Container(
+      width: 130,
+      height: 75,
+      decoration: BoxDecoration(
+        color: const Color(0xff2D8CFF).withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Icon(Icons.play_arrow, color: Colors.white, size: 32),
+      ),
     );
   }
 }
