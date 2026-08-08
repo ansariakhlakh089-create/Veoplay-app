@@ -611,8 +611,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
         _controller.seekTo(Duration(seconds: widget.startPosition));
       }
       _controller.play();
-      _controller.setVolume(0);
-    });
+         });
     _controller.addListener(() {
       if (mounted) setState(() {});
     });
