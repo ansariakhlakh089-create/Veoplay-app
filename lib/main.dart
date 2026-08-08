@@ -319,8 +319,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
              ),
              body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.blue),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  CircularProgressIndicator(color: Colors.blue),
+                  SizedBox(height: 20),
+                  Text(
+                    "Discovering videos...",
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ],
+              ),
             )
           : _permissionDenied
               ? Center(
