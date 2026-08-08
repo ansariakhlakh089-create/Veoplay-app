@@ -519,17 +519,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Stack(
               children: [
-                Container(
-                  width: 130,
-                  height: 75,
-                  decoration: BoxDecoration(
-                    color: const Color(0xff2D8CFF).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child:
-                        Icon(Icons.play_arrow, color: Colors.white, size: 32),
-                  ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: VideoThumbnailWidget(videoPath: item['url']!),
                 ),
                 Positioned(
                   bottom: 4,
