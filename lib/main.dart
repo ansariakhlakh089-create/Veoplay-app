@@ -359,6 +359,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Container(
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          const SizedBox(height: 25),
                           if (_recentTitle != null) ...[
                             const Text("Recent",
                                 style: TextStyle(
