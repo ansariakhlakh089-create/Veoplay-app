@@ -791,7 +791,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
             return ListTile(
               title: Text('${speed}x'),
               onTap: () {
-                _controller.setPlaybakSpeed(speed);
+                _controller.setPlaybackSpeed(speed);
                 setState(() => _speed = speed);
                 Navigator.pop(context);
               },
