@@ -1015,11 +1015,20 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 IconButton(
+                                  icon: Icon(Icons.skip_previous,
+                                      color: _hasPrevious
+                                          ? Colors.white
+                                          : Colors.white24,
+                                      size: 28),
+                                  onPressed: _hasPrevious ? _playPrevious : null,
+                                ),
+                                const SizedBox(width: 12),
+                                IconButton(
                                   icon: const Icon(Icons.replay_10,
                                       color: Colors.white, size: 30),
                                   onPressed: _skipBackward,
                                 ),
-                                const SizedBox(width: 24),
+                                const SizedBox(width: 20),
                                 GestureDetector(
                                   onTap: _togglePlay,
                                   child: Container(
@@ -1038,11 +1047,20 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 24),
+                                const SizedBox(width: 20),
                                 IconButton(
                                   icon: const Icon(Icons.forward_10,
                                       color: Colors.white, size: 30),
                                   onPressed: _skipForward,
+                                ),
+                                const SizedBox(width: 12),
+                                IconButton(
+                                  icon: Icon(Icons.skip_next,
+                                      color: _hasNext
+                                          ? Colors.white
+                                          : Colors.white24,
+                                      size: 28),
+                                  onPressed: _hasNext ? _playNext : null,
                                 ),
                               ],
                             ),
