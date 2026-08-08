@@ -926,24 +926,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
-                            // वॉल्यूम स्लाइडर
-                            Row(
-                              children: [
-                                const Icon(Icons.volume_up,
-                                    color: Colors.white70, size: 20),
-                                Expanded(
-                                  child: Slider(
-                                    value: _volume,
-                                    min: 0,
-                                    max: 1,
-                                    activeColor: const Color(0xff2D8CFF),
-                                    onChanged: _setVolume,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          ], 
                         ),
                       ),
                     ),
