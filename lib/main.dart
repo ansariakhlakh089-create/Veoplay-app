@@ -152,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: FadeTransition(
                   opacity: _titleOpacity,
                   child: const Text(
-                    'Vee Play',
+                    'Veoplay',
                     style: TextStyle(
                       fontSize: 38,
                       fontWeight: FontWeight.w700,
@@ -168,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: FadeTransition(
                   opacity: _taglineOpacity,
                   child: const Text(
-                    'WATCH·PLAY·ENJOY',
+                    'PLAY·WATCH·ENJOY',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
