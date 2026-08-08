@@ -594,7 +594,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
  @override
   void initState() {
     super.initState();
-    VolumeController.instance.getVolume().then((v) {
+    VolumeController().getVolume().then((v) {
       if (mounted) setState(() => _volume = v);
     });
     if (widget.videoUrl.startsWith('http')) {
