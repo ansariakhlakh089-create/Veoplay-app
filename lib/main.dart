@@ -659,6 +659,48 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     _controller.seekTo(newPos);
   }
 
+  bool get _hasNext {
+    if (widget.playlist == null || widget.currentIndex == null) return false;
+    return widget.currentIndex! < widget.playlist!.length - 1;
+  }
+
+  bool get _hasPrevious {
+    if (widget.playlist == null || widget.currentIndex == null) return false;
+    return widget.currentIndex! > 0;
+  }
+
+  void _playNext() {
+    if (!_hasNext) return;
+    final nextItem = widget.playlist![widget.currentIndex! + 1];
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RealVideoPlayer(
+          videoUrl: nextItem['url']!,
+          title: nextItem['title']!,
+          playlist: widget.playlist,
+          currentIndex: widget.currentIndex! + 1,
+        ),
+      ),
+    );
+  }
+
+  void _playPrevious() {
+    if (!_hasPrevious) return;
+    final prevItem = widget.playlist![widget.currentIndex! - 1];
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RealVideoPlayer(
+          videoUrl: prevItem['url']!,
+          title: prevItem['title']!,
+          playlist: widget.playlist,
+          currentIndex: widget.currentIndex! - 1,
+        ),
+      ),
+    );
+  }
+
   void _setSpeed(double speed) {
     _controller.setPlaybackSpeed(speed);
     setState(() => _speed = speed);
