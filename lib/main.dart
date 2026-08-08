@@ -592,6 +592,9 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
  @override
   void initState() {
     super.initState();
+    VolumeController.instance.getVolume().then((v) {
+      if (mounted) setState(() => _volume = v);
+    });
     if (widget.videoUrl.startsWith('http')) {
       _controller =
           VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
@@ -606,18 +609,12 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
         _controller.seekTo(Duration(seconds: widget.startPosition));
       }
       _controller.play();
+      _controller.setVolume(0);
     });
     _controller.addListener(() {
       if (mounted) setState(() {});
     });
     _startHideTimer();
-  }
-
-  void _startHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) setState(() => _showControls = false);
-    });
   }
 
   void _toggleControls() {
