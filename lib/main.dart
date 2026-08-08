@@ -634,18 +634,25 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
       _controller = VideoPlayerController.file(File(widget.videoUrl));
     }
     _controller.initialize().then((_) {
-      setState(() {
-        _isInitialized = true;
-      });
-      if (widget.startPosition > 0) {
-        _controller.seekTo(Duration(seconds: widget.startPosition));
-      }
-      _controller.play();
-         });
+  setState(() {
+    _isInitialized = true;
+  });
+  if (widget.startPosition > 0) {
+    _controller.seekTo(Duration(seconds: widget.startPosition));
+  }
+  _controller.play();
+}).catchError((error) {
+  // यहाँ एरर आने पर क्या करना है
+  debugPrint('Video initialize error: $error');
+  // ज़रूरी हो तो यूज़र को मैसेज दिखाने के लिए एक boolean state बना सकते हैं
+  setState(() {
+    // मान लो कोई _hasError नाम का bool है
+    // _hasError = true;
+  });
+});
     _controller.addListener(() {
       if (mounted) setState(() {});
     });
-    _startHideTimer();
   }
 
   void _startHideTimer() {
