@@ -548,8 +548,12 @@ class _HomeScreenState extends State<HomeScreen> {
 class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final String title;
+  final int startPosition;
   const RealVideoPlayer(
-      {super.key, required this.videoUrl, required this.title});
+      {super.key,
+      required this.videoUrl,
+      required this.title,
+      this.startPosition = 0});
 
   @override
   State<RealVideoPlayer> createState() => _RealVideoPlayerState();
@@ -565,16 +569,24 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   double _volume = 1.0;
   double _brightness = 0.8;
 
-  @override
+ @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-        });
-        _controller.play();
+    if (widget.videoUrl.startsWith('http')) {
+      _controller =
+          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+    } else {
+      _controller = VideoPlayerController.file(File(widget.videoUrl));
+    }
+    _controller.initialize().then((_) {
+      setState(() {
+        _isInitialized = true;
       });
+      if (widget.startPosition > 0) {
+        _controller.seekTo(Duration(seconds: widget.startPosition));
+      }
+      _controller.play();
+    });
     _controller.addListener(() {
       if (mounted) setState(() {});
     });
