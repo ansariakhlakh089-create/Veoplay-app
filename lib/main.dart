@@ -700,9 +700,20 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
 
   @override
   void dispose() {
+    _saveProgress();
     _controller.dispose();
     _hideTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('recent_title', widget.title);
+    await prefs.setString('recent_url', widget.videoUrl);
+    await prefs.setInt(
+        'recent_position', _controller.value.position.inSeconds);
+    await prefs.setInt(
+        'recent_duration', _controller.value.duration.inSeconds);
   }
 
   @override
