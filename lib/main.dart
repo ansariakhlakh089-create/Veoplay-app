@@ -203,17 +203,18 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _loadVideos();
   }
-
+  
   Future<void> _loadVideos() async {
     final PermissionState permission =
         await PhotoManager.requestPermissionExtend();
-    if (!permission.isAuth) {
+    if (!permission.isAuth && !permission.hasAccess) {
       setState(() {
         _isLoading = false;
         _permissionDenied = true;
       });
       return;
     }
+    PhotoManager.setIgnorePermissionCheck(true);
 
     final List<AssetPathEntity> albums =
         await PhotoManager.getAssetPathList(
