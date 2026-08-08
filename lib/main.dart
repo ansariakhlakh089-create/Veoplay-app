@@ -482,7 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
+  
   Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
     final index = videoList.indexOf(item);
     return Padding(
@@ -512,73 +512,97 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Container(
-                  width: 130,
-                  height: 75,
-                  decoration: BoxDecoration(
-                  color: const Color(0xff2D8CFF).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child:
-                        Icon(Icons.play_arrow, color: Colors.white, size: 32),
-                  ),
-                ),
-                Positioned(
-                  bottom: 4,
-                  right: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      item['duration']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+            // ---- थंबनेल भाग (बदला हुआ) ----
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 130,
+                height: 75,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // असली वीडियो थंबनेल
+                    VideoThumbnail(
+                      videoUrl: item['url']!,
+                      thumbnailPath: '',
+                      imageFormat: ImageFormat.PNG,
+                      maxHeight: 150,
+                      quality: 75,
+                      errorWidget: Container(
+                        color: const Color(0xff2D8CFF).withOpacity(0.2),
+                        child: const Icon(Icons.videocam, color: Colors.white54),
                       ),
                     ),
-                  ),
+                    // प्ले आइकन
+                    const Center(
+                      child: Icon(Icons.play_circle_fill, color: Colors.white, size: 32),
+                    ),
+                    // ड्यूरेशन बैज
+                    Positioned(
+                      bottom: 4,
+                      right: 6,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          item['duration']!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
+            // ---- जानकारी वाला भाग (टाइटल, res, size, source + more_vert) ----
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // वीडियो का टाइटल
                   Text(
-                    item['title']!,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w500),
-                    maxLines: 1,
+                    item['title'] ?? 'No Title',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
+                  // रेज़ॉल्यूशन और साइज़
                   Text(
-                    "${item['res']} | ${item['size']}",
-                    style:
-                        const TextStyle(color: Colors.white60, fontSize: 13),
+                    "${item['res'] ?? ''} | ${item['size'] ?? ''}",
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
                   ),
-                  Text(
-                    item['source']!,
-                    style:
-                        const TextStyle(color: Colors.white38, fontSize: 12),
+                  const SizedBox(height: 2),
+                  // सोर्स और more_vert आइकन वाली Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item['source'] ?? '',
+                          style: const TextStyle(color: Colors.white38, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              onPressed: () {},
-              icon:
-                  const Icon(Icons.more_vert, color: Colors.white60, size: 20),
             ),
           ],
         ),
@@ -592,8 +616,8 @@ class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final String title;
   final int startPosition;
-  final List<Map<String, String>>? playlist;   // ये जोड़ें
-  final int? currentIndex;                     // ये जोड़ें
+  final List<Map<String, String>>? playlist;
+  final int? currentIndex;
 
   const RealVideoPlayer({
     Key? key,
@@ -619,40 +643,39 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   double _brightness = 0.8;
   double _dragSeekSeconds = 0;
   bool _isDraggingSeek = false;
-    bool _isFullscreen = false;
+  bool _isFullscreen = false;
 
- @override
+  @override
   void initState() {
     super.initState();
     VolumeController().getVolume().then((v) {
       if (mounted) setState(() => _volume = v);
-    });
+    }).catchError((_) {});
+
     if (widget.videoUrl.startsWith('http')) {
       _controller =
           VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
     } else {
       _controller = VideoPlayerController.file(File(widget.videoUrl));
     }
+
     _controller.initialize().then((_) {
-  setState(() {
-    _isInitialized = true;
-  });
-  if (widget.startPosition > 0) {
-    _controller.seekTo(Duration(seconds: widget.startPosition));
-  }
-  _controller.play();
-}).catchError((error) {
-  // यहाँ एरर आने पर क्या करना है
-  debugPrint('Video initialize error: $error');
-  // ज़रूरी हो तो यूज़र को मैसेज दिखाने के लिए एक boolean state बना सकते हैं
-  setState(() {
-    // मान लो कोई _hasError नाम का bool है
-    // _hasError = true;
-  });
-});
+      if (!mounted) return;
+      setState(() {
+        _isInitialized = true;
+      });
+      if (widget.startPosition > 0) {
+        _controller.seekTo(Duration(seconds: widget.startPosition));
+      }
+      _controller.play();
+    }).catchError((error) {
+      debugPrint('Video initialize error: $error');
+    });
+
     _controller.addListener(() {
       if (mounted) setState(() {});
     });
+    _startHideTimer();
   }
 
   void _startHideTimer() {
@@ -670,6 +693,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   void _togglePlay() {
+    if (!_isInitialized) return;
     if (_controller.value.isPlaying) {
       _controller.pause();
     } else {
@@ -679,15 +703,18 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   void _seekTo(double seconds) {
+    if (!_isInitialized) return;
     _controller.seekTo(Duration(seconds: seconds.toInt()));
   }
 
   void _skipForward() {
+    if (!_isInitialized) return;
     final newPos = _controller.value.position + const Duration(seconds: 10);
     _controller.seekTo(newPos);
   }
 
   void _skipBackward() {
+    if (!_isInitialized) return;
     var newPos = _controller.value.position - const Duration(seconds: 10);
     if (newPos < Duration.zero) newPos = Duration.zero;
     _controller.seekTo(newPos);
@@ -735,80 +762,64 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     );
   }
 
-  void _setSpeed(double speed) {
-    _controller.setPlaybackSpeed(speed);
-    setState(() => _speed = speed);
+  void _toggleFullscreen() {
+    if (_isFullscreen) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+    setState(() => _isFullscreen = !_isFullscreen);
   }
 
-  void _setVolume(double volume) {
-    VolumeController().setVolume(volume);
-    setState(() => _volume = volume);
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('recent_title', widget.title);
+    await prefs.setString('recent_url', widget.videoUrl);
+    await prefs.setInt('recent_position', _controller.value.position.inSeconds);
+    await prefs.setInt('recent_duration', _controller.value.duration.inSeconds);
   }
 
-  void _setBrightness(double brightness) {
-    setState(() => _brightness = brightness);
-  }
-
-  void _showSpeedDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xff1A1D24),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (context) {
-        final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Playback Speed',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  children: speeds.map((s) {
-                    final selected = s == _speed;
-                    return ChoiceChip(
-                      label: Text('${s}x'),
-                      selected: selected,
-                      selectedColor: const Color(0xff2D8CFF),
-                      backgroundColor: Colors.white10,
-                      labelStyle: TextStyle(
-                          color: selected ? Colors.white : Colors.white70),
-                      onSelected: (_) {
-                        _setSpeed(s);
-                        Navigator.pop(context);
-                      },
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.toString().padLeft(2, '0');
-    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+  Future<void> _saveProgressData(String title, String url, int pos, int dur) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('recent_title', title);
+    await prefs.setString('recent_url', url);
+    await prefs.setInt('recent_position', pos);
+    await prefs.setInt('recent_duration', dur);
   }
 
   @override
   void dispose() {
-    _saveProgress();
-    _controller.dispose();
+    // पहले डेटा निकालें, फिर dispose करें
+    final title = widget.title;
+    final url = widget.videoUrl;
+    final position = _controller.value.position.inSeconds;
+    final duration = _controller.value.duration.inSeconds;
+
     _hideTimer?.cancel();
+    _controller.dispose();
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    _saveProgressData(title, url, position, duration);
     super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    // आपका पूरा UI कोड (जैसा पहले लिखा था) यहाँ रखें
+    // ...
+  }
+}
 
   Future<void> _saveProgress() async {
     final position = _controller.value.position.inSeconds;
