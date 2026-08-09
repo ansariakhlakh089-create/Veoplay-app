@@ -1095,38 +1095,41 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             const SizedBox(height: 6),
                             // प्ले कंट्रोल्स
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                   icon: Icon(
                                       _isFullscreen
                                           ? Icons.fullscreen_exit
                                           : Icons.screen_rotation,
                                       color: Colors.white,
-                                      size: 24),
+                                      size: 20),
                                   onPressed: _toggleFullscreen,
                                 ),
-                                const SizedBox(width: 8),
                                 IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                   icon: Icon(Icons.skip_previous,
                                       color: _hasPrevious
                                           ? Colors.white
                                           : Colors.white24,
-                                      size: 28),
+                                      size: 22),
                                   onPressed: _hasPrevious ? _playPrevious : null,
                                 ),
-                                const SizedBox(width: 12),
                                 IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                   icon: const Icon(Icons.replay_10,
-                                      color: Colors.white, size: 30),
+                                      color: Colors.white, size: 24),
                                   onPressed: _skipBackward,
                                 ),
-                                const SizedBox(width: 20),
                                 GestureDetector(
                                   onTap: _togglePlay,
                                   child: Container(
-                                    width: 56,
-                                    height: 56,
+                                    width: 50,
+                                    height: 50,
                                     decoration: const BoxDecoration(
                                       color: Color(0xff2D8CFF),
                                       shape: BoxShape.circle,
@@ -1136,23 +1139,25 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                           ? Icons.pause
                                           : Icons.play_arrow,
                                       color: Colors.white,
-                                      size: 30,
+                                      size: 26,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 20),
                                 IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                   icon: const Icon(Icons.forward_10,
-                                      color: Colors.white, size: 30),
+                                      color: Colors.white, size: 24),
                                   onPressed: _skipForward,
                                 ),
-                                const SizedBox(width: 12),
                                 IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
                                   icon: Icon(Icons.skip_next,
                                       color: _hasNext
                                           ? Colors.white
                                           : Colors.white24,
-                                      size: 28),
+                                      size: 22),
                                   onPressed: _hasNext ? _playNext : null,
                                 ),
                               ],
