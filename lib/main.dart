@@ -8,6 +8,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 void main() {
   runApp(const VeoPlay());
