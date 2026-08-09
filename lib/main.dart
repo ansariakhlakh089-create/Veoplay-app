@@ -349,16 +349,26 @@ class _HomeScreenState extends State<HomeScreen>
         titleSpacing: 18,
         title: Row(
           children: [
-            Container(
-              height: 42,
-              width: 42,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
-                ),
+            ClipOval(
+              child: Image.asset(
+                'assets/logo.png',
+                height: 42,
+                width: 42,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 42,
+                    width: 42,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
+                      ),
+                    ),
+                    child: const Icon(Icons.play_arrow, color: Colors.white),
+                  );
+                },
               ),
-              child: const Icon(Icons.play_arrow, color: Colors.white),
             ),
             const SizedBox(width: 10),
             const Text("VeoPlay",
