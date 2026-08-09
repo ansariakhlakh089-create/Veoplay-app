@@ -217,30 +217,46 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadRecent();
   }
 
-  Future<void> _loadRecent() async {
-    final prefs = await SharedPreferences.getInstance();
-    final title = prefs.getString('recent_title');
-    final url = prefs.getString('recent_url');
-    final position = prefs.getInt('recent_position') ?? 0;
-    final duration = prefs.getInt('recent_duration') ?? 0;
-    if (title != null && url != null) {
-      setState(() {
-        _recentTitle = title;
-        _recentUrl = url;
-        _recentPosition = position;
-        _recentDuration = duration;
-      });
-    }
-  }
-  
   Future<void> _loadVideos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getStringList('cached_videos');
+    if (cached != null && cached.isNotEmpty) {
+      final loadedCache = cached.map((s) {
+        final parts = s.split('|||');
+        return {
+          "title": parts[0],
+          "res": parts[1],
+          "size": parts[2],
+          "source": parts[3],
+          "duration": parts[4],
+          "url": parts[5],
+          "isLocal": "true",
+        };
+      }).toList();
+      setState(() {
+        videoList = loadedCache;
+        _isLoading = false;
+      });
+      _refreshVideosInBackground();
+      return;
+    }
+    await _scanVideos();
+  }
+
+  Future<void> _refreshVideosInBackground() async {
+    await _scanVideos(silent: true);
+  }
+
+  Future<void> _scanVideos({bool silent = false}) async {
     final PermissionState permission =
         await PhotoManager.requestPermissionExtend();
     if (!permission.isAuth && !permission.hasAccess) {
-      setState(() {
-        _isLoading = false;
-        _permissionDenied = true;
-      });
+      if (!silent) {
+        setState(() {
+          _isLoading = false;
+          _permissionDenied = true;
+        });
+      }
       return;
     }
     PhotoManager.setIgnorePermissionCheck(true);
@@ -252,9 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (albums.isEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
+      if (!silent) setState(() => _isLoading = false);
       return;
     }
 
@@ -281,12 +295,19 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    final toSave = loaded
+        .map((m) =>
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}")
+        .toList();
+    await prefs.setStringList('cached_videos', toSave);
+
     setState(() {
       videoList = loaded;
       _isLoading = false;
     });
   }
-
+        
   @override
   Widget build(BuildContext context) {
     return Scaffold(
