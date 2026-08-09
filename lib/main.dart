@@ -640,6 +640,11 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     // वॉल्यूम लेना (एरर हैंडलिंग के साथ)
     VolumeController().getVolume().then((v) {
       if (mounted) setState(() => _volume = v);
