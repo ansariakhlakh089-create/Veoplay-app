@@ -432,7 +432,12 @@ class _HomeScreenState extends State<HomeScreen>
                         style: TextStyle(color: Colors.white54, fontSize: 16),
                       ),
                     )
-                  : SingleChildScrollView(
+                  : RefreshIndicator(
+                      onRefresh: () async {
+                        await _scanVideos();
+                      },
+                      child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
