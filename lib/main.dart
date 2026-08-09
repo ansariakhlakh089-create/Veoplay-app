@@ -952,6 +952,14 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             ),
                           ),
                           IconButton(
+                            icon: Icon(
+                                _isFullscreen
+                                    ? Icons.fullscreen_exit
+                                    : Icons.screen_rotation,
+                                color: Colors.white),
+                            onPressed: _toggleFullscreen,
+                          ),
+                          IconButton(
                             icon: const Icon(Icons.cast, color: Colors.white),
                             onPressed: () {},
                           ),
