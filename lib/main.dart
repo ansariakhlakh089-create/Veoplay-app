@@ -699,6 +699,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   double _dragSeekSeconds = 0;
   bool _isDraggingSeek = false;
   bool _isFullscreen = false;
+  bool _showGestureIndicator = false;
+  String _gestureText = '';
 
   @override
   void initState() {
