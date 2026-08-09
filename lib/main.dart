@@ -1078,6 +1078,22 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // रोटेट बटन (सीक बार के ऊपर)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: Icon(
+                                    _isFullscreen
+                                        ? Icons.fullscreen_exit
+                                        : Icons.screen_rotation,
+                                    color: Colors.white,
+                                    size: 20),
+                                onPressed: _toggleFullscreen,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             // सीक बार
                             Row(
                               children: [
@@ -1124,19 +1140,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             const SizedBox(height: 6),
                             // प्ले कंट्रोल्स
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(
-                                      _isFullscreen
-                                          ? Icons.fullscreen_exit
-                                          : Icons.screen_rotation,
-                                      color: Colors.white,
-                                      size: 20),
-                                  onPressed: _toggleFullscreen,
-                                ),
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
@@ -1147,6 +1152,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                       size: 22),
                                   onPressed: _hasPrevious ? _playPrevious : null,
                                 ),
+                                const SizedBox(width: 16),
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
