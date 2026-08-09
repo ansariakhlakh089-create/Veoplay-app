@@ -923,16 +923,25 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                 final dx = details.globalPosition.dx;
                 final delta = -details.delta.dy / 200;
                 if (dx < screenWidth / 2) {
-                  // brightness (सिर्फ़ UI में दिखाने के लिए, असली ब्राइटनेस बदलने के लिए प्लगइन चाहिए)
+                  final newBrightness = (_brightness + delta).clamp(0.0, 1.0);
+                  ScreenBrightness().setScreenBrightness(newBrightness);
                   setState(() {
-                    _brightness = (_brightness + delta).clamp(0.0, 1.0);
+                    _brightness = newBrightness;
+                    _showGestureIndicator = true;
+                    _gestureText = 'Brightness ${(newBrightness * 100).toInt()}%';
                   });
                 } else {
-                  // volume
                   double newVol = (_volume + delta).clamp(0.0, 1.0);
                   VolumeController().setVolume(newVol);
-                  setState(() => _volume = newVol);
+                  setState(() {
+                    _volume = newVol;
+                    _showGestureIndicator = true;
+                    _gestureText = 'Volume ${(newVol * 100).toInt()}%';
+                  });
                 }
+              },
+              onVerticalDragEnd: (details) {
+                setState(() => _showGestureIndicator = false);
               },
               onHorizontalDragStart: (details) {
                 setState(() {
