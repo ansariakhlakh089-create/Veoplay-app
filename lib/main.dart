@@ -1106,6 +1106,16 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 IconButton(
+                                  icon: Icon(
+                                      _isFullscreen
+                                          ? Icons.fullscreen_exit
+                                          : Icons.screen_rotation,
+                                      color: Colors.white,
+                                      size: 24),
+                                  onPressed: _toggleFullscreen,
+                                ),
+                                const SizedBox(width: 8),
+                                IconButton(
                                   icon: Icon(Icons.skip_previous,
                                       color: _hasPrevious
                                           ? Colors.white
