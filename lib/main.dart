@@ -411,23 +411,32 @@ class _HomeScreenState extends State<HomeScreen> {
                                   _loadRecent();
                                 }
                               },
-                              child: Container(
-                                height: 150,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xff2D8CFF),
-                                      Color(0xff6B4DFF)
-                                    ],
-                                  ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    const Center(
-                                      child: Icon(Icons.play_circle_fill,
-                                          color: Colors.white, size: 70),
-                                    ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: SizedBox(
+                                  height: 150,
+                                  width: double.infinity,
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      VideoThumbnailWidget(
+                                          videoPath: _recentUrl!),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(0.6),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const Center(
+                                        child: Icon(Icons.play_circle_fill,
+                                            color: Colors.white, size: 70),
+                                      ),
                                     Positioned(
                                       left: 18,
                                       bottom: 18,
@@ -455,6 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
+                          ),
                             const SizedBox(height: 25),
                           ],
                           const Text("Videos",
