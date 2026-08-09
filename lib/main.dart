@@ -217,6 +217,22 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadRecent();
   }
 
+  Future<void> _loadRecent() async {
+    final prefs = await SharedPreferences.getInstance();
+    final title = prefs.getString('recent_title');
+    final url = prefs.getString('recent_url');
+    final position = prefs.getInt('recent_position') ?? 0;
+    final duration = prefs.getInt('recent_duration') ?? 0;
+    if (title != null && url != null) {
+      setState(() {
+        _recentTitle = title;
+        _recentUrl = url;
+        _recentPosition = position;
+        _recentDuration = duration;
+      });
+    }
+  }
+
   Future<void> _loadVideos() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getStringList('cached_videos');
