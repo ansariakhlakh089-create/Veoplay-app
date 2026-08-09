@@ -823,8 +823,12 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.toString().padLeft(2, '0');
+    final hours = d.inHours;
+    final minutes = (d.inMinutes % 60).toString().padLeft(2, '0');
     final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '$hours:$minutes:$seconds';
+    }
     return '$minutes:$seconds';
   }
 
