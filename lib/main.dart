@@ -921,16 +921,16 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () async {
-                              await _saveProgress();
-                              if (context.mounted) {
-                                Navigator.pop(context, {
-                                  'title': widget.title,
-                                  'url': widget.videoUrl,
-                                  'position': _controller.value.position.inSeconds,
-                                  'duration': _controller.value.duration.inSeconds,
-                                });
-                              }
+                            onPressed: () {
+                              final position = _controller.value.position.inSeconds;
+                              final duration = _controller.value.duration.inSeconds;
+                              _saveProgress();
+                              Navigator.pop(context, {
+                                'title': widget.title,
+                                'url': widget.videoUrl,
+                                'position': position,
+                                'duration': duration,
+                              });
                             },
                           ),
                           Expanded(
