@@ -434,7 +434,8 @@ class _HomeScreenState extends State<HomeScreen>
                     )
                   : RefreshIndicator(
                       onRefresh: () async {
-                        await _scanVideos();
+                        await _scanVideos(silent: true);
+                        await _loadRecent();
                       },
                       child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
