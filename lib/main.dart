@@ -660,6 +660,10 @@ class _HomeScreenState extends State<HomeScreen>
                                 },
                               );
                             }),
+                        ],
+                      ),
+                    ),
+                  ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
         destinations: const [
