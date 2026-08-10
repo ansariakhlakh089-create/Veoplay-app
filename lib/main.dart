@@ -540,19 +540,46 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                             const SizedBox(height: 25),
                           ],
-                          const Text("Videos",
-                              style: TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 15),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: videoList.length,
-                            itemBuilder: (context, index) {
-                              final item = videoList[index];
-                              return _buildVideoTile(context, item);
-                            },
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => _showPlaylist = false),
+                                child: Text("Videos",
+                                    style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: !_showPlaylist
+                                            ? Colors.white
+                                            : Colors.white38)),
+                              ),
+                              const SizedBox(width: 20),
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => _showPlaylist = true),
+                                child: Text("Playlist",
+                                    style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: _showPlaylist
+                                            ? Colors.white
+                                            : Colors.white38)),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 15),
+                          if (!_showPlaylist)
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: videoList.length,
+                              itemBuilder: (context, index) {
+                                final item = videoList[index];
+                                return _buildVideoTile(context, item);
+                              },
+                            )
+                          else
+                            _buildPlaylistView(),
                         ],
                       ),
                     ),
