@@ -206,7 +206,8 @@ class _HomeScreenState extends State<HomeScreen>
   List<Map<String, String>> videoList = [];
   bool _isLoading = true;
   bool _permissionDenied = false;
-
+    bool _showPlaylist = false;
+  
   String? _recentTitle;
   String? _recentUrl;
   int _recentPosition = 0;
