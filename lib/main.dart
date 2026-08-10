@@ -263,6 +263,7 @@ class _HomeScreenState extends State<HomeScreen>
           "duration": parts[4],
           "url": parts[5],
           "isLocal": "true",
+          "folder": parts.length > 6 ? parts[6] : "Unknown",
         };
       }).toList();
       setState(() {
