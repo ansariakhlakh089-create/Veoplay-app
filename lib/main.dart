@@ -1241,17 +1241,40 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
   @override
   void initState() {
     super.initState();
-    _generateThumbnail();
+    _loadOrGenerateThumbnail();
   }
 
-  Future<void> _generateThumbnail() async {
+  String _getCacheFileName() {
+    final hash = widget.videoPath.hashCode.toString();
+    return 'thumb_$hash.jpg';
+  }
+
+  Future<void> _loadOrGenerateThumbnail() async {
     try {
+      final tempDir = Directory.systemTemp;
+      final cacheFile = File('${tempDir.path}/${_getCacheFileName()}');
+
+      if (await cacheFile.exists()) {
+        final bytes = await cacheFile.readAsBytes();
+        if (mounted) {
+          setState(() {
+            _thumbnailBytes = bytes;
+          });
+        }
+        return;
+      }
+
       final bytes = await VideoThumbnail.thumbnailData(
         video: widget.videoPath,
         imageFormat: ImageFormat.JPEG,
         maxWidth: 200,
         quality: 50,
       );
+
+      if (bytes != null) {
+        await cacheFile.writeAsBytes(bytes);
+      }
+
       if (mounted) {
         setState(() {
           _thumbnailBytes = bytes;
