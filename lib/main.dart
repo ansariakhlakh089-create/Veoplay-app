@@ -1340,3 +1340,70 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
     );
   }
 }
+class FolderVideosScreen extends StatelessWidget {
+  final String folderName;
+  final List<Map<String, String>> videos;
+  const FolderVideosScreen(
+      {super.key, required this.folderName, required this.videos});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(folderName),
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(18),
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          final item = videos[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => RealVideoPlayer(
+                      videoUrl: item['url']!,
+                      title: item['title']!,
+                      playlist: videos,
+                      currentIndex: index,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: VideoThumbnailWidget(videoPath: item['url']!),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(item['title'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 14),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis),
+                        const SizedBox(height: 4),
+                        Text(item['duration'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.white60, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
