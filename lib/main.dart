@@ -579,11 +579,87 @@ class _HomeScreenState extends State<HomeScreen>
                               },
                             )
                           else
-                            _buildPlaylistView(),
-                        ],
-                      ),
-                    ),
-                  ),
+                            Builder(builder: (context) {
+                              final Map<String, List<Map<String, String>>>
+                                  grouped = {};
+                              for (final video in videoList) {
+                                final folder = video['folder'] ?? 'Unknown';
+                                grouped
+                                    .putIfAbsent(folder, () => [])
+                                    .add(video);
+                              }
+                              final folderNames = grouped.keys.toList();
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                physics:
+                                    const NeverScrollableScrollPhysics(),
+                                itemCount: folderNames.length,
+                                itemBuilder: (context, index) {
+                                  final folderName = folderNames[index];
+                                  final folderVideos = grouped[folderName]!;
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 10),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                FolderVideosScreen(
+                                              folderName: folderName,
+                                              videos: folderVideos,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white10,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.folder,
+                                                color: Color(0xff2D8CFF),
+                                                size: 32),
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start,
+                                                children: [
+                                                  Text(folderName,
+                                                      style: const TextStyle(
+                                                          color:
+                                                              Colors.white,
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight
+                                                                  .bold)),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                      "${folderVideos.length} videos",
+                                                      style: const TextStyle(
+                                                          color: Colors
+                                                              .white54,
+                                                          fontSize: 13)),
+                                                ],
+                                              ),
+                                            ),
+                                            const Icon(Icons.chevron_right,
+                                                color: Colors.white38),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
         destinations: const [
