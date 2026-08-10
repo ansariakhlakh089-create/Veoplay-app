@@ -316,6 +316,7 @@ class _HomeScreenState extends State<HomeScreen>
       final minutes = duration.inMinutes.toString().padLeft(2, '0');
       final seconds =
           (duration.inSeconds % 60).toString().padLeft(2, '0');
+      final folderName = file.parent.path.split('/').last;
       loaded.add({
         "title": asset.title ?? "Unknown",
         "res": "${asset.width}x${asset.height}",
@@ -324,13 +325,14 @@ class _HomeScreenState extends State<HomeScreen>
         "duration": "$minutes:$seconds",
         "url": file.path,
         "isLocal": "true",
+        "folder": folderName,
       });
     }
 
     final prefs = await SharedPreferences.getInstance();
     final toSave = loaded
         .map((m) =>
-            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}")
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}")
         .toList();
     await prefs.setStringList('cached_videos', toSave);
 
