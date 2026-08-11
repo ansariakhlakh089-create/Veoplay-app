@@ -680,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
     final index = videoList.indexOf(item);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: const EdgeInsets.only(bottom: 0),
       child: GestureDetector(
         onTap: () async {
           final result = await Navigator.push(
