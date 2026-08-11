@@ -384,11 +384,13 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          PopupMenuButton(
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 1, child: Text("Settings")),
-              PopupMenuItem(value: 2, child: Text("About")),
-            ],
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
+              child: const Icon(Icons.person, color: Colors.white, size: 20),
+            ),
           ),
         ],
              ),
