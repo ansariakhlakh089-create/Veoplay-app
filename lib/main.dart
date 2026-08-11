@@ -668,12 +668,20 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: 0,
+        onDestinationSelected: (index) {
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AudioScreen()),
+            );
+          }
+        },
         destinations: const [
           NavigationDestination(
               icon: Icon(Icons.video_library), label: "Videos"),
           NavigationDestination(
               icon: Icon(Icons.play_circle_fill), label: "Play"),
-          NavigationDestination(icon: Icon(Icons.person), label: "Profile"),
+          NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
         ],
       ),
     );
