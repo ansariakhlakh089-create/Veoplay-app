@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:screen_brightness/screen_brightness.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(const VeoPlay());
