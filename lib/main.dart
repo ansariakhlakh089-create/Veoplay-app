@@ -1489,3 +1489,315 @@ class FolderVideosScreen extends StatelessWidget {
     );
   }
 }
+// ==================== ऑडियो स्क्रीन ====================
+class AudioScreen extends StatefulWidget {
+  const AudioScreen({super.key});
+
+  @override
+  State<AudioScreen> createState() => _AudioScreenState();
+}
+
+class _AudioScreenState extends State<AudioScreen> {
+  final OnAudioQuery _audioQuery = OnAudioQuery();
+  List<SongModel> _songs = [];
+  bool _isLoading = true;
+  bool _permissionDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSongs();
+  }
+
+  Future<void> _loadSongs() async {
+    bool hasPermission = await _audioQuery.checkAndRequest(
+      retryRequest: true,
+    );
+    if (!hasPermission) {
+      setState(() {
+        _isLoading = false;
+        _permissionDenied = true;
+      });
+      return;
+    }
+    final songs = await _audioQuery.querySongs(
+      sortType: SongSortType.TITLE,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+    );
+    setState(() {
+      _songs = songs;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text("Music"),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Colors.blue),
+            )
+          : _permissionDenied
+              ? const Center(
+                  child: Text(
+                    "Audio access permission चाहिए",
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                )
+              : _songs.isEmpty
+                  ? const Center(
+                      child: Text(
+                        "कोई गाना नहीं मिला",
+                        style: TextStyle(color: Colors.white54, fontSize: 16),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(18),
+                      itemCount: _songs.length,
+                      itemBuilder: (context, index) {
+                        final song = _songs[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AudioPlayerScreen(
+                                    songs: _songs,
+                                    initialIndex: index,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xff2D8CFF)
+                                        .withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.music_note,
+                                      color: Colors.white),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(song.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14)),
+                                      const SizedBox(height: 2),
+                                      Text(song.artist ?? "Unknown",
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              color: Colors.white54,
+                                              fontSize: 12)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+    );
+  }
+}
+// ==================== ऑडियो प्लेयर स्क्रीन ====================
+class AudioPlayerScreen extends StatefulWidget {
+  final List<SongModel> songs;
+  final int initialIndex;
+  const AudioPlayerScreen(
+      {super.key, required this.songs, required this.initialIndex});
+
+  @override
+  State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
+}
+
+class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
+  late AudioPlayer _player;
+  late int _currentIndex;
+  bool _isPlaying = false;
+  Duration _position = Duration.zero;
+  Duration _duration = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _player = AudioPlayer();
+    _playCurrent();
+
+    _player.onPlayerStateChanged.listen((state) {
+      if (mounted) {
+        setState(() => _isPlaying = state == PlayerState.playing);
+      }
+    });
+    _player.onDurationChanged.listen((d) {
+      if (mounted) setState(() => _duration = d);
+    });
+    _player.onPositionChanged.listen((p) {
+      if (mounted) setState(() => _position = p);
+    });
+    _player.onPlayerComplete.listen((_) {
+      _playNext();
+    });
+  }
+
+  Future<void> _playCurrent() async {
+    final song = widget.songs[_currentIndex];
+    await _player.play(DeviceFileSource(song.data));
+  }
+
+  void _togglePlay() {
+    if (_isPlaying) {
+      _player.pause();
+    } else {
+      _player.resume();
+    }
+  }
+
+  void _playNext() {
+    if (_currentIndex < widget.songs.length - 1) {
+      setState(() => _currentIndex++);
+      _playCurrent();
+    }
+  }
+
+  void _playPrevious() {
+    if (_currentIndex > 0) {
+      setState(() => _currentIndex--);
+      _playCurrent();
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.toString().padLeft(2, '0');
+    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final song = widget.songs[_currentIndex];
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text(""),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.music_note,
+                  color: Colors.white, size: 100),
+            ),
+            const SizedBox(height: 40),
+            Text(song.title,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(song.artist ?? "Unknown",
+                style: const TextStyle(color: Colors.white54, fontSize: 14)),
+            const SizedBox(height: 30),
+            Slider(
+              value: _position.inSeconds
+                  .toDouble()
+                  .clamp(0, _duration.inSeconds.toDouble()),
+              min: 0,
+              max: _duration.inSeconds.toDouble() > 0
+                  ? _duration.inSeconds.toDouble()
+                  : 1,
+              activeColor: const Color(0xff2D8CFF),
+              onChanged: (value) {
+                _player.seek(Duration(seconds: value.toInt()));
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_formatDuration(_position),
+                    style: const TextStyle(color: Colors.white70)),
+                Text(_formatDuration(_duration),
+                    style:const TextStyle(color: Colors.white70)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.skip_previous,
+                      color: Colors.white, size: 32),
+                  onPressed: _playPrevious,
+                ),
+                const SizedBox(width: 20),
+                GestureDetector(
+                  onTap: _togglePlay,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: const BoxDecoration(
+                      color: Color(0xff2D8CFF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                IconButton(
+                  icon: const Icon(Icons.skip_next,
+                      color: Colors.white, size: 32),
+                  onPressed: _playNext,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
