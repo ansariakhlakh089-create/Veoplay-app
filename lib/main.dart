@@ -209,6 +209,9 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isLoading = true;
   bool _permissionDenied = false;
     bool _showPlaylist = false;
+    int _currentTab = 0;
+    List<SongModel> _songs = [];
+    bool _audioLoaded = false;
   
   String? _recentTitle;
   String? _recentUrl;
