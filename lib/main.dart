@@ -688,13 +688,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: 0,
+        selectedIndex: _currentTab,
         onDestinationSelected: (index) {
-          if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AudioScreen()),
-            );
+          setState(() => _currentTab = index);
+          if (index == 2 && !_audioLoaded) {
+            _loadSongs();
           }
         },
         destinations: const [
@@ -707,6 +705,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+        
   
   Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
     final index = videoList.indexOf(item);
