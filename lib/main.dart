@@ -413,7 +413,73 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ],
              ),
-             body: _isLoading
+             body: _currentTab == 2
+          ? (_songs.isEmpty
+              ? const Center(
+                  child: Text(
+                    "कोई गाना नहीं मिला",
+                    style: TextStyle(color: Colors.white54, fontSize: 16),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(18),
+                  itemCount: _songs.length,
+                  itemBuilder: (context, index) {
+                    final song = _songs[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AudioPlayerScreen(
+                                songs: _songs,
+                                initialIndex: index,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color:
+                                    const Color(0xff2D8CFF).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.music_note,
+                                  color: Colors.white),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(song.title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 14)),
+                                  const SizedBox(height: 2),
+                                  Text(song.artist ?? "Unknown",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ))
+          : _isLoading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
