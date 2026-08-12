@@ -1375,37 +1375,41 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
 
   Future<void> _loadOrGenerateThumbnail() async {
     try {
-      final tempDir = Directory.systemTemp;
-      final cacheFile = File('${tempDir.path}/${_getCacheFileName()}');
-
-      if (await cacheFile.exists()) {
-        final bytes = await cacheFile.readAsBytes();
-        if (mounted) {
-          setState(() {
-            _thumbnailBytes = bytes;
-          });
+      Uint8List? bytes;
+      try {
+        final tempDir = Directory.systemTemp;
+        final cacheFile = File('${tempDir.path}/${_getCacheFileName()}');
+        if (await cacheFile.exists()) {
+          bytes = await cacheFile.readAsBytes();
+        } else {
+          bytes = await VideoThumbnail.thumbnailData(
+            video: widget.videoPath,
+            imageFormat: ImageFormat.JPEG,
+            maxWidth: 200,
+            quality: 50,
+          );
+          if (bytes != null) {
+            try {
+              await cacheFile.writeAsBytes(bytes);
+            } catch (_) {}
+          }
         }
-        return;
+      } catch (_) {
+        bytes = await VideoThumbnail.thumbnailData(
+          video: widget.videoPath,
+          imageFormat: ImageFormat.JPEG,
+          maxWidth: 200,
+          quality: 50,
+        );
       }
 
-      final bytes = await VideoThumbnail.thumbnailData(
-        video: widget.videoPath,
-        imageFormat: ImageFormat.JPEG,
-        maxWidth: 200,
-        quality: 50,
-      );
-
-      if (bytes != null) {
-        await cacheFile.writeAsBytes(bytes);
-      }
-
-      if (mounted) {
+      if (mounted && bytes != null) {
         setState(() {
           _thumbnailBytes = bytes;
         });
       }
     } catch (e) {
-      // थंबनेल नहीं बन पाया, आइकन दिखेगा
+      debugPrint('Thumbnail error: $e');
     }
   }
 
