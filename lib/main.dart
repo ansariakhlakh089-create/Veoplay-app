@@ -255,6 +255,22 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  Future<void> _loadSongs() async {
+    if (_audioLoaded) return;
+    final OnAudioQuery audioQuery = OnAudioQuery();
+    bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
+    if (!hasPermission) return;
+    final songs = await audioQuery.querySongs(
+      sortType: SongSortType.TITLE,
+      orderType: OrderType.ASC_OR_SMALLER,
+      uriType: UriType.EXTERNAL,
+    );
+    setState(() {
+      _songs = songs;
+      _audioLoaded = true;
+    });
+  }
+
   Future<void> _loadVideos() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getStringList('cached_videos');
