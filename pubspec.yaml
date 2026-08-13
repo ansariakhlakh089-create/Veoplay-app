@@ -18,7 +18,8 @@ dependencies:
   screen_brightness: ^1.0.1
   video_thumbnail: ^0.5.3
   on_audio_query: ^2.9.0
-  audioplayers: ^5.2.1
+  just_audio: ^0.9.36
+  just_audio_background: ^0.0.1-beta.11
  
 dev_dependencies:
   flutter_test:
