@@ -1739,58 +1739,64 @@ class AudioPlayerScreen extends StatefulWidget {
 class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   late AudioPlayer _player;
   late int _currentIndex;
-  bool _isPlaying = false;
-  Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
+  bool _isLoop = false;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _player = AudioPlayer();
-    _playCurrent();
+    _setupPlaylist();
 
-    _player.onPlayerStateChanged.listen((state) {
-      if (mounted) {
-        setState(() => _isPlaying = state == PlayerState.playing);
+    _player.playerStateStream.listen((state) {
+      if (state.processingState == ProcessingState.completed && !_isLoop) {
+        _playNext();
       }
-    });
-    _player.onDurationChanged.listen((d) {
-      if (mounted) setState(() => _duration = d);
-    });
-    _player.onPositionChanged.listen((p) {
-      if (mounted) setState(() => _position = p);
-    });
-    _player.onPlayerComplete.listen((_) {
-      _playNext();
     });
   }
 
-  Future<void> _playCurrent() async {
-    final song = widget.songs[_currentIndex];
-    await _player.play(DeviceFileSource(song.data));
+  Future<void> _setupPlaylist() async {
+    final playlist = ConcatenatingAudioSource(
+      children: widget.songs.map((song) {
+        return AudioSource.uri(
+          Uri.parse(song.uri ?? song.data),
+          tag: MediaItem(
+            id: song.id.toString(),
+            title: song.title,
+            artist: song.artist ?? "Unknown",
+          ),
+        );
+      }).toList(),
+    );
+    await _player.setAudioSource(playlist, initialIndex: _currentIndex);
+    _player.play();
+
+    _player.currentIndexStream.listen((index) {
+      if (index != null && mounted) {
+        setState(() => _currentIndex = index);
+      }
+    });
   }
 
   void _togglePlay() {
-    if (_isPlaying) {
+    if (_player.playing) {
       _player.pause();
     } else {
-      _player.resume();
+      _player.play();
     }
   }
 
   void _playNext() {
-    if (_currentIndex < widget.songs.length - 1) {
-      setState(() => _currentIndex++);
-      _playCurrent();
-    }
+    if (_player.hasNext) _player.seekToNext();
   }
 
   void _playPrevious() {
-    if (_currentIndex > 0) {
-      setState(() => _currentIndex--);
-      _playCurrent();
-    }
+    if (_player.hasPrevious) _player.seekToPrevious();
+  }
+
+  void _toggleLoop() {
+    setState(() => _isLoop = !_isLoop);
+    _player.setLoopMode(_isLoop ? LoopMode.one : LoopMode.off);
   }
 
   String _formatDuration(Duration d) {
@@ -1844,59 +1850,108 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             Text(song.artist ?? "Unknown",
                 style: const TextStyle(color: Colors.white54, fontSize: 14)),
             const SizedBox(height: 30),
-            Slider(
-              value: _position.inSeconds
-                  .toDouble()
-                  .clamp(0, _duration.inSeconds.toDouble()),
-              min: 0,
-              max: _duration.inSeconds.toDouble() > 0
-                  ? _duration.inSeconds.toDouble()
-                  : 1,
-              activeColor: const Color(0xff2D8CFF),
-              onChanged: (value) {
-                _player.seek(Duration(seconds: value.toInt()));
+            StreamBuilder<Duration>(
+              stream: _player.positionStream,
+              builder: (context, snapshot) {
+                final position = snapshot.data ?? Duration.zero;
+                final duration = _player.duration ?? Duration.zero;
+                return Column(
+                  children: [
+                    Slider(
+                      value: position.inSeconds
+                          .toDouble()
+                          .clamp(0, duration.inSeconds.toDouble()),
+                      min: 0,
+                      max: duration.inSeconds.toDouble() > 0
+                          ? duration.inSeconds.toDouble()
+                          : 1,
+                      activeColor: const Color(0xff2D8CFF),
+                      onChanged: (value) {
+                        _player.seek(Duration(seconds: value.toInt()));
+                      },
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_formatDuration(position),
+                            style: const TextStyle(color: Colors.white70)),
+                        Text(_formatDuration(duration),
+                            style: const TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  ],
+                );
               },
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(_formatDuration(_position),
-                    style: const TextStyle(color: Colors.white70)),
-                Text(_formatDuration(_duration),
-                    style:const TextStyle(color: Colors.white70)),
-              ],
             ),
             const SizedBox(height: 20),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                IconButton(
+                  icon: Icon(Icons.repeat,
+                      color: _isLoop ? const Color(0xff2D8CFF) : Colors.white54,
+                      size: 24),
+                  onPressed: _toggleLoop,
+                ),
                 IconButton(
                   icon: const Icon(Icons.skip_previous,
                       color: Colors.white, size: 32),
                   onPressed: _playPrevious,
                 ),
-                const SizedBox(width: 20),
-                GestureDetector(
-                  onTap: _togglePlay,
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: const BoxDecoration(
-                      color: Color(0xff2D8CFF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      _isPlaying ? Icons.pause : Icons.play_arrow,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
+                StreamBuilder<PlayerState>(
+                  stream: _player.playerStateStream,
+                  builder: (context, snapshot) {
+                    final playing = snapshot.data?.playing ?? false;
+                    return GestureDetector(
+                      onTap: _togglePlay,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: const BoxDecoration(
+                          color: Color(0xff2D8CFF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          playing ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 20),
                 IconButton(
                   icon: const Icon(Icons.skip_next,
                       color: Colors.white, size: 32),
                   onPressed: _playNext,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.speed, color: Colors.white54, size: 24),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: const Color(0xff1A1D24),
+                      builder: (context) {
+                        final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Wrap(
+                            spacing: 10,
+                            children: speeds.map((s) {
+                              return ChoiceChip(
+                                label: Text('${s}x'),
+                                selected: _player.speed == s,
+                                onSelected: (_) {
+                                  _player.setSpeed(s);
+                                  Navigator.pop(context);
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
