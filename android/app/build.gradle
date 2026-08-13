@@ -8,15 +8,14 @@ android {
     namespace = "com.aucyos.veoplay"
     compileSdk = 34
     ndkVersion = flutter.ndkVersion
-}
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"   // yahan string chahiye, JavaVersion.VERSION_1_8 nahi
     }
 
     defaultConfig {
@@ -32,6 +31,7 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
 
 flutter {
     source = "../.."
