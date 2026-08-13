@@ -12,7 +12,13 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
+    androidNotificationChannelName: 'VeoPlay Audio',
+    androidNotificationOngoing: true,
+  );
   runApp(const VeoPlay());
 }
 
