@@ -1762,8 +1762,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Future<void> _setupPlaylist() async {
     final playlist = ConcatenatingAudioSource(
       children: widget.songs.map((song) {
-        return AudioSource.uri(
-          Uri.parse(song.uri ?? song.data),
+        return AudioSource.file(
+          song.data,
           tag: MediaItem(
             id: song.id.toString(),
             title: song.title,
