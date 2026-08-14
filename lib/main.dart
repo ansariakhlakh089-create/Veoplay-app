@@ -15,11 +15,15 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
-    androidNotificationChannelName: 'VeoPlay Audio',
-    androidNotificationOngoing: true,
-  );
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
+      androidNotificationChannelName: 'VeoPlay Audio',
+      androidNotificationOngoing: true,
+    );
+  } catch (e) {
+    debugPrint('Audio background init failed: $e');
+  }
   runApp(const VeoPlay());
 }
 
