@@ -1609,6 +1609,8 @@ class AudioScreen extends StatefulWidget {
 class _AudioScreenState extends State<AudioScreen> {
   final OnAudioQuery _audioQuery = OnAudioQuery();
   List<SongModel> _songs = [];
+  Set<int> _favoriteIds = {};
+  int _musicSubTab = 0;
   bool _isLoading = true;
   bool _permissionDenied = false;
 
