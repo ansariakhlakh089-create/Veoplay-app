@@ -1762,35 +1762,42 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 
   Future<void> _setupPlaylist() async {
-    final playlist = ConcatenatingAudioSource(
-      children: widget.songs.map((song) {
-        return AudioSource.file(
-          song.data,
-          tag: MediaItem(
-            id: song.id.toString(),
-            title: song.title,
-            artist: song.artist ?? "Unknown",
-          ),
-        );
-      }).toList(),
-    );
-    await _player.setAudioSource(playlist, initialIndex: _currentIndex);
-    _player.play();
+  final playlist = ConcatenatingAudioSource(
+    children: widget.songs.map((song) {
+      return AudioSource.file(
+        song.data,
+        tag: MediaItem(
+          id: song.id.toString(),
+          title: song.title,
+          artist: song.artist ?? "Unknown",
+        ),
+      );
+    }).toList(),
+  );
 
-    _player.currentIndexStream.listen((index) {
-      if (index != null && mounted) {
-        setState(() => _currentIndex = index);
-      }
-    });
-  }
-  
-  void _togglePlay() {
-    if (_player.playing) {
-      _player.pause();
-    } else {
-      _player.play();
+  await _player.setAudioSource(
+    playlist,
+    initialIndex: _currentIndex,
+  );
+
+  await _player.play();
+
+  _player.currentIndexStream.listen((index) {
+    if (index != null && mounted) {
+      setState(() {
+        _currentIndex = index;
+      });
     }
+  });
+}
+
+void _togglePlay() {
+  if (_player.playing) {
+    _player.pause();
+  } else {
+    _player.play();
   }
+}
 
   void _playNext() {
     if (_player.hasNext) _player.seekToNext();
