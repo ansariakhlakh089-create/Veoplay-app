@@ -1781,8 +1781,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       final playlist = ConcatenatingAudioSource(
         useLazyPreparation: true,
         children: widget.songs.map((song) {
-          return AudioSource.file(
-            song.data,
+          return AudioSource.uri(
+            Uri.parse('content://media/external/audio/media/${song.id}'),
             tag: MediaItem(
               id: song.id.toString(),
               title: song.title,
@@ -1790,7 +1790,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             ),
           );
         }).toList(),
-      );
 
       await _player.setAudioSource(
         playlist,
