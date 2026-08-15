@@ -1,4 +1,4 @@
-import 'dart:async';
+jiimport 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';   // 👈 यहाँ जोड़ें
@@ -1774,8 +1774,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         );
       }).toList(),
     );
+    await _player.setAudioSource(playlist, initialIndex: _currentIndex);
+    _player.play();
 
-  Future<void> _loadFavorites() async {
+    _player.currentIndexStream.listen((index) {
+      if (index != null && mounted) {
+        setState(() => _currentIndex = index);
+      }
+    });
+  }
   
   void _togglePlay() {
     if (_player.playing) {
