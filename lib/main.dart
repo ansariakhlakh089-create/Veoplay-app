@@ -1776,36 +1776,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
 
   Future<void> _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getStringList('favorite_songs') ?? [];
-    setState(() {
-      _favoriteIds = saved.map((e) => int.parse(e)).toSet();
-    });
-  }
-
-  Future<void> _toggleFavorite(int songId) async {
-    setState(() {
-      if (_favoriteIds.contains(songId)) {
-        _favoriteIds.remove(songId);
-      } else {
-        _favoriteIds.add(songId);
-      }
-    });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
-  }
-    
-    await _player.setAudioSource(playlist, initialIndex: _currentIndex);
-    _player.play();
-
-    _player.currentIndexStream.listen((index) {
-      if (index != null && mounted) {
-        setState(() => _currentIndex = index);
-      }
-    });
-  }
-
+  
   void _togglePlay() {
     if (_player.playing) {
       _player.pause();
