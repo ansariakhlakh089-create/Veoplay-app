@@ -1,5 +1,9 @@
-jiimport 'dart:async';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';   // 👈 यहाँ जोड़ें
 import 'package:photo_manager/photo_manager.dart';
@@ -9,9 +13,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:on_audio_query/on_audio_query.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
