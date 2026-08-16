@@ -1790,7 +1790,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             ),
           );
         }).toList(),
-
+      );
+        
       await _player.setAudioSource(
         playlist,
         initialIndex: _currentIndex,
