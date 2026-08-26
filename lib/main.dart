@@ -367,9 +367,9 @@ class _HomeScreenState extends State<HomeScreen>
 
     final prefs = await SharedPreferences.getInstance();
     final toSave = loaded
-        .map((m) =>
-            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}")
-        .toList();
+    .map((m) =>
+        "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
+    .toList();
     await prefs.setStringList('cached_videos', toSave);
 
     setState(() {
