@@ -805,8 +805,10 @@ class _HomeScreenState extends State<HomeScreen>
     NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
   ],
 ),
-        
-  
+       ),
+     );
+   }
+    
     Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
     final index = videoList.indexOf(item);
     return Padding(
