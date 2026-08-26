@@ -807,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen>
 ),
         
   
-  Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
+    Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
     final index = videoList.indexOf(item);
     return Padding(
       padding: const EdgeInsets.only(bottom: 0),
@@ -912,9 +912,8 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
-}
 
-void _showVideoOptions(BuildContext context, Map<String, String> item, int index) {
+  void _showVideoOptions(BuildContext context, Map<String, String> item, int index) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xff1A1D24),
@@ -955,44 +954,109 @@ void _showVideoOptions(BuildContext context, Map<String, String> item, int index
   }
 
   void _showVideoDetails(Map<String, String> item) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xff1A1D24),
-      title: Text(
-        item['title'] ?? 'Details',
-        style: const TextStyle(color: Colors.white),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Resolution: ${item['res']}",
-            style: const TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Duration: ${item['duration']}",
-            style: const TextStyle(color: Colors.white70),
-          ),
-          // Add more fields as needed
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text(item['title'] ?? 'Details',
+            style: const TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Resolution: ${item['res']}", style: const TextStyle(color: Colors.white70)),
+            Text("Duration: ${item['duration']}", style: const TextStyle(color: Colors.white70)),
+            Text("Folder: ${item['folder']}", style: const TextStyle(color: Colors.white70)),
+            Text("Path: ${item['url']}",
+                style: const TextStyle(color: Colors.white70),
+                maxLines: 3, overflow: TextOverflow.ellipsis),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Close',
-            style: TextStyle(color: Colors.blueAccent),
-          ),
-        ),
-      ],
-    ),
-  );
+    );
   }
-  }   
-      
+
+  Future<void> _renameVideo(Map<String, String> item, int index) async {
+    final controller = TextEditingController(text: item['title']);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: const Text("Rename Video", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: "नया नाम डालें"),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+
+    if (newName == null || newName.isEmpty) return;
+
+    setState(() => videoList[index]['title'] = newName);
+
+    final prefs = await SharedPreferences.getInstance();
+    final toSave = videoList
+        .map((m) =>
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id'] ?? ''}")
+        .toList();
+    await prefs.setStringList('cached_videos', toSave);
+  }
+
+  Future<void> _deleteVideo(Map<String, String> item, int index) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: const Text("वीडियो डिलीट करें?", style: TextStyle(color: Colors.white)),
+        content: const Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएगी।",
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final id = item['id'];
+    if (id != null && id.isNotEmpty) {
+      final result = await PhotoManager.editor.deleteWithIds([id]);
+      if (result.isEmpty) return;
+    } else {
+      try {
+        await File(item['url']!).delete();
+      } catch (e) {
+        debugPrint("Delete error: $e");
+        return;
+      }
+    }
+
+    setState(() => videoList.removeAt(index));
+
+    final prefs = await SharedPreferences.getInstance();
+    final toSave = videoList
+        .map((m) =>
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id'] ?? ''}")
+        .toList();
+    await prefs.setStringList('cached_videos', toSave);
+  }
+}
+
   // ==================== असली वीडियो प्लेयर ====================
 class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
