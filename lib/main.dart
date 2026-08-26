@@ -914,6 +914,59 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
+void _showVideoOptions(BuildContext context, Map<String, String> item, int index) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info_outline, color: Colors.white),
+                title: const Text("Details", style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showVideoDetails(item);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.white),
+                title: const Text("Rename", style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _renameVideo(item, index);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.redAccent),
+                title: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteVideo(item, index);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+}
+
+  void _showVideoDetails(Map<String, String> item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text(item['title'] ?? 'Details',
+            style: const TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Resolution: ${item['res']}", style: const Tex
+      
 // ==================== असली वीडियो प्लेयर ====================
 class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
