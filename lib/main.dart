@@ -1777,31 +1777,31 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
   // ==================== PLAYLIST SETUP ====================
   Future<void> _setupPlaylist() async {
-    try {
-      final playlist = ConcatenatingAudioSource(
-        useLazyPreparation: true,
-        children: widget.songs.map((song) {
-          return AudioSource.uri(
-            Uri.parse('content://media/external/audio/media/${song.id}'),
-            tag: MediaItem(
-              id: song.id.toString(),
-              title: song.title,
-              artist: song.artist ?? "Unknown",
-            ),
-          );
-        }).toList(),
-      );
-        
-      await _player.setAudioSource(
-        playlist,
-        initialIndex: _currentIndex,
-      );
+  try {
+    final playlist = ConcatenatingAudioSource(
+      useLazyPreparation: true,
+      children: widget.songs.map((song) {
+        return AudioSource.uri(
+          Uri.parse('content://media/external/audio/media/${song.id}'),
+          tag: MediaItem(
+            id: song.id.toString(),
+            album: "VeoPlay",
+            title: song.title,
+            artist: song.artist ?? "Unknown",
+          ),
+        );
+      }).toList(),
+    );
 
-      // Playlist तैयार होने के बाद play
-      await _player.play();
-    } catch (e) {
-      debugPrint("Audio setup error: $e");
-    }
+    await _player.setAudioSource(
+      playlist,
+      initialIndex: _currentIndex,
+    );
+
+    await _player.play();
+  } catch (e) {
+    debugPrint("Audio setup error: $e");
+  }
   }
 
   // ==================== PLAY / PAUSE ====================
