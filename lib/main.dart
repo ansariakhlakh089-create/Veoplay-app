@@ -361,6 +361,7 @@ class _HomeScreenState extends State<HomeScreen>
         "url": file.path,
         "isLocal": "true",
         "folder": folderName,
+        "id": asset.id,
       });
     }
 
