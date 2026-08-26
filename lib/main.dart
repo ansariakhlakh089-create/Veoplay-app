@@ -952,7 +952,7 @@ void _showVideoOptions(BuildContext context, Map<String, String> item, int index
         );
       },
     );
-}
+  }
 
   void _showVideoDetails(Map<String, String> item) {
   showDialog(
@@ -990,9 +990,10 @@ void _showVideoOptions(BuildContext context, Map<String, String> item, int index
       ],
     ),
   );
-}
+  }
+  }   
       
-// ==================== असली वीडियो प्लेयर ====================
+  // ==================== असली वीडियो प्लेयर ====================
 class RealVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final String title;
