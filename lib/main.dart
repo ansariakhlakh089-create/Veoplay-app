@@ -805,7 +805,6 @@ class _HomeScreenState extends State<HomeScreen>
     NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
   ],
 ),
-       ),
      );
    }
     
