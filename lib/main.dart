@@ -390,8 +390,8 @@ class _HomeScreenState extends State<HomeScreen>
             ClipOval(
               child: Image.asset(
                 'assets/logo.png',
-                height: 42,
-                width: 42,
+                height: 31,
+                width: 31,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
