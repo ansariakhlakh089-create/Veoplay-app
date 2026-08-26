@@ -897,7 +897,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () => _showVideoOptions(context, item, index),
                         icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
