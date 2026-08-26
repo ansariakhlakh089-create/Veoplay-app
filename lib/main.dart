@@ -955,17 +955,42 @@ void _showVideoOptions(BuildContext context, Map<String, String> item, int index
 }
 
   void _showVideoDetails(Map<String, String> item) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: Text(item['title'] ?? 'Details',
-            style: const TextStyle(color: Colors.white)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Resolution: ${item['res']}", style: const Tex
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: const Color(0xff1A1D24),
+      title: Text(
+        item['title'] ?? 'Details',
+        style: const TextStyle(color: Colors.white),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Resolution: ${item['res']}",
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Duration: ${item['duration']}",
+            style: const TextStyle(color: Colors.white70),
+          ),
+          // Add more fields as needed
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Close',
+            style: TextStyle(color: Colors.blueAccent),
+          ),
+        ),
+      ],
+    ),
+  );
+}
       
 // ==================== असली वीडियो प्लेयर ====================
 class RealVideoPlayer extends StatefulWidget {
