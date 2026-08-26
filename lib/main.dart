@@ -766,23 +766,43 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentTab,
-        onDestinationSelected: (index) {
-          setState(() => _currentTab = index);
-          if (index == 2 && !_audioLoaded) {
-            _loadSongs();
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.video_library), label: "Videos"),
-          NavigationDestination(
-              icon: Icon(Icons.play_circle_fill), label: "Play"),
-          NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
-        ],
-      ),
-    );
-  }
+  selectedIndex: _currentTab,
+  onDestinationSelected: (index) {
+    if (index == 1) {
+      // Beech wala Play button — seedha Recent video kholiye
+      if (_recentUrl != null && _recentTitle != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RealVideoPlayer(
+              videoUrl: _recentUrl!,
+              title: _recentTitle!,
+              startPosition: _recentPosition,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("कोई हाल ही में चलाया गया वीडियो नहीं है")),
+        );
+      }
+      return; // tab switch nahi karna, isliye yahin ruk jaayenge
+    }
+
+    setState(() => _currentTab = index);
+    if (index == 2 && !_audioLoaded) {
+      _loadSongs();
+    }
+  },
+  destinations: const [
+    NavigationDestination(
+        icon: Icon(Icons.video_library), label: "Videos"),
+    NavigationDestination(
+        icon: Icon(Icons.play_circle_fill, size: 36),  // 👈 bada size
+        label: "Play"),
+    NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
+  ],
+),
         
   
   Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
