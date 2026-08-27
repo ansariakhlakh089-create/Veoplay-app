@@ -16,15 +16,12 @@ import 'package:screen_brightness/screen_brightness.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
-      androidNotificationChannelName: 'VeoPlay Audio',
-      androidNotificationOngoing: true,
-    );
-  } catch (e) {
-    debugPrint('Audio background init failed: $e');
-  }
+  await JustAudioBackground.init(
+    androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
+    androidNotificationChannelName: 'VeoPlay Audio',
+    androidNotificationOngoing: true,
+    androidNotificationIcon: 'mipmap/ic_launcher',
+  );
   runApp(const VeoPlay());
 }
 
