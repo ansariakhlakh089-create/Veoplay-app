@@ -1942,32 +1942,52 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 
   // ==================== PLAYLIST SETUP ====================
+  String? _setupError;
+
   Future<void> _setupPlaylist() async {
-  try {
-    final playlist = ConcatenatingAudioSource(
-      useLazyPreparation: true,
-      children: widget.songs.map((song) {
-        return AudioSource.uri(
-          Uri.parse('content://media/external/audio/media/${song.id}'),
-          tag: MediaItem(
-            id: song.id.toString(),
-            album: "VeoPlay",
-            title: song.title,
-            artist: song.artist ?? "Unknown",
+    try {
+      final playlist = ConcatenatingAudioSource(
+        children: widget.songs.map((song) {
+          return AudioSource.uri(
+            Uri.parse('content://media/external/audio/media/${song.id}'),
+            tag: MediaItem(
+              id: song.id.toString(),
+              album: "VeoPlay",
+              title: song.title,
+              artist: song.artist ?? "Unknown",
+            ),
+          );
+        }).toList(),
+      );
+
+      final song = widget.songs[_currentIndex];
+    if (_setupError != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xff0B0D12),
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SelectableText(
+              "ERROR:\n$_setupError",
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
           ),
-        );
-      }).toList(),
-    );
-
+        ),
+      );
+    }
+      
     await _player.setAudioSource(
-      playlist,
-      initialIndex: _currentIndex,
-    );
+        playlist,
+        initialIndex: _currentIndex,
+      );
 
-    await _player.play();
-  } catch (e) {
-    debugPrint("Audio setup error: $e");
-  }
+      await _player.play();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _setupError = e.toString());
+      }
+    }
   }
 
   // ==================== PLAY / PAUSE ====================
