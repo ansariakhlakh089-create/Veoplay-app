@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 700), () {
+    Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
