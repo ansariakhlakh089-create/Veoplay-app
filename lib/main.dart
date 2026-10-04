@@ -166,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 27),
               SlideTransition(
                 position: _titleSlide,
                 child: FadeTransition(
