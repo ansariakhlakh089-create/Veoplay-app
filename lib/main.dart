@@ -148,8 +148,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Opacity(
                       opacity: _logoOpacity.value,
                       child: SizedBox(
-                        width: 140,
-                        height: 140,
+                        width: 200,
+                        height: 200,
                         child: Image.asset(
                           'assets/logo.png',
                           fit: BoxFit.contain,
@@ -166,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               SlideTransition(
                 position: _titleSlide,
                 child: FadeTransition(
