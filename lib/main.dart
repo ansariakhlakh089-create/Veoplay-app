@@ -1959,23 +1959,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
           );
         }).toList(),
       );
-
-      final song = widget.songs[_currentIndex];
-    if (_setupError != null) {
-      return Scaffold(
-        backgroundColor: const Color(0xff0B0D12),
-        appBar: AppBar(backgroundColor: Colors.transparent),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Center(
-            child: SelectableText(
-              "ERROR:\n$_setupError",
-              style: const TextStyle(color: Colors.red, fontSize: 14),
-            ),
-          ),
-        ),
-      );
-    }
       
     await _player.setAudioSource(
         playlist,
