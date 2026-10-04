@@ -305,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen>
         videoList = loadedCache;
         _isLoading = false;
       });
-      _refreshVideosInBackground();
+     // _refreshVideosInBackground();
       return;
     }
     await _scanVideos();
