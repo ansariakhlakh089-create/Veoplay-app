@@ -601,7 +601,9 @@ class _HomeScreenState extends State<HomeScreen>
                                     _recentDuration = result['duration'];
                                   });
                                 } else {
-                                  _loadRecent();
+                            await Future.delayed(
+                                const Duration(milliseconds: 300));
+                            if (mounted) _loadRecent();
                                 }
                               },
                               child: ClipRRect(
@@ -850,7 +852,8 @@ class _HomeScreenState extends State<HomeScreen>
               _recentDuration = result['duration'];
             });
           } else {
-            _loadRecent();
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (mounted) _loadRecent();
           }
         },
         child: Row(
