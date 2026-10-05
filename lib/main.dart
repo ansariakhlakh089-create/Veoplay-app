@@ -1647,6 +1647,31 @@ class VideoThumbnailWidget extends StatefulWidget {
   State<VideoThumbnailWidget> createState() => _VideoThumbnailWidgetState();
 }
 
+// एक साथ सिर्फ़ 3 thumbnail बनते हैं (पहली बार app खोलने पर crash न हो)
+class _ThumbQueue {
+  static const int _maxParallel = 3;
+  static int _running = 0;
+  static final List<Completer<void>> _waiting = [];
+
+  static Future<void> acquire() async {
+    if (_running < _maxParallel) {
+      _running++;
+      return;
+    }
+    final c = Completer<void>();
+    _waiting.add(c);
+    await c.future;
+  }
+
+  static void release() {
+    if (_waiting.isNotEmpty) {
+      _waiting.removeAt(0).complete();
+    } else {
+      _running--;
+    }
+  }
+}
+
 class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
   Uint8List? _thumbnailBytes;
 
@@ -1656,22 +1681,36 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
     _loadOrGenerateThumbnail();
   }
 
-  String _getCacheFileName() {
-    final hash = widget.videoPath.hashCode.toString();
-    return 'thumb_$hash.jpg';
+  @override
+  void didUpdateWidget(covariant VideoThumbnailWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoPath != widget.videoPath) {
+      _thumbnailBytes = null;
+      _loadOrGenerateThumbnail();
+    }
   }
 
+  String _cacheFileName(String path) => 'thumb_${path.hashCode}.jpg';
+
   Future<void> _loadOrGenerateThumbnail() async {
+    final path = widget.videoPath;
     try {
+      final cacheFile =
+          File('${Directory.systemTemp.path}/${_cacheFileName(path)}');
       Uint8List? bytes;
+
       try {
-        final tempDir = Directory.systemTemp;
-        final cacheFile = File('${tempDir.path}/${_getCacheFileName()}');
         if (await cacheFile.exists()) {
           bytes = await cacheFile.readAsBytes();
-        } else {
+        }
+      } catch (_) {}
+
+      if (bytes == null) {
+        await _ThumbQueue.acquire();
+        try {
+          if (!mounted || path != widget.videoPath) return;
           bytes = await VideoThumbnail.thumbnailData(
-            video: widget.videoPath,
+            video: path,
             imageFormat: ImageFormat.JPEG,
             maxWidth: 200,
             quality: 50,
@@ -1681,17 +1720,12 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
               await cacheFile.writeAsBytes(bytes);
             } catch (_) {}
           }
+        } finally {
+          _ThumbQueue.release();
         }
-      } catch (_) {
-        bytes = await VideoThumbnail.thumbnailData(
-          video: widget.videoPath,
-          imageFormat: ImageFormat.JPEG,
-          maxWidth: 200,
-          quality: 50,
-        );
       }
 
-      if (mounted && bytes != null) {
+      if (mounted && bytes != null && path == widget.videoPath) {
         setState(() {
           _thumbnailBytes = bytes;
         });
@@ -1709,6 +1743,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
         width: 130,
         height: 75,
         fit: BoxFit.cover,
+        gaplessPlayback: true,
       );
     }
     return Container(
