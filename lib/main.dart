@@ -340,43 +340,60 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
 
-    final int count = await albums[0].assetCountAsync;
+     int count = await albums[0].assetCountAsync;
     final List<AssetEntity> assets =
         await albums[0].getAssetListRange(start: 0, end: count);
 
+    final prefs = await SharedPreferences.getInstance();
     final List<Map<String, String>> loaded = [];
+    int processed = 0;
+
+    List<String> toCache(List<Map<String, String>> list) => list
+        .map((m) =>
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
+        .toList();
+
     for (final asset in assets) {
       final file = await asset.file;
-      if (file == null) continue;
-      final duration = asset.videoDuration;
-      final minutes = duration.inMinutes.toString().padLeft(2, '0');
-      final seconds =
-          (duration.inSeconds % 60).toString().padLeft(2, '0');
-      final folderName = file.parent.path.split('/').last;
-      loaded.add({
-        "title": asset.title ?? "Unknown",
-        "res": "${asset.width}x${asset.height}",
-        "size": "",
-        "source": "Device",
-        "duration": "$minutes:$seconds",
-        "url": file.path,
-        "isLocal": "true",
-        "folder": folderName,
-        "id": asset.id,
-      });
+      processed++;
+      if (file != null) {
+        final duration = asset.videoDuration;
+        final minutes = duration.inMinutes.toString().padLeft(2, '0');
+        final seconds =
+            (duration.inSeconds % 60).toString().padLeft(2, '0');
+        final folderName = file.parent.path.split('/').last;
+        loaded.add({
+          "title": asset.title ?? "Unknown",
+          "res": "${asset.width}x${asset.height}",
+          "size": "",
+          "source": "Device",
+          "duration": "$minutes:$seconds",
+          "url": file.path,
+          "isLocal": "true",
+          "folder": folderName,
+          "id": asset.id,
+        });
+      }
+
+      if (!silent && processed % 15 == 0) {
+        await prefs.setStringList('cached_videos', toCache(loaded));
+        if (mounted) {
+          setState(() {
+            videoList = List.of(loaded);
+            _isLoading = false;
+          });
+        }
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final toSave = loaded
-    .map((m) =>
-        "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
-    .toList();
-    await prefs.setStringList('cached_videos', toSave);
-
-    setState(() {
-      videoList = loaded;
-      _isLoading = false;
-    });
+    await prefs.setStringList('cached_videos', toCache(loaded));
+    if (mounted) {
+      setState(() {
+        videoList = loaded;
+        _isLoading = false;
+      });
+    }
   }
         
   @override
