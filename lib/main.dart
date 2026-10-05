@@ -234,12 +234,18 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    recentChangedNotifier.addListener(_onRecentChanged);
     _loadVideos();
     _loadRecent();
   }
 
+  void _onRecentChanged() {
+    if (mounted) _loadRecent();
+  }
+
   @override
   void dispose() {
+    recentChangedNotifier.removeListener(_onRecentChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -1291,14 +1297,16 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     await prefs.setString('recent_url', widget.videoUrl);
     await prefs.setInt('recent_position', _controller.value.position.inSeconds);
     await prefs.setInt('recent_duration', _controller.value.duration.inSeconds);
+        recentChangedNotifier.value++;
   }
+
 
   Future<void> _saveProgressData(String title, String url, int pos, int dur) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('recent_title', title);
     await prefs.setString('recent_url', url);
     await prefs.setInt('recent_position', pos);
-    await prefs.setInt('recent_duration', dur);
+    await prefs.setInt('recent_duration', dur); recentChangedNotifier.value++;
   }
 
   @override
