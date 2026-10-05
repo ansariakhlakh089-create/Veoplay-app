@@ -1317,7 +1317,9 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    _saveProgressData(title, url, position, duration);
+    if (position >= 5) {
+      _saveProgressData(title, url, position, duration);
+    }
     super.dispose();
   }
 
