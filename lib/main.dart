@@ -577,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen>
                       },
                       child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -588,13 +588,13 @@ class _HomeScreenState extends State<HomeScreen>
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          const SizedBox(height: 25),
+                          const SizedBox(height: 12),
                           if (_recentTitle != null) ...[
                             const Text("Recent",
                                 style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 15),
+                            const SizedBox(height: 8),
                             GestureDetector(
                               onTap: () async {
                                 final result = await Navigator.push(
