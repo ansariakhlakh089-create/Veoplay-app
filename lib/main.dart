@@ -2043,7 +2043,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     super.initState();
 
     _currentIndex = widget.initialIndex;
-    _player = AudioPlayer();
+    _player = globalAudioPlayer;
 
     // Current song index बदलने पर UI update
     _currentIndexSubscription =
@@ -2148,7 +2148,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   @override
   void dispose() {
     _currentIndexSubscription?.cancel();
-    _player.dispose();
 
     super.dispose();
   }
