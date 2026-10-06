@@ -2054,8 +2054,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         });
       }
     });
+    
+    _isLoop = _player.loopMode == LoopMode.one;
 
-    _setupPlaylist();
+    // वही गाना पहले से चल रहा हो तो दोबारा शुरू मत करो
+    final currentTag = _player.sequenceState?.currentSource?.tag;
+    final selectedId =
+        widget.songs.isNotEmpty ? widget.songs[_currentIndex].id.toString() : '';
+    if (currentTag is MediaItem &&
+        currentTag.id == selectedId &&
+        (_player.sequence?.length ?? 0) == widget.songs.length) {
+      _currentIndex = _player.currentIndex ?? _currentIndex;
+    } else {
+      _setupPlaylist();
+    }
   }
 
   // ==================== PLAYLIST SETUP ====================
