@@ -914,13 +914,13 @@ class _HomeScreenState extends State<HomeScreen>
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   // रेज़ॉल्यूशन और साइज़
                   Text(
                     "${item['res'] ?? ''} | ${item['size'] ?? ''}",
                     style: const TextStyle(color: Colors.white60, fontSize: 13),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 0),
                   // सोर्स और more_vert आइकन वाली Row
                   Row(
                     children: [
