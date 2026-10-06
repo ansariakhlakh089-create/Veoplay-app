@@ -441,20 +441,19 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             const SizedBox(width: 10),
-            const Text("VeoPlay",
-            IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),          
+            const Text("VeoPlay",          
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+          IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
               child: const Icon(Icons.person, color: Colors.white, size: 20),
-              IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),
             ),
           ),
         ],
