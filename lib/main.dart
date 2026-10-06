@@ -703,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             ],
                           ),
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 10),
                           if (!_showPlaylist)
                             ListView.builder(
                               shrinkWrap: true,
