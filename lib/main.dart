@@ -354,7 +354,8 @@ class _HomeScreenState extends State<HomeScreen>
     final prefs = await SharedPreferences.getInstance();
     final List<Map<String, String>> loaded = [];
     int processed = 0;
-
+    final customNames = await _loadCustomNames();
+    
     List<String> toCache(List<Map<String, String>> list) => list
         .map((m) =>
             "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
@@ -370,9 +371,9 @@ class _HomeScreenState extends State<HomeScreen>
             (duration.inSeconds % 60).toString().padLeft(2, '0');
         final folderName = file.parent.path.split('/').last;
         loaded.add({
-          "title": asset.title ?? "Unknown",
+          "title": customNames[asset.id] ?? asset.title ?? "Unknown",
           "res": "${asset.width}x${asset.height}",
-          "size": "",
+          "size": _formatSize(file.existsSync() ? file.lengthSync() : 0),
           "source": "Device",
           "duration": "$minutes:$seconds",
           "url": file.path,
@@ -980,7 +981,33 @@ class _HomeScreenState extends State<HomeScreen>
       },
     );
   }
+  String _formatSize(int bytes) {
+    if (bytes >= 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+    }
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
 
+  Future<Map<String, String>> _loadCustomNames() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('custom_names') ?? [];
+    final map = <String, String>{};
+    for (final s in list) {
+      final i = s.indexOf('|||');
+      if (i > 0) map[s.substring(0, i)] = s.substring(i + 3);
+    }
+    return map;
+  }
+
+  Future<void> _saveCustomName(String id, String name) async {
+    final map = await _loadCustomNames();
+    map[id] = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'custom_names',
+      map.entries.map((e) => '${e.key}|||${e.value}').toList(),
+    );
+  }
   void _showVideoDetails(Map<String, String> item) {
     showDialog(
       context: context,
@@ -994,6 +1021,7 @@ class _HomeScreenState extends State<HomeScreen>
           children: [
             Text("Resolution: ${item['res']}", style: const TextStyle(color: Colors.white70)),
             Text("Duration: ${item['duration']}", style: const TextStyle(color: Colors.white70)),
+            Text("Size: ${item['size']}", style: const TextStyle(color: Colors.white70)),
             Text("Folder: ${item['folder']}", style: const TextStyle(color: Colors.white70)),
             Text("Path: ${item['url']}",
                 style: const TextStyle(color: Colors.white70),
@@ -1031,7 +1059,13 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (newName == null || newName.isEmpty) return;
 
-    setState(() => videoList[index]['title'] = newName);
+    final cleanName = newName.replaceAll('|', '');
+    if (cleanName.isEmpty) return;
+    final vid = videoList[index]['id'];
+    if (vid != null && vid.isNotEmpty) {
+      await _saveCustomName(vid, cleanName);
+    }
+    setState(() => videoList[index]['title'] = cleanName);
 
     final prefs = await SharedPreferences.getInstance();
     final toSave = videoList
@@ -1075,7 +1109,20 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     setState(() => videoList.removeAt(index));
-
+    final prefsR = await SharedPreferences.getInstance();
+    if (prefsR.getString('recent_url') == item['url']) {
+      await prefsR.remove('recent_title');
+      await prefsR.remove('recent_url');
+      await prefsR.remove('recent_position');
+      await prefsR.remove('recent_duration');
+      if (mounted) {
+        setState(() {
+          _recentTitle = null;
+          _recentUrl = null;
+        });
+      }
+    }
+    
     final prefs = await SharedPreferences.getInstance();
     final toSave = videoList
         .map((m) =>
