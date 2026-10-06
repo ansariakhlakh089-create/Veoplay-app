@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
+final AudioPlayer globalAudioPlayer = AudioPlayer();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -264,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen>
     final url = prefs.getString('recent_url');
     final position = prefs.getInt('recent_position') ?? 0;
     final duration = prefs.getInt('recent_duration') ?? 0;
-    if (title != null && url != null) {
+   if (mounted && title != null && url != null) {
       setState(() {
         _recentTitle = title;
         _recentUrl = url;
@@ -293,6 +294,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadVideos() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getStringList('cached_videos');
+    _sortMode = prefs.getInt('sort_mode') ?? 0;
     if (cached != null && cached.isNotEmpty) {
       final loadedCache = cached.map((s) {
         final parts = s.split('|||');
@@ -310,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen>
       }).toList();
       setState(() {
         videoList = loadedCache;
+        _sortList(videoList);
         _isLoading = false;
       });
       // _refreshVideosInBackground();
@@ -388,6 +391,7 @@ class _HomeScreenState extends State<HomeScreen>
         if (mounted) {
           setState(() {
             videoList = List.of(loaded);
+            _sortList(videoList);
             _isLoading = false;
           });
         }
@@ -399,6 +403,7 @@ class _HomeScreenState extends State<HomeScreen>
     if (mounted) {
       setState(() {
         videoList = loaded;
+        _sortList(videoList);
         _isLoading = false;
       });
     }
@@ -437,6 +442,7 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             const SizedBox(width: 10),
             const Text("VeoPlay",
+            IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),          
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
@@ -448,6 +454,7 @@ class _HomeScreenState extends State<HomeScreen>
               radius: 18,
               backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
               child: const Icon(Icons.person, color: Colors.white, size: 20),
+              IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),
             ),
           ),
         ],
@@ -1006,6 +1013,76 @@ class _HomeScreenState extends State<HomeScreen>
     await prefs.setStringList(
       'custom_names',
       map.entries.map((e) => '${e.key}|||${e.value}').toList(),
+    );
+  }
+  
+  int _sortMode = 0;
+
+  double _sizeToMb(String? s) {
+    if (s == null || s.isEmpty) return 0;
+    final p = s.split(' ');
+    final v = double.tryParse(p[0]) ?? 0;
+    return (p.length > 1 && p[1] == 'GB') ? v * 1024 : v;
+  }
+
+  void _sortList(List<Map<String, String>> list) {
+    int idOf(Map<String, String> m) => int.tryParse(m['id'] ?? '') ?? 0;
+    switch (_sortMode) {
+      case 1:
+        list.sort((a, b) => idOf(a).compareTo(idOf(b)));
+        break;
+      case 2:
+        list.sort((a, b) => (a['title'] ?? '')
+            .toLowerCase()
+            .compareTo((b['title'] ?? '').toLowerCase()));
+        break;
+      case 3:
+        list.sort((a, b) =>
+            _sizeToMb(b['size']).compareTo(_sizeToMb(a['size'])));
+        break;
+      default:
+        list.sort((a, b) => idOf(b).compareTo(idOf(a)));
+    }
+  }
+
+  void _showSortMenu() {
+    final options = [
+      'नया पहले',
+      'पुराना पहले',
+      'नाम (A से Z)',
+      'साइज़ (बड़ा पहले)'
+    ];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(options.length, (i) {
+              return ListTile(
+                leading: Icon(
+                  _sortMode == i
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  color: _sortMode == i ? Colors.blueAccent : Colors.white54,
+                ),
+                title: Text(options[i],
+                    style: const TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  setState(() {
+                    _sortMode = i;
+                    _sortList(videoList);
+                  });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setInt('sort_mode', i);
+                },
+              );
+            }),
+          ),
+        );
+      },
     );
   }
   void _showVideoDetails(Map<String, String> item) {
