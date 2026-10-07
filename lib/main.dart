@@ -1999,6 +1999,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   double _dragSeekSeconds = 0;
   bool _isDraggingSeek = false;
   bool _isFullscreen = false;
+  bool _replacing = false;
   bool _showGestureIndicator = false;
   String _gestureText = '';
 
@@ -2097,6 +2098,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   void _playNext() {
     if (!_hasNext) return;
     final nextItem = widget.playlist![widget.currentIndex! + 1];
+    _replacing = true;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -2113,6 +2115,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   void _playPrevious() {
     if (!_hasPrevious) return;
     final prevItem = widget.playlist![widget.currentIndex! - 1];
+    _replacing = true;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
