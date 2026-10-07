@@ -15,6 +15,7 @@ import 'package:volume_controller/volume_controller.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
 final AudioPlayer globalAudioPlayer = AudioPlayer();
+final Map<int, String> globalSongNames = {};
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -285,8 +286,14 @@ class _HomeScreenState extends State<HomeScreen>
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
     );
+    await _loadSongNames();
+    final prefs = await SharedPreferences.getInstance();
+    _songSortMode = prefs.getInt('song_sort_mode') ?? 0;
+    final sorted = List<SongModel>.of(songs);
+    _sortSongs(sorted);
+    if (!mounted) return;
     setState(() {
-      _songs = songs;
+      _songs = sorted;
       _audioLoaded = true;
     });
   }
@@ -466,7 +473,30 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(18),
+                  : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+                      child: Row(
+                        children: [
+                          const Text("Songs",
+                              style: TextStyle(
+                                  color: colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold)),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: _showSongSortMenu,
+                            icon: const Icon(Icons.sort,
+                                color: Colors.white70),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
                   itemCount: _songs.length,
                   itemBuilder: (context, index) {
                     final song = _songs[index];
@@ -498,31 +528,37 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: Colors.white),
                             ),
                             const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(song.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          color: Colors.white, fontSize: 14)),
-                                  const SizedBox(height: 2),
-                                  Text(song.artist ?? "Unknown",
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 12)),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ))
+                                  Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(globalSongNames[song.id] ?? song.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 14),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              song.artist ?? "Unknown",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+      IconButton(
+        onPressed: () => _showSongOptions(song),
+        icon: const Icon(Icons.more_vert, color: Colors.white, size: 20),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      ),
+    ],
+  ),
+),
           : _isLoading
           ? Center(
               child: Column(
@@ -1090,6 +1126,240 @@ class _HomeScreenState extends State<HomeScreen>
         );
       },
     );
+  }
+  int _songSortMode = 0;
+
+  void _sortSongs(List<SongModel> list) {
+    switch (_songSortMode) {
+      case 1:
+        list.sort((a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
+        break;
+      case 2:
+        list.sort((a, b) => (globalSongNames[a.id] ?? a.title)
+            .toLowerCase()
+            .compareTo((globalSongNames[b.id] ?? b.title).toLowerCase()));
+        break;
+      default:
+        list.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+    }
+  }
+
+  void _showSongSortMenu() {
+    final options = ['नया गाना पहले', 'पुराना गाना पहले', 'नाम (A से Z)'];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(options.length, (i) {
+              return ListTile(
+                leading: Icon(
+                  _songSortMode == i
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  color:
+                      _songSortMode == i ? Colors.blueAccent : Colors.white54,
+                ),
+                title: Text(options[i],
+                    style: const TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  setState(() {
+                    _songSortMode = i;
+                    _sortSongs(_songs);
+                  });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setInt('song_sort_mode', i);
+                },
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _loadSongNames() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('custom_song_names') ?? [];
+    globalSongNames.clear();
+    for (final s in list) {
+      final i = s.indexOf('|||');
+      if (i > 0) {
+        final id = int.tryParse(s.substring(0, i));
+        if (id != null) globalSongNames[id] = s.substring(i + 3);
+      }
+    }
+  }
+
+  Future<void> _saveSongNames() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'custom_song_names',
+      globalSongNames.entries.map((e) => '${e.key}|||${e.value}').toList(),
+    );
+  }
+
+  void _showSongOptions(SongModel song) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info_outline, color: Colors.white),
+                title: const Text("Details",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSongDetails(song);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.white),
+                title: const Text("Rename",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _renameSong(song);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.redAccent),
+                title: const Text("Delete",
+                    style: TextStyle(color: Colors.redAccent)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteSong(song);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSongDetails(SongModel song) {
+    final d = Duration(milliseconds: song.duration ?? 0);
+    final dur =
+        '${d.inMinutes.toString().padLeft(2, '0')}:${(d.inSeconds % 60).toString().padLeft(2, '0')}';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text(globalSongNames[song.id] ?? song.title,
+            style: const TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Artist: ${song.artist ?? 'Unknown'}",
+                style: const TextStyle(color: Colors.white70)),
+            Text("Duration: $dur",
+                style: const TextStyle(color: Colors.white70)),
+            Text("Size: ${_formatSize(song.size)}",
+                style: const TextStyle(color: Colors.white70)),
+            Text("Path: ${song.data}",
+                style: const TextStyle(color: Colors.white70),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close")),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _renameSong(SongModel song) async {
+    final controller =
+        TextEditingController(text: globalSongNames[song.id] ?? song.title);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: const Text("Rename Song",
+            style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: "नया नाम डालें"),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+    if (newName == null || newName.isEmpty) return;
+    final cleanName = newName.replaceAll('|', '');
+    if (cleanName.isEmpty) return;
+    globalSongNames[song.id] = cleanName;
+    await _saveSongNames();
+    if (!mounted) return;
+    setState(() => _sortSongs(_songs));
+  }
+
+  Future<void> _deleteSong(SongModel song) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: const Text("गाना डिलीट करें?",
+            style: TextStyle(color: Colors.white)),
+        content: const Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete",
+                style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      final result =
+          await PhotoManager.editor.deleteWithIds([song.id.toString()]);
+      if (result.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("डिलीट नहीं हो पाया")),
+          );
+        }
+        return;
+      }
+    } catch (e) {
+      debugPrint("Song delete error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("डिलीट नहीं हो पाया")),
+        );
+      }
+      return;
+    }
+    globalSongNames.remove(song.id);
+    await _saveSongNames();
+    if (!mounted) return;
+    setState(() => _songs.removeWhere((s) => s.id == song.id));
   }
   void _showVideoDetails(Map<String, String> item) {
     showDialog(
@@ -2165,7 +2435,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             tag: MediaItem(
               id: song.id.toString(),
               album: "VeoPlay",
-              title: song.title,
+              title: globalSongNames[song.id] ?? song.title,
               artist: song.artist ?? "Unknown",
             ),
           );
@@ -2279,6 +2549,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
     
     final song = widget.songs[_currentIndex];
+    final songTitle = globalSongNames[song.id] ?? song.title;
 
     return Scaffold(
       backgroundColor: const Color(0xff0B0D12),
@@ -2333,7 +2604,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
             // ==================== SONG TITLE ====================
             Text(
-              song.title,
+              songTitle,
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
