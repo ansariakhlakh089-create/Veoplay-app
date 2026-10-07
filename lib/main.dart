@@ -3042,12 +3042,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 
   // ==================== EQUALIZER (Real working) ====================
-  Future<void> _showEqualizerDialog() async {
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.music());
-    } catch (_) {}
-
+  try {
+  final session = await AudioSession.instance;
+  await session.configure(const AudioSessionConfiguration.music());
+} catch (e) {
+  debugPrint('AudioSession error: $e');
+  }
     double bass = 1.0, mid = 1.0, treble = 1.0;
 
     if (!mounted) return;
