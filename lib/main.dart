@@ -3341,8 +3341,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   final String title;
   final List<SongModel> songs;
   const SongListScreen({super.key, required this.title, required this.songs});
-  }
-    
+
   @override
   State<SongListScreen> createState() => _SongListScreenState();
 }
