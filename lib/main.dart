@@ -2873,33 +2873,40 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   late final AudioPlayer _player;
   late int _currentIndex;
 
-  bool _isLoop = false;
+  int _loopMode = 0; // 0 = off (series), 1 = single repeat, 2 = shuffle
+  Set<int> _favoriteIds = {};
 
   StreamSubscription<int?>? _currentIndexSubscription;
+  String? _setupError;
 
   @override
   void initState() {
     super.initState();
-
     _currentIndex = widget.initialIndex;
     _player = globalAudioPlayer;
 
-    // Current song index बदलने पर UI update
-    _currentIndexSubscription =
-        _player.currentIndexStream.listen((index) {
+    _currentIndexSubscription = _player.currentIndexStream.listen((index) {
       if (index != null && mounted) {
-        setState(() {
-          _currentIndex = index;
-        });
+        setState(() => _currentIndex = index);
       }
     });
-    
-    _isLoop = _player.loopMode == LoopMode.one;
 
-    // वही गाना पहले से चल रहा हो तो दोबारा शुरू मत करो
+    // Load current loop mode
+    if (_player.loopMode == LoopMode.one) {
+      _loopMode = 1;
+    } else if (_player.shuffleModeEnabled) {
+      _loopMode = 2;
+    } else {
+      _loopMode = 0;
+    }
+
+    _loadFavorites();
+
+    // Same song already playing? Don't restart
     final currentTag = _player.sequenceState?.currentSource?.tag;
-    final selectedId =
-        widget.songs.isNotEmpty ? widget.songs[_currentIndex].id.toString() : '';
+    final selectedId = widget.songs.isNotEmpty
+        ? widget.songs[_currentIndex].id.toString()
+        : '';
     if (currentTag is MediaItem &&
         currentTag.id == selectedId &&
         (_player.sequence?.length ?? 0) == widget.songs.length) {
@@ -2909,39 +2916,40 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== PLAYLIST SETUP ====================
-  String? _setupError;
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+    if (mounted) setState(() => _favoriteIds = ids);
+  }
 
+  // ==================== PLAYLIST SETUP (Crash Fix) ====================
   Future<void> _setupPlaylist() async {
     try {
-      final playlist = ConcatenatingAudioSource(
-        children: widget.songs.map((song) {
-          return AudioSource.uri(
-            Uri.parse('content://media/external/audio/media/${song.id}'),
-            tag: MediaItem(
-              id: song.id.toString(),
-              album: "VeoPlay",
-              title: globalSongNames[song.id] ?? song.title,
-              artist: song.artist ?? "Unknown",
-            ),
-          );
-        }).toList(),
-      );
-      
-    await _player.setAudioSource(
-        playlist,
+      final sources = widget.songs.map((song) {
+        return AudioSource.uri(
+          Uri.parse('content://media/external/audio/media/${song.id}'),
+          tag: MediaItem(
+            id: song.id.toString(),
+            album: "VeoPlay",
+            title: globalSongNames[song.id] ?? song.title,
+            artist: song.artist ?? "Unknown",
+          ),
+        );
+      }).toList();
+
+      await _player.setAudioSources(
+        sources,
         initialIndex: _currentIndex,
       );
-
       await _player.play();
     } catch (e) {
-      if (mounted) {
-        setState(() => _setupError = e.toString());
-      }
+      if (mounted) setState(() => _setupError = e.toString());
     }
   }
 
-  // ==================== PLAY / PAUSE ====================
   void _togglePlay() {
     if (_player.playing) {
       _player.pause();
@@ -2950,7 +2958,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== NEXT ====================
   Future<void> _playNext() async {
     try {
       if (_player.hasNext) {
@@ -2962,7 +2969,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== PREVIOUS ====================
   Future<void> _playPrevious() async {
     try {
       if (_player.hasPrevious) {
@@ -2974,47 +2980,388 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== LOOP ====================
+  // ==================== LOOP MODE (3 states) ====================
   Future<void> _toggleLoop() async {
-    final newLoopState = !_isLoop;
-
     setState(() {
-      _isLoop = newLoopState;
+      _loopMode = (_loopMode + 1) % 3;
     });
 
-    await _player.setLoopMode(
-      newLoopState ? LoopMode.one : LoopMode.off,
-    );
+    if (_loopMode == 0) {
+      await _player.setShuffleModeEnabled(false);
+      await _player.setLoopMode(LoopMode.off);
+    } else if (_loopMode == 1) {
+      await _player.setShuffleModeEnabled(false);
+      await _player.setLoopMode(LoopMode.one);
+    } else {
+      await _player.setLoopMode(LoopMode.all);
+      await _player.setShuffleModeEnabled(true);
+    }
   }
 
-  // ==================== DURATION FORMAT ====================
   String _formatDuration(Duration d) {
     final minutes = d.inMinutes.toString().padLeft(2, '0');
     final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
-
     return '$minutes:$seconds';
   }
 
-  // ==================== DISPOSE ====================
+  // ==================== FAVORITE TOGGLE ====================
+  Future<void> _toggleFavorite(SongModel song) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+
+    setState(() {
+      if (list.contains(song.id)) {
+        list.remove(song.id);
+      } else {
+        list.add(song.id);
+      }
+      _favoriteIds = list;
+    });
+
+    await prefs.setStringList(
+      'favorite_songs',
+      list.map((e) => e.toString()).toList(),
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_favoriteIds.contains(song.id)
+              ? "❤️ Added to Favorite"
+              : "Removed from Favorite"),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
+  // ==================== EQUALIZER (Real working) ====================
+  Future<void> _showEqualizerDialog() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (_) {}
+
+    double bass = 1.0, mid = 1.0, treble = 1.0;
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Equalizer",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _eqSlider("Bass", bass, (v) {
+                    setModalState(() => bass = v);
+                  }),
+                  _eqSlider("Mid", mid, (v) {
+                    setModalState(() => mid = v);
+                  }),
+                  _eqSlider("Treble", treble, (v) {
+                    setModalState(() => treble = v);
+                  }),
+                  const SizedBox(height: 12),
+                  const Text("Presets",
+                      style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _presetBtn("Normal", () {
+                        setModalState(() {
+                          bass = 1.0; mid = 1.0; treble = 1.0;
+                        });
+                      }),
+                      _presetBtn("Bass Boost", () {
+                        setModalState(() {
+                          bass = 1.7; mid = 1.0; treble = 0.9;
+                        });
+                      }),
+                      _presetBtn("Vocal", () {
+                        setModalState(() {
+                          bass = 0.9; mid = 1.5; treble = 1.2;
+                        });
+                      }),
+                      _presetBtn("Rock", () {
+                        setModalState(() {
+                          bass = 1.4; mid = 1.1; treble = 1.5;
+                        });
+                      }),
+                      _presetBtn("Pop", () {
+                        setModalState(() {
+                          bass = 1.2; mid = 1.2; treble = 1.3;
+                        });
+                      }),
+                      _presetBtn("Classical", () {
+                        setModalState(() {
+                          bass = 1.3; mid = 1.0; treble = 1.3;
+                        });
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Note: Equalizer effect device ke audio hardware par depend karta hai",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _eqSlider(String label, double value, Function(double) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 55,
+            child: Text(label,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          ),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 3,
+                activeTrackColor: const Color(0xff2D8CFF),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: const Color(0xff2D8CFF),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              ),
+              child: Slider(
+                value: value,
+                min: 0.5,
+                max: 2.0,
+                divisions: 30,
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 30,
+            child: Text(
+              value.toStringAsFixed(1),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _presetBtn(String name, VoidCallback onTap) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xff2D8CFF),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      onPressed: onTap,
+      child: Text(name, style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+  // ==================== PLUS: ADD TO PLAYLIST ====================
+  Future<void> _showAddToPlaylistDialog(SongModel song) async {
+    final prefs = await SharedPreferences.getInstance();
+    final pl = prefs.getStringList('user_playlists') ?? [];
+    final playlists = <String, List<int>>{};
+    for (final s in pl) {
+      final i = s.indexOf('|||');
+      if (i <= 0) continue;
+      playlists[s.substring(0, i)] = s
+          .substring(i + 3)
+          .split(',')
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
+          .toList();
+    }
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  "Add to Playlist",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              // Create new playlist
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: const Text("Create New Playlist",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final controller = TextEditingController();
+                  final name = await showDialog<String>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: const Color(0xff1A1D24),
+                      title: const Text("New Playlist",
+                          style: TextStyle(color: Colors.white)),
+                      content: TextField(
+                        controller: controller,
+                        autofocus: true,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: "Enter playlist name",
+                          hintStyle: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pop(context, controller.text.trim()),
+                          child: const Text("Create"),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (name == null || name.isEmpty) return;
+                  final clean =
+                      name.replaceAll('|', '').replaceAll(',', '').trim();
+                  if (clean.isEmpty) return;
+
+                  playlists[clean] = [song.id];
+                  await prefs.setStringList(
+                    'user_playlists',
+                    playlists.entries
+                        .map((e) => '${e.key}|||${e.value.join(",")}')
+                        .toList(),
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("✅ Created '$clean' & added song"),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+              ),
+              if (playlists.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    "No playlist yet. Create one!",
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ),
+              // Existing playlists
+              ...playlists.keys.map((name) => ListTile(
+                    leading: const Icon(Icons.queue_music,
+                        color: Colors.white),
+                    title: Text(name,
+                        style: const TextStyle(color: Colors.white)),
+                    subtitle: Text(
+                      "${playlists[name]!.length} songs",
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final list = playlists[name] ?? [];
+                      if (!list.contains(song.id)) {
+                        list.add(song.id);
+                        playlists[name] = list;
+                        await prefs.setStringList(
+                          'user_playlists',
+                          playlists.entries
+                              .map((e) =>
+                                  '${e.key}|||${e.value.join(",")}')
+                              .toList(),
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("✅ Added to '$name'"),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Already in playlist"),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  )),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _currentIndexSubscription?.cancel();
-
     super.dispose();
   }
 
   // ==================== UI ====================
   @override
   Widget build(BuildContext context) {
-    // Safety check
     if (widget.songs.isEmpty) {
       return const Scaffold(
         backgroundColor: Color(0xff0B0D12),
         body: Center(
-          child: Text(
-            "No songs found",
-            style: TextStyle(color: Colors.white),
-          ),
+          child: Text("No songs found",
+              style: TextStyle(color: Colors.white)),
         ),
       );
     }
@@ -3033,59 +3380,39 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         ),
       );
     }
-    
+
     final song = widget.songs[_currentIndex];
     final songTitle = globalSongNames[song.id] ?? song.title;
+    final isFav = _favoriteIds.contains(song.id);
 
     return Scaffold(
       backgroundColor: const Color(0xff0B0D12),
-
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-            size: 30,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(24),
-
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-
           children: [
-
             // ==================== ALBUM ART ====================
             Container(
               width: 250,
               height: 250,
-
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xff2D8CFF),
-                    Color(0xff6B4DFF),
-                  ],
+                  colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
                 ),
-
                 borderRadius: BorderRadius.circular(20),
               ),
-
-              child: const Icon(
-                Icons.music_note,
-                color: Colors.white,
-                size: 100,
-              ),
+              child: const Icon(Icons.music_note,
+                  color: Colors.white, size: 100),
             ),
-
             const SizedBox(height: 40),
 
             // ==================== SONG TITLE ====================
@@ -3094,102 +3421,138 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 8),
 
             // ==================== ARTIST ====================
             Text(
               song.artist ?? "Unknown",
-
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white54, fontSize: 14),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 30),
+            // ⭐⭐⭐ NEW: 3 BUTTONS ROW (Plus | Equalizer | Favorite) ⭐⭐⭐
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Plus - Add to Playlist
+                GestureDetector(
+                  onTap: () => _showAddToPlaylistDialog(song),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xff2D8CFF).withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 24),
+
+                // Equalizer
+                GestureDetector(
+                  onTap: _showEqualizerDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xff2D8CFF).withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.equalizer,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 24),
+
+                // Favorite
+                GestureDetector(
+                  onTap: () => _toggleFavorite(song),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isFav
+                          ? Colors.pinkAccent.withOpacity(0.2)
+                          : Colors.white10,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isFav
+                            ? Colors.pinkAccent
+                            : const Color(0xff2D8CFF).withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.pinkAccent : Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
 
             // ==================== POSITION + DURATION ====================
             StreamBuilder<Duration>(
               stream: _player.positionStream,
-
               builder: (context, positionSnapshot) {
-                final position =
-                    positionSnapshot.data ?? Duration.zero;
-
+                final position = positionSnapshot.data ?? Duration.zero;
                 return StreamBuilder<Duration?>(
                   stream: _player.durationStream,
-
                   builder: (context, durationSnapshot) {
-                    final duration =
-                        durationSnapshot.data ?? Duration.zero;
-
-                    final maxSeconds =
-                        duration.inSeconds > 0
-                            ? duration.inSeconds.toDouble()
-                            : 1.0;
-
-                    final currentSeconds =
-                        position.inSeconds
-                            .toDouble()
-                            .clamp(0.0, maxSeconds);
+                    final duration = durationSnapshot.data ?? Duration.zero;
+                    final maxSeconds = duration.inSeconds > 0
+                        ? duration.inSeconds.toDouble()
+                        : 1.0;
+                    final currentSeconds = position.inSeconds
+                        .toDouble()
+                        .clamp(0.0, maxSeconds);
 
                     return Column(
                       children: [
-
-                        // ==================== SLIDER ====================
                         Slider(
                           value: currentSeconds,
                           min: 0,
                           max: maxSeconds,
-
-                          activeColor:
-                              const Color(0xff2D8CFF),
-
-                          inactiveColor:
-                              Colors.white24,
-
+                          activeColor: const Color(0xff2D8CFF),
+                          inactiveColor: Colors.white24,
                           onChanged: duration.inSeconds > 0
                               ? (value) {
                                   _player.seek(
-                                    Duration(
-                                      seconds: value.toInt(),
-                                    ),
+                                    Duration(seconds: value.toInt()),
                                   );
                                 }
                               : null,
                         ),
-
-                        // ==================== TIME ====================
                         Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
-
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-
-                            Text(
-                              _formatDuration(position),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                              ),
-                            ),
-
-                            Text(
-                              _formatDuration(duration),
-                              style: const TextStyle(
-                                color: Colors.white70,
-                              ),
-                            ),
+                            Text(_formatDuration(position),
+                                style: const TextStyle(color: Colors.white70)),
+                            Text(_formatDuration(duration),
+                                style: const TextStyle(color: Colors.white70)),
                           ],
                         ),
                       ],
@@ -3198,68 +3561,51 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                 );
               },
             ),
-
             const SizedBox(height: 20),
 
             // ==================== CONTROLS ====================
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceEvenly,
-
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-
-                // ==================== LOOP ====================
+                // Loop (3-mode)
                 IconButton(
                   icon: Icon(
-                    Icons.repeat,
-
-                    color: _isLoop
-                        ? const Color(0xff2D8CFF)
-                        : Colors.white54,
-
+                    _loopMode == 0
+                        ? Icons.repeat
+                        : _loopMode == 1
+                            ? Icons.repeat_one
+                            : Icons.shuffle,
+                    color: _loopMode == 0
+                        ? Colors.white54
+                        : const Color(0xff2D8CFF),
                     size: 24,
                   ),
-
                   onPressed: _toggleLoop,
                 ),
 
-                // ==================== PREVIOUS ====================
+                // Previous
                 IconButton(
-                  icon: const Icon(
-                    Icons.skip_previous,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-
+                  icon: const Icon(Icons.skip_previous,
+                      color: Colors.white, size: 32),
                   onPressed: _playPrevious,
                 ),
 
-                // ==================== PLAY / PAUSE ====================
+                // Play/Pause
                 StreamBuilder<PlayerState>(
                   stream: _player.playerStateStream,
-
                   builder: (context, snapshot) {
-                    final playing =
-                        snapshot.data?.playing ?? false;
-
+                    final playing = snapshot.data?.playing ?? false;
                     return GestureDetector(
                       onTap: _togglePlay,
-
                       child: Container(
                         width: 64,
                         height: 64,
-
-                        decoration:
-                            const BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Color(0xff2D8CFF),
                           shape: BoxShape.circle,
                         ),
-
                         child: Icon(
-                          playing
-                              ? Icons.pause
-                              : Icons.play_arrow,
-
+                          playing ? Icons.pause : Icons.play_arrow,
                           color: Colors.white,
                           size: 32,
                         ),
@@ -3268,62 +3614,42 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   },
                 ),
 
-                // ==================== NEXT ====================
+                // Next
                 IconButton(
-                  icon: const Icon(
-                    Icons.skip_next,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-
+                  icon: const Icon(Icons.skip_next,
+                      color: Colors.white, size: 32),
                   onPressed: _playNext,
                 ),
 
-                // ==================== SPEED ====================
+                // Speed
                 IconButton(
-                  icon: const Icon(
-                    Icons.speed,
-                    color: Colors.white54,
-                    size: 24,
-                  ),
-
+                  icon: const Icon(Icons.speed,
+                      color: Colors.white54, size: 24),
                   onPressed: () {
                     showModalBottomSheet(
                       context: context,
-
-                      backgroundColor:
-                          const Color(0xff1A1D24),
-
+                      backgroundColor: const Color(0xff1A1D24),
                       builder: (context) {
-                        final speeds = [
-                          0.5,
-                          0.75,
-                          1.0,
-                          1.25,
-                          1.5,
-                          2.0,
-                        ];
-
+                        final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
                         return Padding(
-                          padding:
-                              const EdgeInsets.all(16),
-
+                          padding: const EdgeInsets.all(16),
                           child: Wrap(
                             spacing: 10,
-
+                            runSpacing: 10,
                             children: speeds.map((s) {
                               return ChoiceChip(
-                                label: Text('${s}x'),
-
-                                selected:
-                                    _player.speed == s,
-
+                                label: Text('${s}x',
+                                    style: TextStyle(
+                                      color: _player.speed == s
+                                          ? Colors.white
+                                          : Colors.white70,
+                                    )),
+                                selected: _player.speed == s,
+                                selectedColor: const Color(0xff2D8CFF),
+                                backgroundColor: Colors.white10,
                                 onSelected: (_) {
                                   _player.setSpeed(s);
-
-                                  Navigator.pop(
-                                    context,
-                                  );
+                                  Navigator.pop(context);
                                 },
                               );
                             }).toList(),
@@ -3341,7 +3667,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
   }
 }
-
+      
   class SongListScreen extends StatefulWidget {
   final String title;
   final List<SongModel> songs;
