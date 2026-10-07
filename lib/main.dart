@@ -1863,83 +1863,11 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildMusicTab() {
-    if (_songs.isEmpty) {
-      return const Center(
-        child: Text("कोई गाना नहीं मिला",
-            style: TextStyle(color: Colors.white54, fontSize: 16)),
-      );
-    }
-    const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
-    final recent = _songsByIds(_recentSongIds);
-    final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
+    Widget _buildMusicContent() {
+  if (_musicSubTab == 1) {
+    final names = _playlists.keys.toList();
     return Column(
       children: [
-        SizedBox(
-          height: 44,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            children: List.generate(tabs.length, (i) {
-              final sel = _musicSubTab == i;
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => _musicSubTab = i),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 22),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(tabs[i],
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight:
-                                  sel ? FontWeight.bold : FontWeight.normal,
-                              color: sel
-                                  ? const Color(0xff2D8CFF)
-                                  : Colors.white54)),
-                      const SizedBox(height: 4),
-                      Container(
-                          height: 3,
-                          width: 28,
-                          color: sel
-                              ? const Color(0xff2D8CFF)
-                              : Colors.transparent),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: _musicBox("Recently Played", Icons.history,
-                    Colors.orangeAccent, recent.length,
-                    () => _openSongList("Recently Played", recent)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _musicBox("Favorite", Icons.favorite,
-                    Colors.pinkAccent, favs.length,
-                    () => _openSongList("Favorite", favs)),
-              ),
-            ],
-          ),
-        ),
-        Expanded(child: _buildMusicContent()),
-      ],
-    );
-  }
-
-  Widget _buildMusicContent() {
-    if (_musicSubTab == 1) {
-      final names = _playlists.keys.toList();
-      return Column(
-        children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
             child: Row(
@@ -3807,7 +3735,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 }
 
-   @override
+  class SongListScreen extends StatefulWidget {
+  final String title;
+  final List<SongModel> songs;
+  const SongListScreen({super.key, required this.title, required this.songs});
+
+  @override
   State<SongListScreen> createState() => _SongListScreenState();
 }
 
