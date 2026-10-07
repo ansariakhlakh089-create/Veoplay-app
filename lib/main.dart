@@ -447,7 +447,6 @@ class _HomeScreenState extends State<HomeScreen>
         ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          IconButton(onPressed: _showSortMenu, icon: const Icon(Icons.sort)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: CircleAvatar(
@@ -700,6 +699,14 @@ class _HomeScreenState extends State<HomeScreen>
                                         color: _showPlaylist
                                             ? Colors.white
                                             : Colors.white38)),
+                              ),
+                              const Spacer(),
+                              IconButton(
+                                onPressed: _showSortMenu,
+                                icon: const Icon(Icons.sort,
+                                    color: Colors.white70),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),
