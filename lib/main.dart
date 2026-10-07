@@ -1127,6 +1127,1010 @@ class _HomeScreenState extends State<HomeScreen>
       },
     );
   }
+  void _toast(String msg) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
+  Future<void> _loadMusicData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _favoriteIds = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+    _recentSongIds = (prefs.getStringList('recent_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toList();
+    final pl = prefs.getStringList('user_playlists') ?? [];
+    final map = <String, List<int>>{};
+    for (final s in pl) {
+      final i = s.indexOf('|||');
+      if (i <= 0) continue;
+      map[s.substring(0, i)] = s
+          .substring(i + 3)
+          .split(',')
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
+          .toList();
+    }
+    _playlists = map;
+  }
+
+  Future<void> _addRecentSong(int id) async {
+    if (_recentSongIds.isNotEmpty && _recentSongIds.first == id) return;
+    final prefs = await SharedPreferences.getInstance();
+    final list = (prefs.getStringList('recent_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toList();
+    list.remove(id);
+    list.insert(0, id);
+    if (list.length > 50) list.removeRange(50, list.length);
+    await prefs.setStringList(
+        'recent_songs', list.map((e) => e.toString()).toList());
+    if (mounted) setState(() => _recentSongIds = list);
+  }
+
+  Future<void> _toggleFavorite(SongModel song) async {
+    setState(() {
+      if (_favoriteIds.contains(song.id)) {
+        _favoriteIds.remove(song.id);
+      } else {
+        _favoriteIds.add(song.id);
+      }
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
+  }
+
+  Future<void> _savePlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'user_playlists',
+      _playlists.entries.map((e) => '${e.key}|||${e.value.join(",")}').toList(),
+    );
+  }
+
+  Future<String?> _askPlaylistName() async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title:
+            const Text("नई Playlist", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: "Playlist का नाम"),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text("Create")),
+        ],
+      ),
+    );
+    if (name == null) return null;
+    final clean = name.replaceAll('|', '').replaceAll(',', '').trim();
+    return clean.isEmpty ? null : clean;
+  }
+
+  Future<void> _createPlaylist() async {
+    final name = await _askPlaylistName();
+    if (name == null) return;
+    if (_playlists.containsKey(name)) {
+      _toast("इस नाम की Playlist पहले से है");
+      return;
+    }
+    setState(() => _playlists[name] = []);
+    await _savePlaylists();
+  }
+
+  Future<void> _addSongToPlaylist(String name, SongModel song) async {
+    final list = _playlists[name] ?? [];
+    if (!list.contains(song.id)) list.add(song.id);
+    setState(() => _playlists[name] = list);
+    await _savePlaylists();
+    _toast("'$name' में जोड़ दिया");
+  }
+
+  void _addToPlaylistDialog(SongModel song) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: const Text("नई Playlist बनाएँ",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final name = await _askPlaylistName();
+                  if (name == null) return;
+                  if (!_playlists.containsKey(name)) {
+                    setState(() => _playlists[name] = []);
+                  }
+                  await _addSongToPlaylist(name, song);
+                },
+              ),
+              ..._playlists.keys.map((name) => ListTile(
+                    leading:
+                        const Icon(Icons.queue_music, color: Colors.white),
+                    title: Text(name,
+                        style: const TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addSongToPlaylist(name, song);
+                    },
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deletePlaylist(String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text("'$name' हटाएँ?",
+            style: const TextStyle(color: Colors.white)),
+        content: const Text("सिर्फ़ Playlist हटेगी, गाने फोन में रहेंगे।",
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete",
+                  style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _playlists.remove(name));
+    await _savePlaylists();
+  }
+
+  List<SongModel> _songsByIds(List<int> ids) {
+    final byId = {for (final s in _songs) s.id: s};
+    final out = <SongModel>[];
+    for (final id in ids) {
+      final s = byId[id];
+      if (s != null) out.add(s);
+    }
+    return out;
+  }
+
+  void _openSongList(String title, List<SongModel> songs) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => SongListScreen(title: title, songs: songs)),
+    );
+  }
+
+  Widget _songTile(int index) {
+    final song = _songs[index];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  AudioPlayerScreen(songs: _songs, initialIndex: index),
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: const Color(0xff2D8CFF).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.music_note, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(globalSongNames[song.id] ?? song.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(song.artist ?? "Unknown",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12)),
+                ],
+              ),
+            ),
+            if (_favoriteIds.contains(song.id))
+              const Icon(Icons.favorite, color: Colors.pinkAccent, size: 16),
+            IconButton(
+              onPressed: () => _showSongOptions(song),
+              icon: const Icon(Icons.more_vert,
+                  color: Colors.white60, size: 20),
+              padding: const EdgeInsets.only(left: 8),
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _groupTile(IconData icon, String name, int count, VoidCallback onTap,
+      {Widget? trailing}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xff2D8CFF), size: 30),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text("$count songs",
+                        style: const TextStyle(
+                            color: Colors.white54, fontSize: 13)),
+                  ],
+                ),
+              ),
+              if (trailing != null)
+                trailing
+              else
+                const Icon(Icons.chevron_right, color: Colors.white38),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _musicBox(String title, IconData icon, Color color, int count,
+      VoidCallback onTap) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 2),
+                  Text("$count songs",
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMusicTab() {
+    if (_songs.isEmpty) {
+      return const Center(
+        child: Text("कोई गाना नहीं मिला",
+            style: TextStyle(color: Colors.white54, fontSize: 16)),
+      );
+    }
+    const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
+    final recent = _songsByIds(_recentSongIds);
+    final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
+    return Column(
+      children: [
+        SizedBox(
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            children: List.generate(tabs.length, (i) {
+              final sel = _musicSubTab == i;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _musicSubTab = i),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 22),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(tabs[i],
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight:
+                                  sel ? FontWeight.bold : FontWeight.normal,
+                              color: sel
+                                  ? const Color(0xff2D8CFF)
+                                  : Colors.white54)),
+                      const SizedBox(height: 4),
+                      Container(
+                          height: 3,
+                          width: 28,
+                          color: sel
+                              ? const Color(0xff2D8CFF)
+                              : Colors.transparent),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: _musicBox("Recently Played", Icons.history,
+                    Colors.orangeAccent, recent.length,
+                    () => _openSongList("Recently Played", recent)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _musicBox("Favorite", Icons.favorite,
+                    Colors.pinkAccent, favs.length,
+                    () => _openSongList("Favorite", favs)),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: _buildMusicContent()),
+      ],
+    );
+  }
+
+  Widget _buildMusicContent() {
+    if (_musicSubTab == 1) {
+      final names = _playlists.keys.toList();
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+            child: Row(
+              children: [
+                Text("Playlist (${names.length})",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                IconButton(
+                  onPressed: _createPlaylist,
+                  icon: const Icon(Icons.add, color: Colors.white70),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: names.isEmpty
+                ? const Center(
+                    child: Text("अभी कोई Playlist नहीं है, ऊपर + दबाकर बनाओ",
+                        style: TextStyle(color: Colors.white54, fontSize: 15),
+                        textAlign: TextAlign.center))
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+                    itemCount: names.length,
+                    itemBuilder: (context, index) {
+                      final name = names[index];
+                      final list = _songsByIds(_playlists[name] ?? []);
+                      return _groupTile(
+                        Icons.queue_music,
+                        name,
+                        list.length,
+                        () => _openSongList(name, list),
+                        trailing: IconButton(
+                          onPressed: () => _deletePlaylist(name),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.white54),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
+    }
+    void _toast(String msg) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
+  Future<void> _loadMusicData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _favoriteIds = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+    _recentSongIds = (prefs.getStringList('recent_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toList();
+    final pl = prefs.getStringList('user_playlists') ?? [];
+    final map = <String, List<int>>{};
+    for (final s in pl) {
+      final i = s.indexOf('|||');
+      if (i <= 0) continue;
+      map[s.substring(0, i)] = s
+          .substring(i + 3)
+          .split(',')
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
+          .toList();
+    }
+    _playlists = map;
+  }
+
+  Future<void> _addRecentSong(int id) async {
+    if (_recentSongIds.isNotEmpty && _recentSongIds.first == id) return;
+    final prefs = await SharedPreferences.getInstance();
+    final list = (prefs.getStringList('recent_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toList();
+    list.remove(id);
+    list.insert(0, id);
+    if (list.length > 50) list.removeRange(50, list.length);
+    await prefs.setStringList(
+        'recent_songs', list.map((e) => e.toString()).toList());
+    if (mounted) setState(() => _recentSongIds = list);
+  }
+
+  Future<void> _toggleFavorite(SongModel song) async {
+    setState(() {
+      if (_favoriteIds.contains(song.id)) {
+        _favoriteIds.remove(song.id);
+      } else {
+        _favoriteIds.add(song.id);
+      }
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
+  }
+
+  Future<void> _savePlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'user_playlists',
+      _playlists.entries.map((e) => '${e.key}|||${e.value.join(",")}').toList(),
+    );
+  }
+
+  Future<String?> _askPlaylistName() async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title:
+            const Text("नई Playlist", style: TextStyle(color: Colors.white)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(hintText: "Playlist का नाम"),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text("Create")),
+        ],
+      ),
+    );
+    if (name == null) return null;
+    final clean = name.replaceAll('|', '').replaceAll(',', '').trim();
+    return clean.isEmpty ? null : clean;
+  }
+
+  Future<void> _createPlaylist() async {
+    final name = await _askPlaylistName();
+    if (name == null) return;
+    if (_playlists.containsKey(name)) {
+      _toast("इस नाम की Playlist पहले से है");
+      return;
+    }
+    setState(() => _playlists[name] = []);
+    await _savePlaylists();
+  }
+
+  Future<void> _addSongToPlaylist(String name, SongModel song) async {
+    final list = _playlists[name] ?? [];
+    if (!list.contains(song.id)) list.add(song.id);
+    setState(() => _playlists[name] = list);
+    await _savePlaylists();
+    _toast("'$name' में जोड़ दिया");
+  }
+
+  void _addToPlaylistDialog(SongModel song) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: const Text("नई Playlist बनाएँ",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final name = await _askPlaylistName();
+                  if (name == null) return;
+                  if (!_playlists.containsKey(name)) {
+                    setState(() => _playlists[name] = []);
+                  }
+                  await _addSongToPlaylist(name, song);
+                },
+              ),
+              ..._playlists.keys.map((name) => ListTile(
+                    leading:
+                        const Icon(Icons.queue_music, color: Colors.white),
+                    title: Text(name,
+                        style: const TextStyle(color: Colors.white)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addSongToPlaylist(name, song);
+                    },
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _deletePlaylist(String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text("'$name' हटाएँ?",
+            style: const TextStyle(color: Colors.white)),
+        content: const Text("सिर्फ़ Playlist हटेगी, गाने फोन में रहेंगे।",
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete",
+                  style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _playlists.remove(name));
+    await _savePlaylists();
+  }
+
+  List<SongModel> _songsByIds(List<int> ids) {
+    final byId = {for (final s in _songs) s.id: s};
+    final out = <SongModel>[];
+    for (final id in ids) {
+      final s = byId[id];
+      if (s != null) out.add(s);
+    }
+    return out;
+  }
+
+  void _openSongList(String title, List<SongModel> songs) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => SongListScreen(title: title, songs: songs)),
+    );
+  }
+
+  Widget _songTile(int index) {
+    final song = _songs[index];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  AudioPlayerScreen(songs: _songs, initialIndex: index),
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: const Color(0xff2D8CFF).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.music_note, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(globalSongNames[song.id] ?? song.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(song.artist ?? "Unknown",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12)),
+                ],
+              ),
+            ),
+            if (_favoriteIds.contains(song.id))
+              const Icon(Icons.favorite, color: Colors.pinkAccent, size: 16),
+            IconButton(
+              onPressed: () => _showSongOptions(song),
+              icon: const Icon(Icons.more_vert,
+                  color: Colors.white60, size: 20),
+              padding: const EdgeInsets.only(left: 8),
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _groupTile(IconData icon, String name, int count, VoidCallback onTap,
+      {Widget? trailing}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xff2D8CFF), size: 30),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text("$count songs",
+                        style: const TextStyle(
+                            color: Colors.white54, fontSize: 13)),
+                  ],
+                ),
+              ),
+              if (trailing != null)
+                trailing
+              else
+                const Icon(Icons.chevron_right, color: Colors.white38),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _musicBox(String title, IconData icon, Color color, int count,
+      VoidCallback onTap) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 80,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 2),
+                  Text("$count songs",
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMusicTab() {
+    if (_songs.isEmpty) {
+      return const Center(
+        child: Text("कोई गाना नहीं मिला",
+            style: TextStyle(color: Colors.white54, fontSize: 16)),
+      );
+    }
+    const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
+    final recent = _songsByIds(_recentSongIds);
+    final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
+    return Column(
+      children: [
+        SizedBox(
+          height: 44,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            children: List.generate(tabs.length, (i) {
+              final sel = _musicSubTab == i;
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _musicSubTab = i),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 22),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(tabs[i],
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight:
+                                  sel ? FontWeight.bold : FontWeight.normal,
+                              color: sel
+                                  ? const Color(0xff2D8CFF)
+                                  : Colors.white54)),
+                      const SizedBox(height: 4),
+                      Container(
+                          height: 3,
+                          width: 28,
+                          color: sel
+                              ? const Color(0xff2D8CFF)
+                              : Colors.transparent),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: _musicBox("Recently Played", Icons.history,
+                    Colors.orangeAccent, recent.length,
+                    () => _openSongList("Recently Played", recent)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _musicBox("Favorite", Icons.favorite,
+                    Colors.pinkAccent, favs.length,
+                    () => _openSongList("Favorite", favs)),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: _buildMusicContent()),
+      ],
+    );
+  }
+
+  Widget _buildMusicContent() {
+    if (_musicSubTab == 1) {
+      final names = _playlists.keys.toList();
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
+            child: Row(
+              children: [
+                Text("Playlist (${names.length})",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                IconButton(
+                  onPressed: _createPlaylist,
+                  icon: const Icon(Icons.add, color: Colors.white70),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: names.isEmpty
+                ? const Center(
+                    child: Text("अभी कोई Playlist नहीं है, ऊपर + दबाकर बनाओ",
+                        style: TextStyle(color: Colors.white54, fontSize: 15),
+                        textAlign: TextAlign.center))
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+                    itemCount: names.length,
+                    itemBuilder: (context, index) {
+                      final name = names[index];
+                      final list = _songsByIds(_playlists[name] ?? []);
+                      return _groupTile(
+                        Icons.queue_music,
+                        name,
+                        list.length,
+                        () => _openSongList(name, list),
+                        trailing: IconButton(
+                          onPressed: () => _deletePlaylist(name),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.white54),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      );
+    }
+    if (_musicSubTab == 2 || _musicSubTab == 3) {
+      final groups = <String, List<SongModel>>{};
+      for (final s in _songs) {
+        String key;
+        if (_musicSubTab == 2) {
+          final p = s.data;
+          final i = p.lastIndexOf('/');
+          final parent = i > 0 ? p.substring(0, i) : '';
+          key = parent.isEmpty
+              ? 'Unknown'
+              : parent.substring(parent.lastIndexOf('/') + 1);
+        } else {
+          final a = s.artist ?? '';
+          key = (a.isEmpty || a == '<unknown>') ? 'Unknown' : a;
+        }
+        groups.putIfAbsent(key, () => []).add(s);
+      }
+      final keys = groups.keys.toList()
+        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+        itemCount: keys.length,
+        itemBuilder: (context, index) {
+          final key = keys[index];
+          final list = groups[key]!;
+          return _groupTile(
+            _musicSubTab == 2 ? Icons.folder : Icons.person,
+            key,
+            list.length,
+            () => _openSongList(key, list),
+          );
+        },
+      );
+    }
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
+          child: Row(
+            children: [
+              Text("All Songs (${_songs.length})",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              IconButton(
+                onPressed: _showSongSortMenu,
+                icon: const Icon(Icons.sort, color: Colors.white70),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+            itemCount: _songs.length,
+            itemBuilder: (context, index) => _songTile(index),
+          ),
+        ),
+      ],
+    );
+  }
   int _songSortMode = 0;
 
   void _sortSongs(List<SongModel> list) {
@@ -1218,6 +2222,32 @@ class _HomeScreenState extends State<HomeScreen>
                 onTap: () {
                   Navigator.pop(context);
                   _showSongDetails(song);
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  _favoriteIds.contains(song.id)
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: Colors.pinkAccent,
+                ),
+                title: Text(
+                    _favoriteIds.contains(song.id)
+                        ? "Favorite से हटाएँ"
+                        : "Favorite में जोड़ें",
+                    style: const TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _toggleFavorite(song);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.playlist_add, color: Colors.white),
+                title: const Text("Playlist में जोड़ें",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _addToPlaylistDialog(song);
                 },
               ),
               ListTile(
