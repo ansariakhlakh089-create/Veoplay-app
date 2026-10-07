@@ -2938,11 +2938,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         );
       }).toList();
 
-      await _player.setAudioSources(
-        sources,
-        initialIndex: _currentIndex,
-      );
-      await _player.play();
+      await _player.setAudioSource(
+    ConcatenatingAudioSource(children: sources),
+    initialIndex: _currentIndex,
+);
+await _player.play();
     } catch (e) {
       if (mounted) setState(() => _setupError = e.toString());
     }
