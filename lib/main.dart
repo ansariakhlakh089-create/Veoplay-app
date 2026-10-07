@@ -2874,7 +2874,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   late final AudioPlayer _player;
   late int _currentIndex;
 
-  int _loopMode = 0; // 0 = off (series), 1 = single repeat, 2 = shuffle
+  int _loopMode = 0;
   Set<int> _favoriteIds = {};
 
   StreamSubscription<int?>? _currentIndexSubscription;
@@ -2892,7 +2892,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
     });
 
-    // Load current loop mode
     if (_player.loopMode == LoopMode.one) {
       _loopMode = 1;
     } else if (_player.shuffleModeEnabled) {
@@ -2903,7 +2902,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
     _loadFavorites();
 
-    // Same song already playing? Don't restart
     final currentTag = _player.sequenceState?.currentSource?.tag;
     final selectedId = widget.songs.isNotEmpty
         ? widget.songs[_currentIndex].id.toString()
@@ -2926,25 +2924,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (mounted) setState(() => _favoriteIds = ids);
   }
 
-  // ==================== PLAYLIST SETUP (Crash Fix) ====================
   Future<void> _setupPlaylist() async {
     try {
-      final playlist = ConcatenatingAudioSource(
-        children: widget.songs.map((song) {
-          return AudioSource.uri(
-            Uri.parse('content://media/external/audio/media/${song.id}'),
-            tag: MediaItem(
-              id: song.id.toString(),
-              album: "VeoPlay",
-              title: globalSongNames[song.id] ?? song.title,
-              artist: song.artist ?? "Unknown",
-            ),
-          );
-        }).toList(),
-      );
+      final sources = widget.songs.map((song) {
+        return AudioSource.uri(
+          Uri.parse('content://media/external/audio/media/${song.id}'),
+          tag: MediaItem(
+            id: song.id.toString(),
+            album: "VeoPlay",
+            title: globalSongNames[song.id] ?? song.title,
+            artist: song.artist ?? "Unknown",
+          ),
+        );
+      }).toList();
 
-      await _player.setAudioSource(
-        playlist,
+      await _player.setAudioSources(
+        sources,
         initialIndex: _currentIndex,
       );
       await _player.play();
@@ -2983,7 +2978,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== LOOP MODE (3 states) ====================
   Future<void> _toggleLoop() async {
     setState(() {
       _loopMode = (_loopMode + 1) % 3;
@@ -3007,7 +3001,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     return '$minutes:$seconds';
   }
 
-  // ==================== FAVORITE TOGGLE ====================
   Future<void> _toggleFavorite(SongModel song) async {
     final prefs = await SharedPreferences.getInstance();
     final list = (prefs.getStringList('favorite_songs') ?? [])
@@ -3041,13 +3034,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
   }
 
-  // ==================== EQUALIZER (Real working) ====================
-  try {
-  final session = await AudioSession.instance;
-  await session.configure(const AudioSessionConfiguration.music());
-} catch (e) {
-  debugPrint('AudioSession error: $e');
-  }
+  Future<void> _showEqualizerDialog() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (e) {
+      debugPrint('AudioSession error: $e');
+    }
+
     double bass = 1.0, mid = 1.0, treble = 1.0;
 
     if (!mounted) return;
@@ -3194,7 +3188,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
   }
 
-  // ==================== PLUS: ADD TO PLAYLIST ====================
   Future<void> _showAddToPlaylistDialog(SongModel song) async {
     final prefs = await SharedPreferences.getInstance();
     final pl = prefs.getStringList('user_playlists') ?? [];
@@ -3233,7 +3226,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   ),
                 ),
               ),
-              // Create new playlist
               ListTile(
                 leading: const Icon(Icons.add, color: Colors.blueAccent),
                 title: const Text("Create New Playlist",
@@ -3299,7 +3291,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     style: TextStyle(color: Colors.white54, fontSize: 14),
                   ),
                 ),
-              // Existing playlists
               ...playlists.keys.map((name) => ListTile(
                     leading: const Icon(Icons.queue_music,
                         color: Colors.white),
@@ -3356,7 +3347,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     super.dispose();
   }
 
-  // ==================== UI ====================
   @override
   Widget build(BuildContext context) {
     if (widget.songs.isEmpty) {
@@ -3403,7 +3393,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ==================== ALBUM ART ====================
             Container(
               width: 250,
               height: 250,
@@ -3417,8 +3406,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   color: Colors.white, size: 100),
             ),
             const SizedBox(height: 40),
-
-            // ==================== SONG TITLE ====================
             Text(
               songTitle,
               textAlign: TextAlign.center,
@@ -3431,8 +3418,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               ),
             ),
             const SizedBox(height: 8),
-
-            // ==================== ARTIST ====================
             Text(
               song.artist ?? "Unknown",
               maxLines: 1,
@@ -3440,12 +3425,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               style: const TextStyle(color: Colors.white54, fontSize: 14),
             ),
             const SizedBox(height: 16),
-
-            // ⭐⭐⭐ NEW: 3 BUTTONS ROW (Plus | Equalizer | Favorite) ⭐⭐⭐
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Plus - Add to Playlist
                 GestureDetector(
                   onTap: () => _showAddToPlaylistDialog(song),
                   child: Container(
@@ -3466,8 +3448,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   ),
                 ),
                 const SizedBox(width: 24),
-
-                // Equalizer
                 GestureDetector(
                   onTap: _showEqualizerDialog,
                   child: Container(
@@ -3488,8 +3468,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   ),
                 ),
                 const SizedBox(width: 24),
-
-                // Favorite
                 GestureDetector(
                   onTap: () => _toggleFavorite(song),
                   child: Container(
@@ -3516,8 +3494,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               ],
             ),
             const SizedBox(height: 20),
-
-            // ==================== POSITION + DURATION ====================
             StreamBuilder<Duration>(
               stream: _player.positionStream,
               builder: (context, positionSnapshot) {
@@ -3565,12 +3541,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               },
             ),
             const SizedBox(height: 20),
-
-            // ==================== CONTROLS ====================
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Loop (3-mode)
                 IconButton(
                   icon: Icon(
                     _loopMode == 0
@@ -3585,15 +3558,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   ),
                   onPressed: _toggleLoop,
                 ),
-
-                // Previous
                 IconButton(
                   icon: const Icon(Icons.skip_previous,
                       color: Colors.white, size: 32),
                   onPressed: _playPrevious,
                 ),
-
-                // Play/Pause
                 StreamBuilder<PlayerState>(
                   stream: _player.playerStateStream,
                   builder: (context, snapshot) {
@@ -3616,15 +3585,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     );
                   },
                 ),
-
-                // Next
                 IconButton(
                   icon: const Icon(Icons.skip_next,
                       color: Colors.white, size: 32),
                   onPressed: _playNext,
                 ),
-
-                // Speed
                 IconButton(
                   icon: const Icon(Icons.speed,
                       color: Colors.white54, size: 24),
