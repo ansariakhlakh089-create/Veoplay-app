@@ -232,12 +232,24 @@ class _HomeScreenState extends State<HomeScreen>
   String? _recentUrl;
   int _recentPosition = 0;
   int _recentDuration = 0;
+  int _musicSubTab = 0;
+  Set<int> _favoriteIds = {};
+  List<int> _recentSongIds = [];
+  Map<String, List<int>> _playlists = {};
+  StreamSubscription<dynamic>? _seqSub;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     recentChangedNotifier.addListener(_onRecentChanged);
+    _seqSub = globalAudioPlayer.sequenceStateStream.listen((s) {
+      final tag = s?.currentSource?.tag;
+      if (tag is MediaItem) {
+        final id = int.tryParse(tag.id);
+        if (id != null) _addRecentSong(id);
+      }
+    });
     _loadVideos();
     _loadRecent();
   }
@@ -249,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     recentChangedNotifier.removeListener(_onRecentChanged);
+    _seqSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -287,6 +300,7 @@ class _HomeScreenState extends State<HomeScreen>
       uriType: UriType.EXTERNAL,
     );
     await _loadSongNames();
+    await _loadMusicData();
     final prefs = await SharedPreferences.getInstance();
     _songSortMode = prefs.getInt('song_sort_mode') ?? 0;
     final sorted = List<SongModel>.of(songs);
@@ -465,100 +479,7 @@ class _HomeScreenState extends State<HomeScreen>
         ],
              ),
              body: _currentTab == 2
-          ? (_songs.isEmpty
-              ? const Center(
-                  child: Text(
-                    "कोई गाना नहीं मिला",
-                    style: TextStyle(color: Colors.white54, fontSize: 16),
-                  ),
-                )
-              : ListView.builder(
-                  : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 0),
-                      child: Row(
-                        children: [
-                          const Text("Songs",
-                              style: TextStyle(
-                                  color: colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold)),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: _showSongSortMenu,
-                            icon: const Icon(Icons.sort,
-                                color: Colors.white70),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                  itemCount: _songs.length,
-                  itemBuilder: (context, index) {
-                    final song = _songs[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AudioPlayerScreen(
-                                songs: _songs,
-                                initialIndex: index,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color:
-                                    const Color(0xff2D8CFF).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(Icons.music_note,
-                                  color: Colors.white),
-                            ),
-                            const SizedBox(width: 12),
-                                  Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(globalSongNames[song.id] ?? song.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 14),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              song.artist ?? "Unknown",
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-      IconButton(
-        onPressed: () => _showSongOptions(song),
-        icon: const Icon(Icons.more_vert, color: Colors.white, size: 20),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(),
-      ),
-    ],
-  ),
-),
+    ? _buildMusicTab()
           : _isLoading
           ? Center(
               child: Column(
