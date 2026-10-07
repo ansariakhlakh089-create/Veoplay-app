@@ -2201,11 +2201,13 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     _hideTimer?.cancel();
     _controller.dispose();
 
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    if (!_replacing) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
 
     if (position >= 5) {
       _saveProgressData(title, url, position, duration);
