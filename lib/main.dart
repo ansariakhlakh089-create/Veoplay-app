@@ -2929,20 +2929,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   // ==================== PLAYLIST SETUP (Crash Fix) ====================
   Future<void> _setupPlaylist() async {
     try {
-      final sources = widget.songs.map((song) {
-        return AudioSource.uri(
-          Uri.parse('content://media/external/audio/media/${song.id}'),
-          tag: MediaItem(
-            id: song.id.toString(),
-            album: "VeoPlay",
-            title: globalSongNames[song.id] ?? song.title,
-            artist: song.artist ?? "Unknown",
-          ),
-        );
-      }).toList();
+      final playlist = ConcatenatingAudioSource(
+        children: widget.songs.map((song) {
+          return AudioSource.uri(
+            Uri.parse('content://media/external/audio/media/${song.id}'),
+            tag: MediaItem(
+              id: song.id.toString(),
+              album: "VeoPlay",
+              title: globalSongNames[song.id] ?? song.title,
+              artist: song.artist ?? "Unknown",
+            ),
+          );
+        }).toList(),
+      );
 
-      await _player.setAudioSources(
-        sources,
+      await _player.setAudioSource(
+        playlist,
         initialIndex: _currentIndex,
       );
       await _player.play();
