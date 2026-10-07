@@ -2855,3 +2855,76 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
   }
 }
+
+   @override
+  State<SongListScreen> createState() => _SongListScreenState();
+}
+
+class _SongListScreenState extends State<SongListScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff0D012),
+      appBar: AppBar(backgroundColor: Colors.transparent, title: Text(widget.title)),
+      body: widget.songs.isEmpty
+          ? const Center(
+              child: Text("यहाँ अभी कोई गाना नहीं है",
+                  style: TextStyle(color: Colors.white54, fontSize: 16)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(18),
+              itemCount: widget.songs.length,
+              itemBuilder: (context, index) {
+                final song = widget.songs[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AudioPlayerScreen(
+                            songs: widget.songs, initialIndex: index),
+                        ),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: const Color(0xff2D8CFF).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.music_note,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(globalSongNames[song.id] ?? song.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 14)),
+                              const SizedBox(height: 2),
+                              Text(song.artist ?? "Unknown",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: Colors.white54, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+}
