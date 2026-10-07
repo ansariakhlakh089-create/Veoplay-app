@@ -3749,7 +3749,7 @@ class _SongListScreenState extends State<SongListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0D012),
+      backgroundColor: const Color(0xff0B0D12),
       appBar: AppBar(backgroundColor: Colors.transparent, title: Text(widget.title)),
       body: widget.songs.isEmpty
           ? const Center(
