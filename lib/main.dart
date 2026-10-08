@@ -297,11 +297,17 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _loadSongs() async {
-    if (_audioLoaded) return;
-    final OnAudioQuery audioQuery = OnAudioQuery();
-    bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
-    if (!hasPermission) return;
-    final songs = await audioQuery.querySongs(
+  if (_audioLoaded) return;
+  final OnAudioQuery audioQuery = OnAudioQuery();
+  bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
+  if (!hasPermission) {
+    if (mounted) {
+      setState(() => _audioPermissionDenied = true);
+    }
+    return;
+  }
+  if (mounted) setState(() => _audioPermissionDenied = false);
+  final songs = await audioQuery.querySongs(
       sortType: SongSortType.TITLE,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
