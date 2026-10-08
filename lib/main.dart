@@ -1947,51 +1947,65 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _deleteSong(SongModel song) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text("गाना डिलीट करें?",
-            style: TextStyle(color: Colors.white)),
-        content: const Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel")),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete",
-                style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
-    );
-    if (confirm != true) return;
-    try {
-      final result =
-          await PhotoManager.editor.deleteWithIds([song.id.toString()]);
-      if (result.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("डिलीट नहीं हो पाया")),
-          );
-        }
-        return;
-      }
-    } catch (e) {
-      debugPrint("Song delete error: $e");
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: const Color(0xff1A1D24),
+      title: const Text("गाना डिलीट करें?",
+          style: TextStyle(color: Colors.white)),
+      content: const Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
+          style: TextStyle(color: Colors.white70)),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel")),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text("Delete",
+              style: TextStyle(color: Colors.redAccent)),
+        ),
+      ],
+    ),
+  );
+  if (confirm != true) return;
+
+  // 👇 नया: File से सीधे delete (MediaStore update अपने आप होगा)
+  try {
+    final file = File(song.data);
+    if (await file.exists()) {
+      await file.delete();
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("डिलीट नहीं हो पाया")),
+          const SnackBar(content: Text("फ़ाइल नहीं मिली")),
         );
       }
       return;
     }
-    globalSongNames.remove(song.id);
-    await _saveSongNames();
-    if (!mounted) return;
-    setState(() => _songs.removeWhere((s) => s.id == song.id));
+  } catch (e) {
+    debugPrint("Song delete error: $e");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("डिलीट नहीं हो पाया: $e")),
+      );
+    }
+    return;
+  }
+
+  globalSongNames.remove(song.id);
+  await _saveSongNames();
+
+  // 👇 favorites/recent से भी निकालो
+  final prefs = await SharedPreferences.getInstance();
+  _favoriteIds.remove(song.id);
+  _recentSongIds.remove(song.id);
+  await prefs.setStringList(
+      'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
+  await prefs.setStringList(
+      'recent_songs', _recentSongIds.map((e) => e.toString()).toList());
+
+  if (!mounted) return;
+  setState(() => _songs.removeWhere((s) => s.id == song.id));
   }
   void _showVideoDetails(Map<String, String> item) {
     showDialog(
