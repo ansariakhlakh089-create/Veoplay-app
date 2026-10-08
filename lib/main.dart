@@ -3558,14 +3558,15 @@ await prefs.setStringList(
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 250,
-              height: 250,
+      body: SingleChildScrollView(         // 👈 नया
+  padding: const EdgeInsets.all(24),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const SizedBox(height: 20),     // 👈 ऊपर थोड़ी जगह
+      Container(
+        width: 250,
+        height: 250,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
