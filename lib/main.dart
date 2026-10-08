@@ -2217,6 +2217,7 @@ WakelockPlus.enable(); // 👈 नया
   if (widget.startPosition > 0) {
     _controller.seekTo(Duration(seconds: widget.startPosition));
   }
+  _controller.setPlaybackSpeed(_speed);   // 👈 यही नई line जोड़ो   
   _controller.play();
 }).catchError((error) {
   debugPrint('Video initialize error: $error');
