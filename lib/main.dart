@@ -329,10 +329,11 @@ if (mounted) {
     final sorted = List<SongModel>.of(songs);
     _sortSongs(sorted);
     if (!mounted) return;
-    setState(() {
-      _songs = sorted;
-      _audioLoaded = true;
-    });
+      setState(() {
+    _songs = sorted;
+    _audioLoaded = true;
+    _audioLoading = false; // 👈 नया
+  });
   }
 
   Future<void> _loadVideos() async {
