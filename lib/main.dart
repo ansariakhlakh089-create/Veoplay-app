@@ -1734,16 +1734,28 @@ class _HomeScreenState extends State<HomeScreen>
             ],
           ),
         ),
-        const SizedBox(height: 8),
-        Expanded(
+              const SizedBox(height: 8),
+      Expanded(
+        child: RefreshIndicator(
+          color: const Color(0xff2D8CFF),
+          backgroundColor: const Color(0xff1A1D24),
+          onRefresh: () async {
+            setState(() {
+              _audioLoaded = false;
+              _songs = [];
+            });
+            await _loadSongs();
+          },
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemCount: _songs.length,
             itemBuilder: (context, index) => _songTile(index),
           ),
         ),
-      ],
-    );
+      ),
+    ],
+  );
   }
   int _songSortMode = 0;
 
