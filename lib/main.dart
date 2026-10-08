@@ -2135,17 +2135,22 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     }
 
     _controller.initialize().then((_) {
-      if (!mounted) return;
-      setState(() {
-        _isInitialized = true;
-      });
-      if (widget.startPosition > 0) {
-        _controller.seekTo(Duration(seconds: widget.startPosition));
-      }
-      _controller.play();
-    }).catchError((error) {
-      debugPrint('Video initialize error: $error');
-    });
+  if (!mounted) return;
+  setState(() {
+    _isInitialized = true;
+  });
+  if (widget.startPosition > 0) {
+    _controller.seekTo(Duration(seconds: widget.startPosition));
+  }
+  _controller.play();
+}).catchError((error) {
+  debugPrint('Video initialize error: $error');
+  if (!mounted) return;
+  setState(() {
+    _hasError = true;
+    _errorMessage = error.toString();
+  });
+});
 
     _controller.addListener(() {
       if (mounted) setState(() {});
