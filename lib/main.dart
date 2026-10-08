@@ -1444,12 +1444,15 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _miniPlayer() {
-    return StreamBuilder<SequenceState?>(
-      stream: globalAudioPlayer.sequenceStateStream,
-      builder: (context, snapshot) {
-        final tag = snapshot.data?.currentSource?.tag;
-        if (tag is! MediaItem) return const SizedBox.shrink();
-        return GestureDetector(
+  return ValueListenableBuilder<int>(
+    valueListenable: musicDataNotifier,
+    builder: (context, _, __) {
+      return StreamBuilder<SequenceState?>(
+        stream: globalAudioPlayer.sequenceStateStream,
+        builder: (context, snapshot) {
+          final tag = snapshot.data?.currentSource?.tag;
+          if (tag is! MediaItem) return const SizedBox.shrink();
+          return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _openNowPlaying,
           child: Container(
