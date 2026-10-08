@@ -2232,12 +2232,21 @@ WakelockPlus.enable(); // 👈 नया
     _startHideTimer();
   }
 
-  void _startHideTimer() {
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(seconds: 4), () {
-      if (mounted) setState(() => _showControls = false);
-    });
+  Future<void> _loadSavedSpeed() async {
+  final prefs = await SharedPreferences.getInstance();
+  final s = prefs.getDouble('video_speed') ?? 1.0;
+  if (mounted) setState(() => _speed = s);
+  if (_isInitialized) {
+    _controller.setPlaybackSpeed(s);
   }
+}
+
+void _startHideTimer() {
+  _hideTimer?.cancel();
+  _hideTimer = Timer(const Duration(seconds: 4), () {
+    if (mounted) setState(() => _showControls = false);
+  });
+}
 
   void _toggleControls() {
     setState(() {
