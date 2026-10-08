@@ -3389,17 +3389,27 @@ await _player.play();
                     ),
                   );
                   if (name == null || name.isEmpty) return;
-                  final clean =
-                      name.replaceAll('|', '').replaceAll(',', '').trim();
-                  if (clean.isEmpty) return;
+final clean =
+    name.replaceAll('|', '').replaceAll(',', '').trim();
+if (clean.isEmpty) return;
 
-                  playlists[clean] = [song.id];
-                  await prefs.setStringList(
-                    'user_playlists',
-                    playlists.entries
-                        .map((e) => '${e.key}|||${e.value.join(",")}')
-                        .toList(),
-                  );
+// 👇 Fix: पहले से हो तो उसमें जोड़ो, वरना नई बनाओ
+if (playlists.containsKey(clean)) {
+  final existing = playlists[clean] ?? [];
+  if (!existing.contains(song.id)) {
+    existing.add(song.id);
+  }
+  playlists[clean] = existing;
+} else {
+  playlists[clean] = [song.id];
+}
+
+await prefs.setStringList(
+  'user_playlists',
+  playlists.entries
+      .map((e) => '${e.key}|||${e.value.join(",")}')
+      .toList(),
+);
                   musicDataNotifier.value++;
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
