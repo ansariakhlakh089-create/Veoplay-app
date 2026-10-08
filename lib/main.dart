@@ -230,6 +230,7 @@ class _HomeScreenState extends State<HomeScreen>
     int _currentTab = 0;
     List<SongModel> _songs = [];
     bool _audioLoaded = false;
+    bool _audioPermissionDenied = false; // 👈 नया
   
   String? _recentTitle;
   String? _recentUrl;
