@@ -1943,7 +1943,10 @@ class _HomeScreenState extends State<HomeScreen>
     globalSongNames[song.id] = cleanName;
     await _saveSongNames();
     if (!mounted) return;
-    setState(() => _sortSongs(_songs));
+    setState(() {
+     _sortSongs(_songs);
+  musicDataNotifier.value++; // 👈 Mini Player को refresh करने के लिए
+});
   }
 
   Future<void> _deleteSong(SongModel song) async {
