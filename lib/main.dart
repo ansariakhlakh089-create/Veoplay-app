@@ -2379,9 +2379,17 @@ void dispose() {
             child: CircularProgressIndicator(color: Colors.cyanAccent),
           )
         : GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _toggleControls,
-              onVerticalDragUpdate: (details) {
+    behavior: HitTestBehavior.opaque,
+    onTap: _toggleControls,
+    onDoubleTapDown: (details) {
+      final w = MediaQuery.of(context).size.width;
+      if (details.globalPosition.dx < w / 2) {
+        _skipBackward();
+      } else {
+        _skipForward();
+      }
+    },
+    onVerticalDragUpdate: (details) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 final dx = details.globalPosition.dx;
                 final delta = -details.delta.dy / 200;
