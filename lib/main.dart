@@ -2320,8 +2320,8 @@ void dispose() {
   final duration = _controller.value.duration.inSeconds;
 
   _hideTimer?.cancel();
-  _controller.dispose();
-
+WakelockPlus.disable(); // 👈 नया
+_controller.dispose();
   // 👇 नया: Brightness वापस default पर
   try {
     ScreenBrightness().resetScreenBrightness();
