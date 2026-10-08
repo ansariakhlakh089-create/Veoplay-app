@@ -1532,8 +1532,21 @@ if (mounted) {
 }         // 👈 method closing
   
   Widget _buildMusicTab() {
-  if (_audioPermissionDenied) {
-    return Center(
+if (_audioLoading && _songs.isEmpty) {           // 👈 नया
+  return const Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        CircularProgressIndicator(color: Color(0xff2D8CFF)),
+        SizedBox(height: 16),
+        Text("गाने लोड हो रहे हैं...",
+            style: TextStyle(color: Colors.white54, fontSize: 14)),
+      ],
+    ),
+  );
+}
+if (_audioPermissionDenied) {
+  return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
