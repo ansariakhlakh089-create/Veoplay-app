@@ -2231,9 +2231,16 @@ void initState() {
       DeviceOrientation.landscapeRight,
     ]);
     // वॉल्यूम लेना (एरर हैंडलिंग के साथ)
-    VolumeController().getVolume().then((v) {
+        VolumeController().getVolume().then((v) {
   if (mounted) setState(() => _volume = v);
 }).catchError((_) {});
+
+// 👇 Fix: असली brightness पढ़ो
+try {
+  ScreenBrightness().current.then((b) {
+    if (mounted) setState(() => _brightness = b);
+  }).catchError((_) {});
+} catch (_) {}
 
 WakelockPlus.enable(); // 👈 नया
 
