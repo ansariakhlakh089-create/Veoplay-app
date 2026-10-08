@@ -2342,11 +2342,43 @@ void dispose() {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: !_isInitialized
-          ? const Center(
-              child: CircularProgressIndicator(color: Colors.cyanAccent),
-            )
-          : GestureDetector(
+      body: _hasError
+    ? Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  color: Colors.redAccent, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                "वीडियो नहीं खुल पाया",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: Colors.white54, fontSize: 12),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("वापस जाएँ"),
+              ),
+            ],
+          ),
+        ),
+      )
+    : !_isInitialized
+        ? const Center(
+            child: CircularProgressIndicator(color: Colors.cyanAccent),
+          )
+        : GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _toggleControls,
               onVerticalDragUpdate: (details) {
