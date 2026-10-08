@@ -3127,8 +3127,8 @@ await _player.play();
     await prefs.setStringList(
       'favorite_songs',
       list.map((e) => e.toString()).toList(),
-      musicDataNotifier.value++;
     );
+    musicDataNotifier.value++;
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -3380,8 +3380,8 @@ await _player.play();
                     playlists.entries
                         .map((e) => '${e.key}|||${e.value.join(",")}')
                         .toList(),
-                    musicDataNotifier.value++;
                   );
+                  musicDataNotifier.value++;
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -3421,8 +3421,8 @@ await _player.play();
                               .map((e) =>
                                   '${e.key}|||${e.value.join(",")}')
                               .toList(),
-                          musicDataNotifier.value++;
                         );
+                        musicDataNotifier.value++;
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
