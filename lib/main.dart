@@ -2100,6 +2100,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _isInitialized = false;
   bool _showControls = true;
   Timer? _hideTimer;
+  bool _hasError = false;           // 👈 नया
+  String _errorMessage = '';        // 👈 नया
 
   double _speed = 1.0;
   double _volume = 1.0;
@@ -2303,28 +2305,33 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   @override
-  void dispose() {
-    final title = widget.title;
-    final url = widget.videoUrl;
-    final position = _controller.value.position.inSeconds;
-    final duration = _controller.value.duration.inSeconds;
+void dispose() {
+  final title = widget.title;
+  final url = widget.videoUrl;
+  final position = _controller.value.position.inSeconds;
+  final duration = _controller.value.duration.inSeconds;
 
-    _hideTimer?.cancel();
-    _controller.dispose();
+  _hideTimer?.cancel();
+  _controller.dispose();
 
-    if (!_replacing) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
+  // 👇 नया: Brightness वापस default पर
+  try {
+    ScreenBrightness().resetScreenBrightness();
+  } catch (_) {}
 
-    if (position >= 5) {
-      _saveProgressData(title, url, position, duration);
-    }
-    super.dispose();
+  if (!_replacing) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
+
+  if (position >= 5) {
+    _saveProgressData(title, url, position, duration);
+  }
+  super.dispose();
+}
 
   @override
   Widget build(BuildContext context) {
