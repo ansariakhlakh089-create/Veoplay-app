@@ -17,6 +17,7 @@ import 'package:audio_session/audio_session.dart';
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
 final AudioPlayer globalAudioPlayer = AudioPlayer();
 final Map<int, String> globalSongNames = {};
+final ValueNotifier<int> musicDataNotifier = ValueNotifier<int>(0);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -244,12 +245,14 @@ class _HomeScreenState extends State<HomeScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     recentChangedNotifier.addListener(_onRecentChanged);
+    musicDataNotifier.addListener(_onMusicDataChanged);
     _seqSub = globalAudioPlayer.sequenceStateStream.listen((s) {
       final tag = s?.currentSource?.tag;
       if (tag is MediaItem) {
         final id = int.tryParse(tag.id);
         if (id != null) _addRecentSong(id);
       }
+      if (mounted) setState(() {});
     });
     _loadVideos();
     _loadRecent();
@@ -262,6 +265,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void dispose() {
     recentChangedNotifier.removeListener(_onRecentChanged);
+    musicDataNotifier.removeListener(_onMusicDataChanged);
     _seqSub?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -1249,6 +1253,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _songTile(int index) {
     final song = _songs[index];
+    final nowTag = globalAudioPlayer.sequenceState?.currentSource?.tag;
+    final isPlaying = nowTag is MediaItem && nowTag.id == song.id.toString();
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -1271,7 +1277,11 @@ class _HomeScreenState extends State<HomeScreen>
                 color: const Color(0xff2D8CFF).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.music_note, color: Colors.white),
+              child: Icon(
+                  isPlaying ? Icons.graphic_eq : Icons.music_note,
+                  color: isPlaying
+                      ? const Color(0xff2D8CFF)
+                      : Colors.white),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1393,7 +1403,103 @@ class _HomeScreenState extends State<HomeScreen>
       ),
     );
   }
+  void _onMusicDataChanged() async {
+    await _loadMusicData();
+    if (mounted) setState(() {});
+  }
 
+  void _openNowPlaying() {
+    final seq =
+        globalAudioPlayer.sequenceState?.sequence ?? <IndexedAudioSource>[];
+    final byId = {for (final s in _songs) s.id: s};
+    final list = <SongModel>[];
+    for (final src in seq) {
+      final t = src.tag;
+      if (t is MediaItem) {
+        final s = byId[int.tryParse(t.id)];
+        if (s != null) list.add(s);
+      }
+    }
+    if (list.isEmpty) return;
+    int idx = 0;
+    final cur = globalAudioPlayer.sequenceState?.currentSource?.tag;
+    if (cur is MediaItem) {
+      final i = list.indexWhere((s) => s.id.toString() == cur.id);
+      if (i >= 0) idx = i;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AudioPlayerScreen(songs: list, initialIndex: idx),
+      ),
+    );
+  }
+
+  Widget _miniPlayer() {
+    return StreamBuilder<SequenceState?>(
+      stream: globalAudioPlayer.sequenceStateStream,
+      builder: (context, snapshot) {
+        final tag = snapshot.data?.currentSource?.tag;
+        if (tag is! MediaItem) return const SizedBox.shrink();
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _openNowPlaying,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xff1A1D24),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: const Color(0xff2D8CFF).withOpacity(0.4)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.graphic_eq, color: Color(0xff2D8CFF)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tag.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold)),
+                      Text(tag.artist ?? "Unknown",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: Colors.white54, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                StreamBuilder<bool>(
+                  stream: globalAudioPlayer.playingStream,
+                  builder: (context, snap) {
+                    final playing = snap.data ?? false;
+                    return IconButton(
+                      onPressed: () => playing
+                          ? globalAudioPlayer.pause()
+                          : globalAudioPlayer.play(),
+                      icon: Icon(
+                          playing ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 30),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
   Widget _buildMusicTab() {
     if (_songs.isEmpty) {
       return const Center(
@@ -1462,6 +1568,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
         Expanded(child: _buildMusicContent()),
+        _miniPlayer(),
       ],
     );
   }
@@ -3020,6 +3127,7 @@ await _player.play();
     await prefs.setStringList(
       'favorite_songs',
       list.map((e) => e.toString()).toList(),
+      musicDataNotifier.value++;
     );
 
     if (mounted) {
@@ -3272,6 +3380,7 @@ await _player.play();
                     playlists.entries
                         .map((e) => '${e.key}|||${e.value.join(",")}')
                         .toList(),
+                    musicDataNotifier.value++;
                   );
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -3312,6 +3421,7 @@ await _player.play();
                               .map((e) =>
                                   '${e.key}|||${e.value.join(",")}')
                               .toList(),
+                          musicDataNotifier.value++;
                         );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
