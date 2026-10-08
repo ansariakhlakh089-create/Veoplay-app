@@ -1473,14 +1473,21 @@ class _HomeScreenState extends State<HomeScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tag.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold)),
-                      Text(tag.artist ?? "Unknown",
+  Builder(builder: (_) {
+    final id = int.tryParse(tag.id);
+    final displayTitle = (id != null &&
+            globalSongNames.containsKey(id))
+        ? globalSongNames[id]!
+        : tag.title;
+    return Text(displayTitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.bold));
+  }),
+  Text(tag.artist ?? "Unknown",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
