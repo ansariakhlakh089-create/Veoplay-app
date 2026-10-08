@@ -1742,7 +1742,6 @@ class _HomeScreenState extends State<HomeScreen>
           onRefresh: () async {
             setState(() {
               _audioLoaded = false;
-              _songs = [];
             });
             await _loadSongs();
           },
