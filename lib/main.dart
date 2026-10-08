@@ -298,16 +298,25 @@ bool _audioLoading = false; // 👈 नया
   }
 
   Future<void> _loadSongs() async {
-  if (_audioLoaded) return;
-  final OnAudioQuery audioQuery = OnAudioQuery();
-  bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
-  if (!hasPermission) {
-    if (mounted) {
-      setState(() => _audioPermissionDenied = true);
-    }
-    return;
+if (_audioLoaded) return;
+if (mounted) setState(() => _audioLoading = true); // 👈 नया
+final OnAudioQuery audioQuery = OnAudioQuery();
+bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
+if (!hasPermission) {
+  if (mounted) {
+    setState(() {
+      _audioPermissionDenied = true;
+      _audioLoading = false; // 👈
+    });
   }
-  if (mounted) setState(() => _audioPermissionDenied = false);
+  return;
+}
+if (mounted) {
+  setState(() {
+    _audioPermissionDenied = false;
+    // _audioLoading बाद में false होगा, डेटा मिलने पर
+  });
+}
   final songs = await audioQuery.querySongs(
       sortType: SongSortType.TITLE,
       orderType: OrderType.ASC_OR_SMALLER,
