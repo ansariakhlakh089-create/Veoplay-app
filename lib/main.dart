@@ -3803,6 +3803,7 @@ await prefs.setStringList(
           ],
         ),
       ),
+      // 👇 SingleChildScrollView का closing — बस closing bracket के पहले `)` हटा देना, and check karna
     );
   }
 }
