@@ -1488,28 +1488,30 @@ class _HomeScreenState extends State<HomeScreen>
                     ],
                   ),
                 ),
-                StreamBuilder<bool>(
-                  stream: globalAudioPlayer.playingStream,
-                  builder: (context, snap) {
-                    final playing = snap.data ?? false;
-                    return IconButton(
-                      onPressed: () => playing
-                          ? globalAudioPlayer.pause()
-                          : globalAudioPlayer.play(),
-                      icon: Icon(
-                          playing ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
-                          size: 30),
-                    );
-                  },
-                ),
-              ],
-            ),
+               StreamBuilder<bool>(
+                stream: globalAudioPlayer.playingStream,
+                builder: (context, snap) {
+                  final playing = snap.data ?? false;
+                  return IconButton(
+                    onPressed: () => playing
+                        ? globalAudioPlayer.pause()
+                        : globalAudioPlayer.play(),
+                    icon: Icon(
+                        playing ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 30),
+                  );
+                },
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+      );  // 👈 StreamBuilder का closing
+    },    // 👈 ValueListenableBuilder का builder closing
+  );      // 👈 ValueListenableBuilder का closing
+}         // 👈 method closing
   
   Widget _buildMusicTab() {
   if (_audioPermissionDenied) {
