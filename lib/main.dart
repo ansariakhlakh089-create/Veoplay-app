@@ -2416,14 +2416,15 @@ void dispose() {
   final duration = _controller.value.duration.inSeconds;
 
   _hideTimer?.cancel();
-WakelockPlus.disable(); // 👈 नया
-_controller.dispose();
-  // 👇 नया: Brightness वापस default पर
-  try {
-    ScreenBrightness().resetScreenBrightness();
-  } catch (_) {}
+  _controller.dispose();
 
+  // 👇 Fix: सिर्फ तब clean-up करो जब हम सच में बाहर जा रहे हों
+  // (नया वीडियो खोल रहे हों तो नहीं)
   if (!_replacing) {
+    WakelockPlus.disable();
+    try {
+      ScreenBrightness().resetScreenBrightness();
+    } catch (_) {}
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
