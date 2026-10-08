@@ -1509,12 +1509,47 @@ class _HomeScreenState extends State<HomeScreen>
   }
   
   Widget _buildMusicTab() {
-    if (_songs.isEmpty) {
-      return const Center(
-        child: Text("कोई गाना नहीं मिला",
-            style: TextStyle(color: Colors.white54, fontSize: 16)),
-      );
-    }
+  if (_audioPermissionDenied) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.music_off, color: Colors.white54, size: 60),
+            const SizedBox(height: 16),
+            const Text(
+              "Music access permission चाहिए",
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => PhotoManager.openSetting(),
+              child: const Text("Settings खोलें"),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _audioPermissionDenied = false;
+                  _audioLoaded = false;
+                });
+                _loadSongs();
+              },
+              child: const Text("फिर कोशिश करें"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  if (_songs.isEmpty) {
+    return const Center(
+      child: Text("कोई गाना नहीं मिला",
+          style: TextStyle(color: Colors.white54, fontSize: 16)),
+    );
+  }
     const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
     final recent = _songsByIds(_recentSongIds);
     final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
