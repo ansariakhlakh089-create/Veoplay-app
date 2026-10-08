@@ -2185,10 +2185,11 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _showGestureIndicator = false;
   String _gestureText = '';
 
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+@override
+void initState() {
+  super.initState();
+  _loadSavedSpeed(); // 👈 नया
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.landscapeLeft,
