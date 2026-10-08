@@ -2125,8 +2125,10 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     ]);
     // वॉल्यूम लेना (एरर हैंडलिंग के साथ)
     VolumeController().getVolume().then((v) {
-      if (mounted) setState(() => _volume = v);
-    }).catchError((_) {});
+  if (mounted) setState(() => _volume = v);
+}).catchError((_) {});
+
+WakelockPlus.enable(); // 👈 नया
 
     if (widget.videoUrl.startsWith('http')) {
       _controller =
