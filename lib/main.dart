@@ -2376,13 +2376,13 @@ void _startHideTimer() {
           children: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
             return ListTile(
               title: Text('${speed}x'),
-              onTap: () async {
-  _controller.setPlaybackSpeed(speed);
-  setState(() => _speed = speed);
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setDouble('video_speed', speed); // 👈 ये जोड़ो
-  if (context.mounted) Navigator.pop(context);
-},
+          onTap: () async {
+              _controller.setPlaybackSpeed(speed);
+             setState(() => _speed = speed);
+             final prefs = await SharedPreferences.getInstance();
+             await prefs.setDouble('video_speed', speed); // 👈 ये line
+             if (context.mounted) Navigator.pop(context);
+              },
             );
           }).toList(),
         ),
