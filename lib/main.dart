@@ -1310,6 +1310,59 @@ if (mounted) {
     setState(() => _playlists.remove(name));
     await _savePlaylists();
   }
+ 
+// 👇 Playlist rename
+Future<void> _renamePlaylist(String oldName) async {
+  final controller = TextEditingController(text: oldName);
+  final newName = await showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: const Color(0xff1A1D24),
+      title: const Text("Playlist का नाम बदलें",
+          style: TextStyle(color: Colors.white)),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        style: const TextStyle(color: Colors.white),
+        decoration: const InputDecoration(hintText: "नया नाम"),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel")),
+        TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text("Save")),
+      ],
+    ),
+  );
+  if (newName == null || newName.isEmpty) return;
+  final clean = newName.replaceAll('|', '').replaceAll(',', '').trim();
+  if (clean.isEmpty || clean == oldName) return;
+  if (_playlists.containsKey(clean)) {
+    _toast("इस नाम की Playlist पहले से है");
+    return;
+  }
+  setState(() {
+    final list = _playlists.remove(oldName) ?? [];
+    _playlists[clean] = list;
+  });
+  await _savePlaylists();
+  _toast("नाम बदल दिया");
+}
+
+// 👇 Playlist से गाना हटाओ
+Future<void> _removeSongFromPlaylist(
+    String playlistName, SongModel song) async {
+  final list = _playlists[playlistName] ?? [];
+  if (!list.contains(song.id)) return;
+  setState(() {
+    list.remove(song.id);
+    _playlists[playlistName] = list;
+  });
+  await _savePlaylists();
+  _toast("'$playlistName' से हटा दिया");
+}
 
   List<SongModel> _songsByIds(List<int> ids) {
     final byId = {for (final s in _songs) s.id: s};
