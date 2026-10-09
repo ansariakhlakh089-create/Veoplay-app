@@ -2647,8 +2647,8 @@ void dispose() {
   final duration = _controller.value.duration.inSeconds;
 
   _hideTimer?.cancel();
-  _controller.dispose();
-
+_sleepTimer?.cancel();   // 👈 यह जोड़ो
+_controller.dispose();
   // 👇 Fix: सिर्फ तब clean-up करो जब हम सच में बाहर जा रहे हों
   // (नया वीडियो खोल रहे हों तो नहीं)
   if (!_replacing) {
