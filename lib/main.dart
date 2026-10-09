@@ -3073,12 +3073,34 @@ GestureDetector(
                         ),
                       ),
                     ),
-                ],
+                  // 👇 Lock indicator (सिर्फ locked होने पर दिखेगा)
+                  if (_locked)
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: _toggleLock,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.lock,
+                            color: Colors.amber,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],   // 👈 यह Stack का children closing (जो पहले से था)
               ),
             ),
     );
   }
 }
+
 // ==================== वीडियो थंबनेल विजेट ====================
 class VideoThumbnailWidget extends StatefulWidget {
   final String videoPath;
