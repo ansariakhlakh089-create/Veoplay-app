@@ -1129,6 +1129,7 @@ if (mounted) {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
         'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
+    musicDataNotifier.value++;
   }
 
   Future<void> _savePlaylists() async {
