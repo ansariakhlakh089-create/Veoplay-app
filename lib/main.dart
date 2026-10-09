@@ -1816,24 +1816,32 @@ if (_audioPermissionDenied) {
                       final name = names[index];
                       final list = _songsByIds(_playlists[name] ?? []);
                       return _groupTile(
-                        Icons.queue_music,
-                        name,
-                        list.length,
-                        () => _openSongList(name, list),
-                        trailing: IconButton(
-                          onPressed: () => _deletePlaylist(name),
-                          icon: const Icon(Icons.delete_outline,
-                              color: Colors.white54),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      );
-    }
+  Icons.queue_music,
+  name,
+  list.length,
+  () => _openSongList(name, list, playlistName: name),
+  trailing: PopupMenuButton<String>(
+    icon: const Icon(Icons.more_vert,
+        color: Colors.white60, size: 20),
+    color: const Color(0xff1A1D24),
+    onSelected: (v) {
+      if (v == 'rename') _renamePlaylist(name);
+      if (v == 'delete') _deletePlaylist(name);
+    },
+    itemBuilder: (_) => const [
+      PopupMenuItem(
+        value: 'rename',
+        child: Text('Rename',
+            style: TextStyle(color: Colors.white)),
+      ),
+      PopupMenuItem(
+        value: 'delete',
+        child: Text('Delete',
+            style: TextStyle(color: Colors.redAccent)),
+      ),
+    ],
+  ),
+);
     if (_musicSubTab == 2 || _musicSubTab == 3) {
       final groups = <String, List<SongModel>>{};
       for (final s in _songs) {
