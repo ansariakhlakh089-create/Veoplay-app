@@ -2954,7 +2954,7 @@ if (_showGestureIndicator)
         // Play as audio (Phase later)
         break;
       case 5:
-        // PiP (Phase later)
+        _enterPip();     // 👈 यह जोड़ो
         break;
       case 6:
         // Share
