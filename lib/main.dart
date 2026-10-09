@@ -2831,12 +2831,39 @@ if (_showGestureIndicator)
                             icon: const Icon(Icons.closed_caption, color: Colors.white),
                             onPressed: () {},
                           ),
-                          PopupMenuButton(
-                            icon: const Icon(Icons.more_vert, color: Colors.white),
-                            itemBuilder: (_) => const [
-                              PopupMenuItem(value: 1, child: Text('Share')),
-                            ],
-                          ),
+                          PopupMenuButton<int>(
+  icon: const Icon(Icons.more_vert, color: Colors.white),
+  onSelected: (value) {
+    switch (value) {
+      case 1:
+        _showSpeedDialog();
+        break;
+      case 2:
+        _toggleLock();
+        break;
+      case 3:
+        _showSleepTimerDialog();
+        break;
+      case 4:
+        // Play as audio (Phase later)
+        break;
+      case 5:
+        // PiP (Phase later)
+        break;
+      case 6:
+        // Share
+        break;
+    }
+  },
+  itemBuilder: (_) => const [
+    PopupMenuItem(value: 1, child: Text('Playback speed')),
+    PopupMenuItem(value: 2, child: Text('Lock')),
+    PopupMenuItem(value: 3, child: Text('Sleep timer')),
+    PopupMenuItem(value: 4, child: Text('Play as audio')),
+    PopupMenuItem(value: 5, child: Text('Pop-Up player')),
+    PopupMenuItem(value: 6, child: Text('Share')),
+  ],
+),
                         ],
                       ),
                     ),
