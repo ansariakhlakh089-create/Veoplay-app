@@ -2377,6 +2377,8 @@ void _startHideTimer() {
     if (!_hasPrevious) return;
     final prevItem = widget.playlist![widget.currentIndex! - 1];
     _replacing = true;
+    final goLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -2385,6 +2387,7 @@ void _startHideTimer() {
           title: prevItem['title']!,
           playlist: widget.playlist,
           currentIndex: widget.currentIndex! - 1,
+          startLandscape: goLandscape,
         ),
       ),
     );
