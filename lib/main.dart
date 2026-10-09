@@ -2967,6 +2967,7 @@ if (_showGestureIndicator)
     PopupMenuItem(value: 3, child: Text('Sleep timer')),
     PopupMenuItem(value: 4, child: Text('Play as audio')),
     PopupMenuItem(value: 5, child: Text('Pop-Up player')),
+    PopupMenuItem(value: 4, child: Text('Pop-Up player')),  // 👈 नया
     PopupMenuItem(value: 6, child: Text('Share')),
   ],
 ),
