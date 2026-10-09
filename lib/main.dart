@@ -2879,13 +2879,34 @@ void dispose() {
                                 ),
                                 const SizedBox(width: 16),
                                 IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.replay_10,
-                                      color: Colors.white, size: 24),
-                                  onPressed: _skipBackward,
-                                ),
-                                GestureDetector(
+  padding: EdgeInsets.zero,
+  constraints: const BoxConstraints(),
+  icon: const Icon(Icons.replay_10,
+      color: Colors.white, size: 24),
+  onPressed: _skipBackward,
+),
+// 👇 यह नया loop button
+IconButton(
+  padding: EdgeInsets.zero,
+  constraints: const BoxConstraints(),
+  icon: Icon(
+    Icons.repeat,
+    color: _isLooping
+        ? const Color(0xff2D8CFF)
+        : Colors.white70,
+    size: 24,
+  ),
+  onPressed: () async {
+    final next = !_isLooping;
+    setState(() => _isLooping = next);
+    _controller.setLooping(next);
+    final p = await SharedPreferences
+        .getInstance();
+    await p.setBool('video_loop', next);
+  },
+),
+// 👈 नया button खत्म
+GestureDetector(
                                   onTap: _togglePlay,
                                   child: Container(
                                     width: 50,
