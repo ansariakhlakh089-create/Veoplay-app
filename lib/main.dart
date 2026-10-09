@@ -3146,9 +3146,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 );
 await _player.play();
     } catch (e) {
-      if (mounted) setState(() => _setupError = e.toString());
+      debugPrint('Song setup error: $e');
+      if (mounted) {
+        final messenger = ScaffoldMessenger.of(context);
+        Navigator.pop(context);
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text("ये गाना नहीं चल पाया, फ़ाइल हट चुकी हो सकती है"),
+          ),
+        );
+      }
     }
-  }
 
   void _togglePlay() {
     if (_player.playing) {
