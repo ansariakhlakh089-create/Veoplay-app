@@ -2207,6 +2207,7 @@ class RealVideoPlayer extends StatefulWidget {
   final int startPosition;
   final List<Map<String, String>>? playlist;
   final int? currentIndex;
+  final bool startLandscape;
 
   const RealVideoPlayer({
     Key? key,
@@ -2215,6 +2216,7 @@ class RealVideoPlayer extends StatefulWidget {
     this.startPosition = 0,
     this.playlist,
     this.currentIndex,
+    this.startLandscape = false,
   }) : super(key: key);
 
   @override
@@ -2243,12 +2245,15 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
 void initState() {
   super.initState();
   _loadSavedSpeed(); // 👈 नया
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+  if (widget.startLandscape) {
+      _isFullscreen = true;
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+  }
     // वॉल्यूम लेना (एरर हैंडलिंग के साथ)
         VolumeController().getVolume().then((v) {
   if (mounted) setState(() => _volume = v);
