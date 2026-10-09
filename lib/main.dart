@@ -2522,10 +2522,13 @@ void dispose() {
     onTap: _toggleControls,
     onDoubleTapDown: (details) {
       final w = MediaQuery.of(context).size.width;
-      if (details.globalPosition.dx < w / 2) {
+      final x = details.globalPosition.dx;
+      if (x < w / 3) {
         _skipBackward();
-      } else {
+      } else if (x > w * 2 / 3) {
         _skipForward();
+      } else {
+        _togglePlay();
       }
     },
     onVerticalDragUpdate: (details) {
