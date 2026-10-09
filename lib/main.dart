@@ -2746,7 +2746,6 @@ void dispose() {
                             icon: const Icon(Icons.more_vert, color: Colors.white),
                             itemBuilder: (_) => const [
                               PopupMenuItem(value: 1, child: Text('Share')),
-                              PopupMenuItem(value: 2, child: Text('Download')),
                             ],
                           ),
                         ],
