@@ -2037,28 +2037,43 @@ if (_audioPermissionDenied) {
   );
   if (confirm != true) return;
 
-  // 👇 नया: File से सीधे delete (MediaStore update अपने आप होगा)
+  // 👇 वीडियो जैसा तरीका: पहले सिस्टम से delete
+  bool removed = false;
   try {
-    final file = File(song.data);
-    if (await file.exists()) {
-      await file.delete();
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("फ़ाइल नहीं मिली")),
-        );
-      }
-      return;
-    }
+    final result =
+        await PhotoManager.editor.deleteWithIds([song.id.toString()]);
+    removed = result.isNotEmpty;
   } catch (e) {
-    debugPrint("Song delete error: $e");
+    debugPrint("Song delete (system) error: $e");
+  }
+
+  // सिस्टम से नहीं हुआ तो फाइल से कोशिश; फाइल पहले ही हटी हो तो भी लिस्ट साफ़ करो
+  if (!removed) {
+    try {
+      final file = File(song.data);
+      if (await file.exists()) {
+        await file.delete();
+      }
+      removed = true;
+    } on PathNotFoundException {
+      removed = true;
+    } catch (e) {
+      debugPrint("Song delete (file) error: $e");
+    }
+  }
+
+  if (!removed) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("डिलीट नहीं हो पाया: $e")),
+        const SnackBar(content: Text("गाना डिलीट नहीं हो पाया (v2)")),
       );
     }
     return;
   }
+
+  try {
+    await PhotoManager.editor.android.removeAllNoExistsAsset();
+  } catch (_) {}
 
   globalSongNames.remove(song.id);
   await _saveSongNames();
