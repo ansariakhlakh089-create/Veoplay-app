@@ -1267,7 +1267,14 @@ if (mounted) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (_) => SongListScreen(title: title, songs: songs)),
+          builder: (_) => SongListScreen(
+                title: title,
+                songs: songs,
+                onMenu: _showSongOptions,
+                keep: (s) =>
+                    _songs.any((x) => x.id == s.id) &&
+                    (title != "Favorite" || _favoriteIds.contains(s.id)),
+              )),
     );
   }
 
