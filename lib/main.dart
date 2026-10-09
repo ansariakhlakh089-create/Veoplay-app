@@ -2318,6 +2318,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _isLooping = false;
   bool _autoNextTriggered = false;
   bool _locked = false;              // 👈 Lock state
+Timer? _sleepTimer;                // 👈 Sleep timer
 
 @override
 void initState() {
