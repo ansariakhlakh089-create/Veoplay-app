@@ -614,7 +614,7 @@ if (mounted) {
                       },
                       child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
