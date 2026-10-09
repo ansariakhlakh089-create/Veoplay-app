@@ -1374,21 +1374,26 @@ Future<void> _removeSongFromPlaylist(
     return out;
   }
 
-  void _openSongList(String title, List<SongModel> songs) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (_) => SongListScreen(
-                title: title,
-                songs: songs,
-                onMenu: _showSongOptions,
-                keep: (s) =>
-                    _songs.any((x) => x.id == s.id) &&
-                    (title != "Favorite" || _favoriteIds.contains(s.id)),
-              )),
-    );
+  void _openSongList(String title, List<SongModel> songs,
+    {String? playlistName}) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (_) => SongListScreen(
+              title: title,
+              songs: songs,
+              onMenu: _showSongOptions,
+              keep: (s) =>
+                  _songs.any((x) => x.id == s.id) &&
+                  (title != "Favorite" || _favoriteIds.contains(s.id)),
+              playlistName: playlistName,                       // 👈 नया
+              onRemoveFromPlaylist: playlistName == null        // 👈 नया
+                  ? null
+                  : (s) => _removeSongFromPlaylist(playlistName, s),
+            )),
+  );
   }
-
+  
   Widget _songTile(int index) {
     final song = _songs[index];
     final nowTag = globalAudioPlayer.sequenceState?.currentSource?.tag;
