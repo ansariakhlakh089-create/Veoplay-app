@@ -3212,7 +3212,8 @@ await _player.play();
         );
       }
     }
-
+  }
+    
   void _togglePlay() {
     if (_player.playing) {
       _player.pause();
