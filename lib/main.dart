@@ -2416,6 +2416,60 @@ void _startHideTimer() {
   });
 }
 
+  // 👇 Vertical indicator widget (Volume/Brightness के लिए)
+Widget _verticalIndicator({
+  required IconData icon,
+  required double value,
+  required Color color,
+}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+    decoration: BoxDecoration(
+      color: Colors.black.withOpacity(0.75),
+      borderRadius: BorderRadius.circular(24),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Percentage
+        Text(
+          '${(value * 100).toInt()}%',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Vertical bar
+        Container(
+          width: 8,
+          height: 160,
+          decoration: BoxDecoration(
+            color: Colors.white24,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: FractionallySizedBox(
+              heightFactor: value.clamp(0.0, 1.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Icon
+        Icon(icon, color: Colors.white, size: 30),
+      ],
+    ),
+  );
+}
+
   void _toggleControls() {
     setState(() {
       _showControls = !_showControls;
