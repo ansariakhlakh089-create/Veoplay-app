@@ -2315,7 +2315,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _replacing = false;
   bool _showGestureIndicator = false;
   String _gestureText = '';
-  bool _isLooping = true;      // 👈 यह नई line
+  bool _isLooping = false;
+  bool _autoNextTriggered = false;   // 👈 यह नई line
 
 @override
 void initState() {
