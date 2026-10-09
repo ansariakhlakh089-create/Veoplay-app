@@ -1514,6 +1514,11 @@ if (mounted) {
                     ],
                   ),
                 ),
+              IconButton(
+                  onPressed: () => globalAudioPlayer.seekToPrevious(),
+                  icon: const Icon(Icons.skip_previous,
+                      color: Colors.white, size: 28),
+                ),
                StreamBuilder<bool>(
                 stream: globalAudioPlayer.playingStream,
                 builder: (context, snap) {
