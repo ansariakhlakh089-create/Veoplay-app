@@ -4345,15 +4345,28 @@ class _SongListScreenState extends State<SongListScreen> {
                             ],
                           ),
                         ),
-                        if (widget.onMenu != null)
-                          IconButton(
-                            onPressed: () => widget.onMenu!(song),
-                            icon: const Icon(Icons.more_vert,
-                                color: Colors.white60, size: 20),
-                            padding: const EdgeInsets.only(left: 8),
-                            constraints: const BoxConstraints(),
-                          ),
-                      ],
+                          // 👇 Remove from playlist button (सिर्फ playlist में दिखेगा)
+  if (widget.playlistName != null &&
+      widget.onRemoveFromPlaylist != null)
+    IconButton(
+      onPressed: () {
+        widget.onRemoveFromPlaylist!(song);
+        setState(() {});
+      },
+      icon: const Icon(Icons.remove_circle_outline,
+          color: Colors.redAccent, size: 20),
+      padding: const EdgeInsets.only(left: 8),
+      constraints: const BoxConstraints(),
+    ),
+  if (widget.onMenu != null)
+    IconButton(
+      onPressed: () => widget.onMenu!(song),
+      icon: const Icon(Icons.more_vert,
+          color: Colors.white60, size: 20),
+      padding: const EdgeInsets.only(left: 8),
+      constraints: const BoxConstraints(),
+    ),
+],
                     ),
                   ),
                 );
