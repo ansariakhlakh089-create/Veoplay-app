@@ -278,6 +278,8 @@ bool _audioLoading = false; // 👈 नया
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _loadRecent();
+      _quickSyncVideos();
+      _quickSyncSongs();
     }
   }
 
@@ -298,7 +300,10 @@ bool _audioLoading = false; // 👈 नया
   }
 
   Future<void> _loadSongs() async {
-if (_audioLoaded) return;
+if (_audioLoaded) {
+  _quickSyncSongs();
+  return;
+}
 if (mounted) setState(() => _audioLoading = true); // 👈 नया
 final OnAudioQuery audioQuery = OnAudioQuery();
 bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
@@ -460,7 +465,7 @@ if (mounted) {
     for (final asset in assets) {
       final file = await asset.file;
       processed++;
-      if (file != null) {
+      if (file != null && file.existsSync()) {
         final duration = asset.videoDuration;
         final minutes = duration.inMinutes.toString().padLeft(2, '0');
         final seconds =
@@ -601,6 +606,9 @@ if (mounted) {
                     )
                   : RefreshIndicator(
                       onRefresh: () async {
+                      try {
+                        await PhotoManager.editor.android.removeAllNoExistsAsset();
+                      } catch (_) {}
                         await _scanVideos(silent: true);
                         await _loadRecent();
                       },
@@ -1831,6 +1839,9 @@ if (_audioPermissionDenied) {
           color: const Color(0xff2D8CFF),
           backgroundColor: const Color(0xff1A1D24),
           onRefresh: () async {
+       try {
+             await PhotoManager.editor.android.removeAllNoExistsAsset();
+          } catch (_) {}
             setState(() {
               _audioLoaded = false;
             });
