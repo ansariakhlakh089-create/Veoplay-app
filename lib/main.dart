@@ -2408,10 +2408,7 @@ void _startHideTimer() {
 
   void _toggleFullscreen() {
     if (_isFullscreen) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     } else {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
