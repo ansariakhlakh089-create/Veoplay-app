@@ -2603,7 +2603,6 @@ Widget _verticalIndicator({
     );
   }
 
-  
 void _toggleLock() {
   setState(() {
     _locked = !_locked;
@@ -2618,6 +2617,72 @@ void _toggleLock() {
       content: Text(_locked ? "🔒 Locked" : "🔓 Unlocked"),
       duration: const Duration(seconds: 1),
     ),
+  );
+}
+  
+void _showSleepTimerDialog() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xff1A1D24),
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                "Sleep Timer",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            for (final min in [5, 10, 15, 30, 60])
+              ListTile(
+                leading: const Icon(Icons.timer, color: Colors.white70),
+                title: Text(
+                  '$min मिनट बाद रुकेगा',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _startSleepTimer(min);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.cancel, color: Colors.redAccent),
+              title: const Text(
+                'Sleep Timer हटाओ',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _sleepTimer?.cancel();
+                _sleepTimer = null;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Sleep timer हटाया')),
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _startSleepTimer(int minutes) {
+  _sleepTimer?.cancel();
+  _sleepTimer = Timer(Duration(minutes: minutes), () {
+    if (mounted) {
+      _controller.pause();
+      Navigator.pop(context);
+    }
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('$minutes मिनट बाद video रुकेगा')),
   );
 }
   
