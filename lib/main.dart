@@ -2056,6 +2056,7 @@ if (_audioPermissionDenied) {
 
   if (!mounted) return;
   setState(() => _songs.removeWhere((s) => s.id == song.id));
+    musicDataNotifier.value++;
   }
   void _showVideoDetails(Map<String, String> item) {
     showDialog(
