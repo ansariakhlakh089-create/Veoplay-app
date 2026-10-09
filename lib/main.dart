@@ -3820,7 +3820,15 @@ await prefs.setStringList(
   class SongListScreen extends StatefulWidget {
   final String title;
   final List<SongModel> songs;
-  const SongListScreen({super.key, required this.title, required this.songs});
+  final void Function(SongModel song)? onMenu;
+  final bool Function(SongModel song)? keep;
+  const SongListScreen({
+    super.key,
+    required this.title,
+    required this.songs,
+    this.onMenu,
+    this.keep,
+  });
 
   @override
   State<SongListScreen> createState() => _SongListScreenState();
@@ -3828,19 +3836,37 @@ await prefs.setStringList(
 
 class _SongListScreenState extends State<SongListScreen> {
   @override
+  void initState() {
+    super.initState();
+    musicDataNotifier.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    musicDataNotifier.removeListener(_refresh);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final songs =
+        widget.keep == null ? widget.songs : widget.songs.where(widget.keep!).toList();
     return Scaffold(
       backgroundColor: const Color(0xff0B0D12),
       appBar: AppBar(backgroundColor: Colors.transparent, title: Text(widget.title)),
-      body: widget.songs.isEmpty
+      body: songs.isEmpty
           ? const Center(
               child: Text("यहाँ अभी कोई गाना नहीं है",
                   style: TextStyle(color: Colors.white54, fontSize: 16)))
           : ListView.builder(
               padding: const EdgeInsets.all(18),
-              itemCount: widget.songs.length,
+              itemCount: songs.length,
               itemBuilder: (context, index) {
-                final song = widget.songs[index];
+                final song = songs[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: GestureDetector(
@@ -3850,7 +3876,7 @@ class _SongListScreenState extends State<SongListScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => AudioPlayerScreen(
-                            songs: widget.songs, initialIndex: index),
+                              songs: songs, initialIndex: index),
                         ),
                       );
                     },
@@ -3863,8 +3889,7 @@ class _SongListScreenState extends State<SongListScreen> {
                             color: const Color(0xff2D8CFF).withOpacity(0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.music_note,
-                              color: Colors.white),
+                          child: const Icon(Icons.music_note, color: Colors.white),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -3885,6 +3910,14 @@ class _SongListScreenState extends State<SongListScreen> {
                             ],
                           ),
                         ),
+                        if (widget.onMenu != null)
+                          IconButton(
+                            onPressed: () => widget.onMenu!(song),
+                            icon: const Icon(Icons.more_vert,
+                                color: Colors.white60, size: 20),
+                            padding: const EdgeInsets.only(left: 8),
+                            constraints: const BoxConstraints(),
+                          ),
                       ],
                     ),
                   ),
