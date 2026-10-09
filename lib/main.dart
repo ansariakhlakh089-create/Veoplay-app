@@ -2602,6 +2602,24 @@ Widget _verticalIndicator({
     );
   }
 
+  
+void _toggleLock() {
+  setState(() {
+    _locked = !_locked;
+    if (_locked) {
+      _showControls = false;
+    } else {
+      _startHideTimer();
+    }
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(_locked ? "🔒 Locked" : "🔓 Unlocked"),
+      duration: const Duration(seconds: 1),
+    ),
+  );
+}
+  
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('recent_title', widget.title);
