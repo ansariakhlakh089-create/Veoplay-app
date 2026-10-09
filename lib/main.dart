@@ -2366,8 +2366,9 @@ SharedPreferences.getInstance().then((p) {
   if (widget.startPosition > 0) {
     _controller.seekTo(Duration(seconds: widget.startPosition));
   }
-  _controller.setPlaybackSpeed(_speed);   // 👈 यही नई line जोड़ो   
-  _controller.play();
+  _controller.setPlaybackSpeed(_speed);
+_controller.setLooping(_isLooping);     // 👈 यह नई line जोड़ो
+_controller.play();
 }).catchError((error) {
   debugPrint('Video initialize error: $error');
   if (!mounted) return;
