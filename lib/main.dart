@@ -2763,26 +2763,36 @@ void dispose() {
                     ),
                   ),
 
-                  // ड्रैग सीक इंडिकेटर
-                  if (_isDraggingSeek)
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _dragSeekSeconds >= 0
-                              ? "+${_dragSeekSeconds.toInt()}s"
-                              : "${_dragSeekSeconds.toInt()}s",
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
+                  // 👇 Volume / Brightness indicator (vertical slider)
+if (_showGestureIndicator)
+  Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Left side: Brightness
+          if (_gestureText.contains('Brightness'))
+            _verticalIndicator(
+              icon: Icons.brightness_6,
+              value: _brightness,
+              color: Colors.amber,
+            ),
+          // Right side: Volume
+          if (_gestureText.contains('Volume'))
+            _verticalIndicator(
+              icon: Icons.volume_up,
+              value: _volume,
+              color: Colors.orange,
+            ),
+        ],
+      ),
+    ),
+  ),
 
                   // ----- टॉप बार -----
                   if (_showControls)
