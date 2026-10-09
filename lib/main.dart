@@ -2739,10 +2739,6 @@ void dispose() {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.cast, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                          IconButton(
                             icon: const Icon(Icons.closed_caption, color: Colors.white),
                             onPressed: () {},
                           ),
