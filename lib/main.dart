@@ -2686,6 +2686,26 @@ void _startSleepTimer(int minutes) {
     SnackBar(content: Text('$minutes मिनट बाद video रुकेगा')),
   );
 }
+
+Future<void> _enterPip() async {
+  // Check if PiP available
+  final available = await SimplePip.isPipAvailable;
+  if (!available) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('इस device पर PiP support नहीं है'),
+        ),
+      );
+    }
+    return;
+  }
+
+  // Enter PiP mode with 16:9 aspect ratio
+  await SimplePip.enterPipMode(
+    aspectRatio: const [16, 9],
+  );
+}
   
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
