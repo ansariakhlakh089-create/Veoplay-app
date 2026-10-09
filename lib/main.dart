@@ -1534,6 +1534,11 @@ if (mounted) {
                   );
                 },
               ),
+              IconButton(
+                  onPressed: () => globalAudioPlayer.seekToNext(),
+                  icon: const Icon(Icons.skip_next,
+                      color: Colors.white, size: 28),
+                ),
             ],
           ),
         ),
