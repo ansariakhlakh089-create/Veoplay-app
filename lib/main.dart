@@ -2342,7 +2342,14 @@ try {
   }).catchError((_) {});
 } catch (_) {}
 
-WakelockPlus.enable(); // 👈 नया
+WakelockPlus.enable();
+
+// 👇 Loop setting load करो
+SharedPreferences.getInstance().then((p) {
+  final loop = p.getBool('video_loop') ?? false;
+  if (mounted) setState(() => _isLooping = loop);
+  if (_isInitialized) _controller.setLooping(loop);
+});
 
     if (widget.videoUrl.startsWith('http')) {
       _controller =
