@@ -360,7 +360,7 @@ if (mounted) {
         _sortList(videoList);
         _isLoading = false;
       });
-      // _refreshVideosInBackground();
+      _quickSyncVideos();
       return;
     }
     await _scanVideos();
@@ -368,6 +368,54 @@ if (mounted) {
 
   Future<void> _refreshVideosInBackground() async {
     await _scanVideos(silent: true);
+  }
+  bool _syncingVideos = false;
+  Future<void> _quickSyncVideos() async {
+    if (_syncingVideos) return;
+    _syncingVideos = true;
+    try {
+      final permission = await PhotoManager.requestPermissionExtend();
+      if (!permission.isAuth && !permission.hasAccess) return;
+      PhotoManager.setIgnorePermissionCheck(true);
+      final albums = await PhotoManager.getAssetPathList(
+          type: RequestType.video, onlyAll: true);
+      if (albums.isEmpty) return;
+      final count = await albums[0].assetCountAsync;
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getInt('last_video_count') != count) {
+        await _scanVideos(silent: true);
+      }
+    } catch (e) {
+      debugPrint('Quick video sync error: $e');
+    } finally {
+      _syncingVideos = false;
+    }
+  }
+
+  bool _syncingSongs = false;
+  Future<void> _quickSyncSongs() async {
+    if (!_audioLoaded || _syncingSongs) return;
+    _syncingSongs = true;
+    try {
+      final fresh = await OnAudioQuery().querySongs(
+        sortType: SongSortType.TITLE,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+      );
+      final oldIds = _songs.map((s) => s.id).toSet();
+      final newIds = fresh.map((s) => s.id).toSet();
+      if (oldIds.length == newIds.length && oldIds.containsAll(newIds)) {
+        return;
+      }
+      final sorted = List<SongModel>.of(fresh);
+      _sortSongs(sorted);
+      if (!mounted) return;
+      setState(() => _songs = sorted);
+    } catch (e) {
+      debugPrint('Quick song sync error: $e');
+    } finally {
+      _syncingSongs = false;
+    }
   }
 
   Future<void> _scanVideos({bool silent = false}) async {
@@ -445,6 +493,7 @@ if (mounted) {
     }
 
     await prefs.setStringList('cached_videos', toCache(loaded));
+    await prefs.setInt('last_video_count', count);
     if (mounted) {
       setState(() {
         videoList = loaded;
