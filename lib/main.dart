@@ -4253,17 +4253,21 @@ await prefs.setStringList(
   final List<SongModel> songs;
   final void Function(SongModel song)? onMenu;
   final bool Function(SongModel song)? keep;
+  final String? playlistName;                              // 👈 नया
+  final void Function(SongModel song)? onRemoveFromPlaylist; // 👈 नया
   const SongListScreen({
     super.key,
     required this.title,
     required this.songs,
     this.onMenu,
     this.keep,
+    this.playlistName,                                     // 👈 नया
+    this.onRemoveFromPlaylist,                             // 👈 नया
   });
 
   @override
   State<SongListScreen> createState() => _SongListScreenState();
-}
+  }
 
 class _SongListScreenState extends State<SongListScreen> {
   @override
