@@ -2380,9 +2380,24 @@ _controller.play();
 });
 
     _controller.addListener(() {
-      if (mounted) setState(() {});
-    });
-    _startHideTimer();
+  if (!mounted) return;
+
+  // 👇 Auto-next check
+  final val = _controller.value;
+  if (!_isLooping &&
+      !_autoNextTriggered &&
+      val.isInitialized &&
+      val.duration > Duration.zero &&
+      val.position >= val.duration - const Duration(milliseconds: 800)) {
+    _autoNextTriggered = true;
+    if (_hasNext) {
+      _playNext();
+    }
+  }
+
+  setState(() {});
+});
+_startHideTimer();
   }
 
   Future<void> _loadSavedSpeed() async {
