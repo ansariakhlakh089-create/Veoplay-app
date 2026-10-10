@@ -2971,7 +2971,7 @@ if (_showGestureIndicator)
   ),
 
                   // ----- टॉप बार -----
-                  if (_showControls)
+                  if (_showControls && !_locked)
                     Positioned(
                       top: MediaQuery.of(context).padding.top,
                       left: 8,
