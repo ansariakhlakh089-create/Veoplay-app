@@ -3074,7 +3074,6 @@ onVerticalDragUpdate: _locked ? null : (details) {
                   ScreenBrightness().setScreenBrightness(newBrightness);
                   setState(() => _brightness = newBrightness);
                   _showGestureFor('Brightness ${(newBrightness * 100).toInt()}%');
-                });
                 } else {
   double newVol = (_volume + delta).clamp(0.0, 2.0);
   if (newVol <= 1.0) {
@@ -3089,7 +3088,6 @@ onVerticalDragUpdate: _locked ? null : (details) {
   setState(() {
     _volume = newVol;
     _muted = false;
-  });
   _showGestureFor('Volume ${(newVol * 100).toInt()}%');
   });
  }
