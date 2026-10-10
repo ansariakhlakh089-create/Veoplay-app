@@ -3393,20 +3393,35 @@ Align(
 ),
 const SizedBox(height: 8),
 
-                            // रोटेट बटन (सीक बार के ऊपर)
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: Icon(
-                                    _isFullscreen
-                                        ? Icons.fullscreen_exit
-                                        : Icons.screen_rotation,
-                                    color: Colors.white,
-                                    size: 20),
-                                onPressed: _toggleFullscreen,
-                              ),
+                            // Fit बाईं तरफ, रोटेट दाईं तरफ (सीक बार के ऊपर)
+                            Row(
+                              children: [
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                      _fitMode == 0
+                                          ? Icons.aspect_ratio
+                                          : (_fitMode == 1
+                                              ? Icons.zoom_out_map
+                                              : Icons.fullscreen),
+                                      color: Colors.white,
+                                      size: 20),
+                                  onPressed: _cycleFit,
+                                ),
+                                const Spacer(),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                      _isFullscreen
+                                          ? Icons.fullscreen_exit
+                                          : Icons.screen_rotation,
+                                      color: Colors.white,
+                                      size: 20),
+                                  onPressed: _toggleFullscreen,
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 4),
                             // सीक बार
