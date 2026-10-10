@@ -3310,12 +3310,18 @@ PopupMenuButton<int>(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // 👇 दाईं कतार: Lock, Mute (रोटेट के ऊपर)
+// 👇 दाईं कतार: Order, Lock, Mute, कैंची (रोटेट के ऊपर)
 Align(
   alignment: Alignment.centerRight,
   child: Column(
     mainAxisSize: MainAxisSize.min,
     children: [
+      _sideBtn(
+        Icons.playlist_play,
+        _showVideoList ? const Color(0xff2D8CFF) : Colors.white,
+        () => setState(() => _showVideoList = !_showVideoList),
+      ),
+      const SizedBox(height: 8),
       _sideBtn(
         _locked ? Icons.lock : Icons.lock_open,
         _locked ? Colors.amber : Colors.white,
@@ -3327,10 +3333,13 @@ Align(
         _muted ? Colors.redAccent : Colors.white,
         _toggleMute,
       ),
+      const SizedBox(height: 8),
+      _sideBtn(Icons.content_cut, Colors.white, _takeScreenshot),
     ],
   ),
 ),
-const SizedBox(height: 8),
+const SizedBox(height: 8),Align(
+
                             // रोटेट बटन (सीक बार के ऊपर)
                             Align(
                               alignment: Alignment.centerRight,
