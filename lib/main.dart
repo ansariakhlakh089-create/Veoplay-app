@@ -3221,14 +3221,14 @@ GestureDetector(
                                           ? Colors.white
                                           : Colors.white24,
                                       size: 22),
-                                  onPressed: _hasNext ? _playNext : null,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                                              onPressed: _hasNext ? _playNext : null,
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+),
                   // 👇 Lock indicator (सिर्फ locked होने पर दिखेगा)
                   if (_locked)
                     Positioned(
