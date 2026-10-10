@@ -4350,16 +4350,20 @@ await prefs.setStringList(
   final List<SongModel> songs;
   final void Function(SongModel song)? onMenu;
   final bool Function(SongModel song)? keep;
-  final String? playlistName;                              // 👈 नया
-  final void Function(SongModel song)? onRemoveFromPlaylist; // 👈 नया
+  final String? playlistName;
+  final void Function(SongModel song)? onRemoveFromPlaylist;
+  final Set<int>? favoriteIds;                              // 👈 नया
+  final void Function(SongModel song)? onToggleFavorite;    // 👈 नया
   const SongListScreen({
     super.key,
     required this.title,
     required this.songs,
     this.onMenu,
     this.keep,
-    this.playlistName,                                     // 👈 नया
-    this.onRemoveFromPlaylist,                             // 👈 नया
+    this.playlistName,
+    this.onRemoveFromPlaylist,
+    this.favoriteIds,                                       // 👈 नया
+    this.onToggleFavorite,                                  // 👈 नया
   });
 
   @override
