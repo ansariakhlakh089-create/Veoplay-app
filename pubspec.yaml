@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   wakelock_plus: ^1.4.0
   video_player: ^2.8.1
-  simple_pip_mode: ^0.9.0     # 👈 यह नई line
+  simple_pip_mode: ^1.1.0     # 👈 यह नई line
   cupertino_icons: ^1.0.6
   permission_handler: ^11.3.1
   photo_manager: ^3.1.4
