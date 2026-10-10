@@ -3182,7 +3182,6 @@ onHorizontalDragEnd: _locked ? null : (details) {
               child: Stack(
                 children: [
                   // वीडियो डिस्प्ले
-                  Center(
                     Positioned.fill(
                     child: ClipRect(
                       child: FittedBox(
