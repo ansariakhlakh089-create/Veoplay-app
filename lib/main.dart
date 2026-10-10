@@ -3165,9 +3165,18 @@ onHorizontalDragEnd: _locked ? null : (details) {
                 children: [
                   // वीडियो डिस्प्ले
                   Center(
-                    child: AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
+                    Positioned.fill(
+                    child: ClipRect(
+                      child: FittedBox(
+                        fit: _fitMode == 0
+                            ? BoxFit.contain
+                            : (_fitMode == 1 ? BoxFit.cover : BoxFit.fill),
+                        child: SizedBox(
+                          width: _controller.value.size.width,
+                          height: _controller.value.size.height,
+                          child: VideoPlayer(_controller),
+                        ),
+                      ),
                     ),
                   ),
 
