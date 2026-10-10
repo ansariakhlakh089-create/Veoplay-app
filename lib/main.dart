@@ -3123,14 +3123,7 @@ if (_showGestureIndicator)
   icon: const Icon(Icons.closed_caption, color: Colors.white),
   onPressed: () {},
 ),
-// 👇 Lock button (top bar में)
-IconButton(
-  icon: Icon(
-    _locked ? Icons.lock : Icons.lock_open,
-    color: _locked ? Colors.amber : Colors.white,
-  ),
-  onPressed: _toggleLock,
-),
+
 // 👇 Mute button (नया)
 IconButton(
   icon: Icon(
