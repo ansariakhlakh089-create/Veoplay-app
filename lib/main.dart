@@ -2484,8 +2484,15 @@ _controller.play();
     _autoNextTriggered = true;
     if (_hasNext) {
       _playNext();
+    } else if (_loopMode == 2) {
+      if (widget.playlist != null && widget.playlist!.length > 1) {
+        _playFirst();
+      } else {
+        _controller.seekTo(Duration.zero);
+        _controller.play();
+        _autoNextTriggered = false;
+      }
     }
-  }
 
   setState(() {});
 });
