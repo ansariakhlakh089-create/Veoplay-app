@@ -2558,8 +2558,10 @@ Widget _verticalIndicator({
 }
 
   void _toggleControls() {
-    setState(() {
-      _showControls = !_showControls;
+    if (_showVideoList) {
+      setState(() => _showVideoList = false);
+      return;
+    }
       if (_showControls) _startHideTimer();
     });
   }
