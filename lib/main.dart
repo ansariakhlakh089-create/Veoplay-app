@@ -2904,18 +2904,18 @@ onVerticalDragUpdate: _locked ? null : (details) {
               onVerticalDragEnd: (details) {
                 setState(() => _showGestureIndicator = false);
               },
-              onHorizontalDragStart: (details) {
-                setState(() {
-                  _isDraggingSeek = true;
-                  _dragSeekSeconds = 0;
-                });
-              },
-              onHorizontalDragUpdate: (details) {
-                setState(() {
-                  _dragSeekSeconds += details.delta.dx / 5;
-                });
-              },
-              onHorizontalDragEnd: (details) {
+              onHorizontalDragStart: _locked ? null : (details) {
+  setState(() {
+    _isDraggingSeek = true;
+    _dragSeekSeconds = 0;
+  });
+},
+onHorizontalDragUpdate: _locked ? null : (details) {
+  setState(() {
+    _dragSeekSeconds += details.delta.dx / 5;
+  });
+},
+onHorizontalDragEnd: _locked ? null : (details) {
                 final newPos = _controller.value.position +
                     Duration(seconds: _dragSeekSeconds.toInt());
                 var target = newPos;
