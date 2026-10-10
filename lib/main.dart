@@ -2402,6 +2402,7 @@ String _skipIndicator = '';              // 👈 नया
 Timer? _skipIndicatorTimer;              // 👈 नया
 Timer? _gestureTimer;
 bool _muted = false;
+bool _showVideoList = false;
 @override
 void initState() {
   super.initState();
