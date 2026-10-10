@@ -2570,18 +2570,28 @@ Widget _verticalIndicator({
     _controller.seekTo(Duration(seconds: seconds.toInt()));
   }
 
-  void _skipForward() {
-    if (!_isInitialized) return;
-    final newPos = _controller.value.position + const Duration(seconds: 10);
-    _controller.seekTo(newPos);
-  }
+  void _showSkipIndicator(String text) {
+  _skipIndicatorTimer?.cancel();
+  setState(() => _skipIndicator = text);
+  _skipIndicatorTimer = Timer(const Duration(milliseconds: 800), () {
+    if (mounted) setState(() => _skipIndicator = '');
+  });
+}
 
-  void _skipBackward() {
-    if (!_isInitialized) return;
-    var newPos = _controller.value.position - const Duration(seconds: 10);
-    if (newPos < Duration.zero) newPos = Duration.zero;
-    _controller.seekTo(newPos);
-  }
+void _skipForward() {
+  if (!_isInitialized) return;
+  final newPos = _controller.value.position + const Duration(seconds: 10);
+  _controller.seekTo(newPos);
+  _showSkipIndicator('+10s');
+}
+
+void _skipBackward() {
+  if (!_isInitialized) return;
+  var newPos = _controller.value.position - const Duration(seconds: 10);
+  if (newPos < Duration.zero) newPos = Duration.zero;
+  _controller.seekTo(newPos);
+  _showSkipIndicator('-10s');
+}
 
   bool get _hasNext {
     if (widget.playlist == null || widget.currentIndex == null) return false;
