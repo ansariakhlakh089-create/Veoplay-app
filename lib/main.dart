@@ -2951,6 +2951,39 @@ onHorizontalDragEnd: _locked ? null : (details) {
                     ),
                   ),
 
+// 👇 Skip indicator (double-tap के लिए)
+if (_skipIndicator.isNotEmpty)
+  Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _skipIndicator.startsWith('+')
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            color: const Color(0xff2D8CFF),
+            size: 26,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _skipIndicator,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  ),
+                  
                   // 👇 Volume / Brightness indicator (vertical slider)
 if (_showGestureIndicator)
   Center(
