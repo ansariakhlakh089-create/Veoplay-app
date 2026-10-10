@@ -3058,6 +3058,7 @@ _controller.dispose();
   if (position >= 5) {
     _saveProgressData(title, url, position, duration);
   }
+  _saveResume(url, position, duration);
   super.dispose();
 }
 
