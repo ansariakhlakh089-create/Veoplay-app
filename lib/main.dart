@@ -2735,6 +2735,27 @@ Widget _buildVideoListPanel() {
   );
 }
 
+Future<void> _cycleLoop() async {
+  final next = (_loopMode + 1) % 3;
+  setState(() {
+    _loopMode = next;
+    _isLooping = (next == 1);
+  });
+  _controller.setLooping(next == 1);
+  _snack(next == 0 ? 'Loop: Off' : (next == 1 ? 'Loop: One' : 'Loop: All'));
+  final p = await SharedPreferences.getInstance();
+  await p.setInt('video_loop_mode', next);
+}
+
+void _cycleFit() {
+  setState(() => _fitMode = (_fitMode + 1) % 3);
+  _snack(_fitMode == 0
+      ? 'Fit'
+      : (_fitMode == 1 ? 'Zoom (Fill)' : 'Stretch'));
+}
+
+void _playFirst() => _playAt(0);
+  
 Widget _sideBtn(IconData icon, Color color, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
