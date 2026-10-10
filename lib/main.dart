@@ -2403,6 +2403,8 @@ Timer? _skipIndicatorTimer;              // 👈 नया
 Timer? _gestureTimer;
 bool _muted = false;
 bool _showVideoList = false;
+int _loopMode = 0;   // 0 = Off, 1 = One, 2 = All
+int _fitMode = 0;    // 0 = Fit, 1 = Zoom, 2 = Stretch
 @override
 void initState() {
   super.initState();
