@@ -3258,14 +3258,6 @@ if (_showGestureIndicator)
   onPressed: () {},
 ),
 
-// 👇 Mute button (नया)
-IconButton(
-  icon: Icon(
-    _muted ? Icons.volume_off : Icons.volume_up,
-    color: _muted ? Colors.redAccent : Colors.white,
-  ),
-  onPressed: _toggleMute,
-),
 PopupMenuButton<int>(
   icon: const Icon(Icons.more_vert, color: Colors.white),
   onSelected: (value) {
