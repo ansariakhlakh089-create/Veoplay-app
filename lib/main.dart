@@ -2983,6 +2983,40 @@ if (_showGestureIndicator)
     ),
   ),
 
+  if (_isDraggingSeek)
+  Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _dragSeekSeconds >= 0
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            color: const Color(0xff2D8CFF),
+            size: 26,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _dragSeekSeconds >= 0
+                ? '+${_formatDuration(Duration(seconds: _dragSeekSeconds.toInt()))}'
+                : '-${_formatDuration(Duration(seconds: _dragSeekSeconds.abs().toInt()))}',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  ),                
+                  
                   // ----- टॉप बार -----
                   if (_showControls && !_locked)
                     Positioned(
