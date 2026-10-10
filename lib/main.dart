@@ -3007,37 +3007,26 @@ if (_showGestureIndicator)
                             icon: const Icon(Icons.closed_caption, color: Colors.white),
                             onPressed: () {},
                           ),
-                          PopupMenuButton<int>(
+                                                    PopupMenuButton<int>(
   icon: const Icon(Icons.more_vert, color: Colors.white),
   onSelected: (value) {
     switch (value) {
       case 1:
-        _showSpeedDialog();
+        _shareVideo();
         break;
       case 2:
-        _toggleLock();
-        break;
-      case 3:
         _showSleepTimerDialog();
         break;
-      case 4:
-        // Play as audio (Phase later)
-        break;
-      case 5:
-        _enterPip();     // 👈 यह जोड़ो
-        break;
-      case 6:
-        // Share
+      case 3:
+        // Play as audio — बाद में
         break;
     }
   },
   itemBuilder: (_) => const [
-    PopupMenuItem(value: 1, child: Text('Playback speed')),
-    PopupMenuItem(value: 2, child: Text('Lock')),
-    PopupMenuItem(value: 3, child: Text('Sleep timer')),
-    PopupMenuItem(value: 4, child: Text('Play as audio')),
-    PopupMenuItem(value: 5, child: Text('Pop-Up player')),
-    PopupMenuItem(value: 6, child: Text('Share')),
+    PopupMenuItem(value: 1, child: Text('Share')),
+    PopupMenuItem(value: 2, child: Text('Sleep timer')),
+    PopupMenuItem(value: 3, child: Text('Play as audio')),
+    PopupMenuItem(value: 4, child: Text('Pop-Up player')),
   ],
 ),
                         ],
