@@ -16,6 +16,7 @@ import 'package:screen_brightness/screen_brightness.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:simple_pip_mode/simple_pip.dart';   // 👈 यह नई line
+import 'package:share_plus/share_plus.dart';
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
 final AudioPlayer globalAudioPlayer = AudioPlayer();
 final Map<int, String> globalSongNames = {};
