@@ -2866,20 +2866,20 @@ _controller.dispose();
             child: CircularProgressIndicator(color: Colors.cyanAccent),
           )
         : GestureDetector(
-    behavior: HitTestBehavior.opaque,
-    onTap: _toggleControls,
-    onDoubleTapDown: (details) {
-      final w = MediaQuery.of(context).size.width;
-      final x = details.globalPosition.dx;
-      if (x < w / 3) {
-        _skipBackward();
-      } else if (x > w * 2 / 3) {
-        _skipForward();
-      } else {
-        _togglePlay();
-      }
-    },
-    onVerticalDragUpdate: (details) {
+behavior: HitTestBehavior.opaque,
+onTap: _locked ? null : _toggleControls,
+onDoubleTapDown: _locked ? null : (details) {
+  final w = MediaQuery.of(context).size.width;
+  final x = details.globalPosition.dx;
+  if (x < w / 3) {
+    _skipBackward();
+  } else if (x > w * 2 / 3) {
+    _skipForward();
+  } else {
+    _togglePlay();
+  }
+},
+onVerticalDragUpdate: _locked ? null : (details) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 final dx = details.globalPosition.dx;
                 final delta = -details.delta.dy / 200;
