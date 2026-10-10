@@ -2598,6 +2598,137 @@ void _showGestureFor(String text) {
   });
 }
 
+void _snack(String msg) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(msg), duration: const Duration(seconds: 1)),
+  );
+}
+
+Future<void> _takeScreenshot() async {
+  if (!_isInitialized) return;
+  try {
+    final bytes = await VideoThumbnail.thumbnailData(
+      video: widget.videoUrl,
+      imageFormat: ImageFormat.JPEG,
+      timeMs: _controller.value.position.inMilliseconds,
+      quality: 100,
+    );
+    if (bytes == null) {
+      _snack('Screenshot नहीं बन पाया');
+      return;
+    }
+    final perm = await PhotoManager.requestPermissionExtend();
+    if (!perm.hasAccess) {
+      _snack('Gallery की permission दो');
+      return;
+    }
+    final name = 'VeoPlay_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    await PhotoManager.editor.saveImage(
+      bytes,
+      filename: name,
+      title: name,
+    );
+    _snack('Screenshot Gallery में सेव हो गया');
+  } catch (e) {
+    debugPrint('Screenshot error: $e');
+    _snack('Screenshot में दिक्कत आई');
+  }
+}
+
+void _playAt(int index) {
+  final item = widget.playlist![index];
+  _replacing = true;
+  final goLandscape =
+      MediaQuery.of(context).orientation == Orientation.landscape;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => RealVideoPlayer(
+        videoUrl: item['url']!,
+        title: item['title']!,
+        playlist: widget.playlist,
+        currentIndex: index,
+        startLandscape: goLandscape,
+      ),
+    ),
+  );
+}
+
+Widget _buildVideoListPanel() {
+  final list = widget.playlist;
+  final panelWidth =
+      (MediaQuery.of(context).size.width * 0.6).clamp(220.0, 320.0).toDouble();
+  return Positioned(
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: panelWidth,
+    child: Container(
+      color: Colors.black.withOpacity(0.75),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      list == null ? 'Videos' : 'Videos (${list.length})',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => setState(() => _showVideoList = false),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white24, height: 1),
+            Expanded(
+              child: (list == null || list.isEmpty)
+                  ? const Center(
+                      child: Text('कोई वीडियो लिस्ट नहीं है',
+                          style: TextStyle(color: Colors.white54)),
+                    )
+                  : ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (context, i) {
+                        final isCurrent = i == widget.currentIndex;
+                        return ListTile(
+                          dense: true,
+                          leading: Icon(
+                            isCurrent ? Icons.play_arrow : Icons.movie_outlined,
+                            color: isCurrent
+                                ? const Color(0xff2D8CFF)
+                                : Colors.white54,
+                          ),
+                          title: Text(
+                            list[i]['title'] ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isCurrent
+                                  ? const Color(0xff2D8CFF)
+                                  : Colors.white,
+                            ),
+                          ),
+                          onTap: isCurrent ? null : () => _playAt(i),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+  
 void _toggleMute() {
   setState(() => _muted = !_muted);
   _controller.setVolume(_muted ? 0.0 : 1.0);
