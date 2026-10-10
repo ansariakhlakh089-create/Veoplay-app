@@ -2451,14 +2451,21 @@ SharedPreferences.getInstance().then((p) {
       _controller = VideoPlayerController.file(File(widget.videoUrl));
     }
 
-    _controller.initialize().then((_) {
+    _controller.initialize().then((_) async {
   if (!mounted) return;
   setState(() {
     _isInitialized = true;
   });
   if (widget.startPosition > 0) {
     _controller.seekTo(Duration(seconds: widget.startPosition));
+  } else {
+    final p = await SharedPreferences.getInstance();
+    final saved = p.getInt('resume_${widget.videoUrl}') ?? 0;
+    if (saved > 0 && mounted) {
+      await _controller.seekTo(Duration(seconds: saved));
+    }
   }
+  if (!mounted) return;
   _controller.setPlaybackSpeed(_speed);
 _controller.setLooping(_isLooping);     // 👈 यह नई line जोड़ो
 _controller.play();
