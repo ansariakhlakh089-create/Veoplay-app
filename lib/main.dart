@@ -3178,6 +3178,27 @@ PopupMenuButton<int>(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            // 👇 दाईं कतार: Lock, Mute (रोटेट के ऊपर)
+Align(
+  alignment: Alignment.centerRight,
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      _sideBtn(
+        _locked ? Icons.lock : Icons.lock_open,
+        _locked ? Colors.amber : Colors.white,
+        _toggleLock,
+      ),
+      const SizedBox(height: 8),
+      _sideBtn(
+        _muted ? Icons.volume_off : Icons.volume_up,
+        _muted ? Colors.redAccent : Colors.white,
+        _toggleMute,
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 8),
                             // रोटेट बटन (सीक बार के ऊपर)
                             Align(
                               alignment: Alignment.centerRight,
