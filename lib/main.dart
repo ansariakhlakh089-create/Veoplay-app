@@ -2790,6 +2790,17 @@ Future<void> _enterPip() async {
   // Enter PiP mode with 16:9 aspect ratio
   await SimplePip().enterPipMode();
 }
+
+Future<void> _shareVideo() async {
+  try {
+    await Share.share(
+      '${widget.title}\n${widget.videoUrl}',
+      subject: widget.title,
+    );
+  } catch (e) {
+    debugPrint('Share error: $e');
+  }
+}
   
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
