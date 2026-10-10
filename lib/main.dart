@@ -2491,55 +2491,57 @@ void _startHideTimer() {
   });
 }
 
-  // 👇 Vertical indicator widget (Volume/Brightness के लिए)
+    // 👇 Vertical indicator widget (Volume/Brightness के लिए)
 Widget _verticalIndicator({
   required IconData icon,
   required double value,
   required Color color,
+  double maxValue = 1.0,   // 👈 नया — volume के लिए 2.0 pass करेंगे
 }) {
+  final percent = (value * 100).toInt();
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
     decoration: BoxDecoration(
-      color: Colors.black.withOpacity(0.75),
-      borderRadius: BorderRadius.circular(24),
+      color: Colors.black.withOpacity(0.7),
+      borderRadius: BorderRadius.circular(16),
     ),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Percentage
+        // Percentage (100%+ पर 🔥 दिखाओ)
         Text(
-          '${(value * 100).toInt()}%',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
+          percent > 100 ? '🔥 $percent%' : '$percent%',
+          style: TextStyle(
+            color: percent > 100 ? Colors.amber : Colors.white,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 14),
-        // Vertical bar
+        const SizedBox(height: 10),
+        // Vertical bar (छोटा)
         Container(
-          width: 8,
-          height: 160,
+          width: 6,
+          height: 100,
           decoration: BoxDecoration(
             color: Colors.white24,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(3),
           ),
           child: Align(
             alignment: Alignment.bottomCenter,
             child: FractionallySizedBox(
-              heightFactor: value.clamp(0.0, 1.0),
+              heightFactor: (value / maxValue).clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
                   color: color,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 14),
-        // Icon
-        Icon(icon, color: Colors.white, size: 30),
+        const SizedBox(height: 10),
+        // Icon (छोटा)
+        Icon(icon, color: Colors.white, size: 20),
       ],
     ),
   );
