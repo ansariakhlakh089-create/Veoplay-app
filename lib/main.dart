@@ -2894,23 +2894,22 @@ onVerticalDragUpdate: _locked ? null : (details) {
                     _gestureText = 'Brightness ${(newBrightness * 100).toInt()}%';
                   });
                 } else {
-                  double newVol = (_volume + delta).clamp(0.0, 1.0);
-                  VolumeController().setVolume(newVol);
-                  setState(() {
-                    _volume = newVol;
-                    _showGestureIndicator = true;
-                    _gestureText = 'Volume ${(newVol * 100).toInt()}%';
-                  });
-                }
-              },
-              onVerticalDragEnd: (details) {
-                setState(() => _showGestureIndicator = false);
-              },
-              onHorizontalDragStart: _locked ? null : (details) {
+  double newVol = (_volume + delta).clamp(0.0, 2.0);
+  if (newVol <= 1.0) {
+    // Normal system volume
+    VolumeController().setVolume(newVol);
+    _controller.setVolume(1.0);
+  } else {
+    // System at max, video boost
+    VolumeController().setVolume(1.0);
+    _controller.setVolume(newVol);
+  }
   setState(() {
-    _isDraggingSeek = true;
-    _dragSeekSeconds = 0;
+    _volume = newVol;
+    _showGestureIndicator = true;
+    _gestureText = 'Volume ${(newVol * 100).toInt()}%';
   });
+ }
 },
 onHorizontalDragUpdate: _locked ? null : (details) {
   setState(() {
