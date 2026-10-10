@@ -2945,10 +2945,10 @@ onHorizontalDragEnd: _locked ? null : (details) {
 if (_showGestureIndicator)
   Center(
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
-        borderRadius: BorderRadius.circular(28),
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -2958,14 +2958,15 @@ if (_showGestureIndicator)
             _verticalIndicator(
               icon: Icons.brightness_6,
               value: _brightness,
-              color: Colors.amber,
+              color: const Color(0xff2D8CFF),   // 👈 नीला
             ),
           // Right side: Volume
           if (_gestureText.contains('Volume'))
             _verticalIndicator(
               icon: Icons.volume_up,
               value: _volume,
-              color: Colors.orange,
+              color: const Color(0xff2D8CFF),   // 👈 नीला
+              maxValue: 2.0,                     // 👈 200% तक
             ),
         ],
       ),
