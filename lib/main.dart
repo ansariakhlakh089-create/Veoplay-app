@@ -1376,23 +1376,28 @@ Future<void> _removeSongFromPlaylist(
   }
 
   void _openSongList(String title, List<SongModel> songs,
-    {String? playlistName}) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-        builder: (_) => SongListScreen(
-              title: title,
-              songs: songs,
-              onMenu: _showSongOptions,
-              keep: (s) =>
-                  _songs.any((x) => x.id == s.id) &&
-                  (title != "Favorite" || _favoriteIds.contains(s.id)),
-              playlistName: playlistName,                       // 👈 नया
-              onRemoveFromPlaylist: playlistName == null        // 👈 नया
-                  ? null
-                  : (s) => _removeSongFromPlaylist(playlistName, s),
-            )),
-  );
+  {String? playlistName}) {
+Navigator.push(
+  context,
+  MaterialPageRoute(
+      builder: (_) => SongListScreen(
+            title: title,
+            songs: songs,
+            onMenu: _showSongOptions,
+            keep: (s) =>
+                _songs.any((x) => x.id == s.id) &&
+                (title != "Favorite" || _favoriteIds.contains(s.id)),
+            playlistName: playlistName,
+            onRemoveFromPlaylist: playlistName == null
+                ? null
+                : (s) => _removeSongFromPlaylist(playlistName, s),
+            favoriteIds: _favoriteIds,                        // 👈 नया
+            onToggleFavorite: (s) async {                     // 👈 नया
+              await _toggleFavorite(s);
+              if (mounted) setState(() {});
+            },
+          )),
+);
   }
   
   Widget _songTile(int index) {
