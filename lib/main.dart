@@ -2517,7 +2517,7 @@ Widget _verticalIndicator({
       children: [
         // Percentage (100%+ पर 🔥 दिखाओ)
         Text(
-          percent > 100 ? '🔥 $percent%' : '$percent%',
+          '$percent%',
           style: TextStyle(
             color: percent > 100 ? Colors.amber : Colors.white,
             fontSize: 16,
@@ -2935,8 +2935,9 @@ onVerticalDragUpdate: _locked ? null : (details) {
   }
   setState(() {
     _volume = newVol;
-    _showGestureIndicator = true;
-    _gestureText = 'Volume ${(newVol * 100).toInt()}%';
+    _muted = false;
+  });
+  _showGestureFor('Volume ${(newVol * 100).toInt()}%');
   });
  }
 },
@@ -3113,6 +3114,14 @@ IconButton(
   ),
   onPressed: _toggleLock,
 ),
+// 👇 Mute button (नया)
+IconButton(
+  icon: Icon(
+    _muted ? Icons.volume_off : Icons.volume_up,
+    color: _muted ? Colors.redAccent : Colors.white,
+  ),
+  onPressed: _toggleMute,
+),
 PopupMenuButton<int>(
   icon: const Icon(Icons.more_vert, color: Colors.white),
   onSelected: (value) {
@@ -3135,27 +3144,6 @@ PopupMenuButton<int>(
   ],
 ),
                         ],
-                      ),
-                    ),
-
-                  // ----- स्पीड इंडिकेटर -----
-                  if (_showControls)
-                    Positioned(
-                      right: 12,
-                      top: MediaQuery.of(context).padding.top + 70,
-                      child: GestureDetector(
-                        onTap: _showSpeedDialog,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${_speed}x',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
                       ),
                     ),
 
