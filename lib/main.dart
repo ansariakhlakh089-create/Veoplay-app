@@ -4452,23 +4452,45 @@ class _SongListScreenState extends State<SongListScreen> {
                           ),
                         ),
                           // 👇 Remove from playlist button (सिर्फ playlist में दिखेगा)
-  // 👇 Favorite से हटाओ (सिर्फ Favorite list में)
-if (widget.onToggleFavorite != null &&
-    widget.favoriteIds != null &&
-    widget.favoriteIds!.contains(song.id))
-  IconButton(
-    onPressed: () {
-      widget.onToggleFavorite!(song);
-      setState(() {});
-    },
-    icon: const Icon(
-      Icons.remove_circle_outline,
-      color: Colors.pinkAccent,
-      size: 20,
+    // 👇 Remove from playlist (सिर्फ playlist में)
+  if (widget.playlistName != null &&
+      widget.onRemoveFromPlaylist != null)
+    IconButton(
+      onPressed: () {
+        widget.onRemoveFromPlaylist!(song);
+        setState(() {});
+      },
+      icon: const Icon(Icons.remove_circle_outline,
+          color: Colors.redAccent, size: 20),
+      padding: const EdgeInsets.only(left: 8),
+      constraints: const BoxConstraints(),
     ),
-    padding: const EdgeInsets.only(left: 4),
-    constraints: const BoxConstraints(),
-  ),
+  // 👇 Favorite से हटाओ (सिर्फ Favorite list में)
+  if (widget.onToggleFavorite != null &&
+      widget.favoriteIds != null &&
+      widget.favoriteIds!.contains(song.id))
+    IconButton(
+      onPressed: () {
+        widget.onToggleFavorite!(song);
+        setState(() {});
+      },
+      icon: const Icon(
+        Icons.remove_circle_outline,
+        color: Colors.pinkAccent,
+        size: 20,
+      ),
+      padding: const EdgeInsets.only(left: 4),
+      constraints: const BoxConstraints(),
+    ),
+  // 👇 Menu (3-dot)
+  if (widget.onMenu != null)
+    IconButton(
+      onPressed: () => widget.onMenu!(song),
+      icon: const Icon(Icons.more_vert,
+          color: Colors.white60, size: 20),
+      padding: const EdgeInsets.only(left: 8),
+      constraints: const BoxConstraints(),
+    ),
 ],
                     ),
                   ),
