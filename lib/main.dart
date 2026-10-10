@@ -3497,7 +3497,8 @@ const SizedBox(height: 8),
     ),
   ),
 ),
-                  // 👇 Lock indicator (सिर्फ locked होने पर दिखेगा)
+                  // 👇 वीडियो लिस्ट पैनल
+                  if (_showVideoList) _buildVideoListPanel(),
                   if (_locked)
                     Positioned(
                       top: MediaQuery.of(context).padding.top + 12,
