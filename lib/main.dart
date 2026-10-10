@@ -1847,6 +1847,12 @@ if (_audioPermissionDenied) {
     ],
   ),
 );
+                    },
+                  ),
+          ),
+        ],
+      );
+  }
     if (_musicSubTab == 2 || _musicSubTab == 3) {
       final groups = <String, List<SongModel>>{};
       for (final s in _songs) {
