@@ -3034,7 +3034,6 @@ PopupMenuButton<int>(
     PopupMenuItem(value: 1, child: Text('Share')),
     PopupMenuItem(value: 2, child: Text('Sleep timer')),
     PopupMenuItem(value: 3, child: Text('Play as audio')),
-    PopupMenuItem(value: 4, child: Text('Pop-Up player')),
   ],
 ),
                         ],
