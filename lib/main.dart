@@ -3148,84 +3148,78 @@ if (_showGestureIndicator)
                             const SizedBox(height: 6),
                             // प्ले कंट्रोल्स
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(Icons.skip_previous,
-                                      color: _hasPrevious
-                                          ? Colors.white
-                                          : Colors.white24,
-                                      size: 22),
-                                  onPressed: _hasPrevious ? _playPrevious : null,
-                                ),
-                                const SizedBox(width: 16),
-                                IconButton(
-  padding: EdgeInsets.zero,
-  constraints: const BoxConstraints(),
-  icon: const Icon(Icons.replay_10,
-      color: Colors.white, size: 24),
-  onPressed: _skipBackward,
-),
-// 👇 यह नया loop button
-IconButton(
-  padding: EdgeInsets.zero,
-  constraints: const BoxConstraints(),
-  icon: Icon(
-    Icons.repeat,
-    color: _isLooping
-        ? const Color(0xff2D8CFF)
-        : Colors.white70,
-    size: 24,
-  ),
-  onPressed: () async {
-    final next = !_isLooping;
-    setState(() => _isLooping = next);
-    _controller.setLooping(next);
-    final p = await SharedPreferences
-        .getInstance();
-    await p.setBool('video_loop', next);
-  },
-),
-// 👈 नया button खत्म
-GestureDetector(
-                                  onTap: _togglePlay,
-                                  child: Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xff2D8CFF),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      _controller.value.isPlaying
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                      color: Colors.white,
-                                      size: 26,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.forward_10,
-                                      color: Colors.white, size: 24),
-                                  onPressed: _skipForward,
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(Icons.skip_next,
-                                      color: _hasNext
-                                          ? Colors.white
-                                          : Colors.white24,
-                                      size: 22),
-                                              onPressed: _hasNext ? _playNext : null,
-            ),
-          ],
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    // 1️⃣ Loop
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(
+        Icons.repeat,
+        color: _isLooping
+            ? const Color(0xff2D8CFF)
+            : Colors.white70,
+        size: 24,
+      ),
+      onPressed: () async {
+        final next = !_isLooping;
+        setState(() => _isLooping = next);
+        _controller.setLooping(next);
+        final p = await SharedPreferences.getInstance();
+        await p.setBool('video_loop', next);
+      },
+    ),
+    // 2️⃣ Previous
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(Icons.skip_previous,
+          color: _hasPrevious
+              ? Colors.white
+              : Colors.white24,
+          size: 32),
+      onPressed: _hasPrevious ? _playPrevious : null,
+    ),
+    // 3️⃣ Play/Pause (big blue)
+    GestureDetector(
+      onTap: _togglePlay,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: const BoxDecoration(
+          color: Color(0xff2D8CFF),
+          shape: BoxShape.circle,
         ),
+        child: Icon(
+          _controller.value.isPlaying
+              ? Icons.pause
+              : Icons.play_arrow,
+          color: Colors.white,
+          size: 32,
+        ),
+      ),
+    ),
+    // 4️⃣ Next
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(Icons.skip_next,
+          color: _hasNext
+              ? Colors.white
+              : Colors.white24,
+          size: 32),
+      onPressed: _hasNext ? _playNext : null,
+    ),
+    // 5️⃣ Speed
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: const Icon(Icons.speed,
+          color: Colors.white70, size: 26),
+      onPressed: _showSpeedDialog,
+    ),
+  ],
+),
       ],
     ),
   ),
