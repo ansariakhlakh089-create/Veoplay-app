@@ -2500,7 +2500,7 @@ _controller.play();
         _autoNextTriggered = false;
       }
     }
-
+  }
   setState(() {});
 });
 _startHideTimer();
