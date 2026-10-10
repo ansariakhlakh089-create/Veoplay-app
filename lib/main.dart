@@ -3004,10 +3004,18 @@ if (_showGestureIndicator)
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.closed_caption, color: Colors.white),
-                            onPressed: () {},
-                          ),
-                                                    PopupMenuButton<int>(
+  icon: const Icon(Icons.closed_caption, color: Colors.white),
+  onPressed: () {},
+),
+// 👇 Lock button (top bar में)
+IconButton(
+  icon: Icon(
+    _locked ? Icons.lock : Icons.lock_open,
+    color: _locked ? Colors.amber : Colors.white,
+  ),
+  onPressed: _toggleLock,
+),
+PopupMenuButton<int>(
   icon: const Icon(Icons.more_vert, color: Colors.white),
   onSelected: (value) {
     switch (value) {
