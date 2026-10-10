@@ -3206,13 +3206,23 @@ PopupMenuButton<int>(
           size: 32),
       onPressed: _hasNext ? _playNext : null,
     ),
-    // 5️⃣ Speed
+        // 5️⃣ Speed
     IconButton(
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
       icon: const Icon(Icons.speed,
           color: Colors.white70, size: 26),
       onPressed: _showSpeedDialog,
+    ),
+    // 6️⃣ PiP (Pop-Up player)
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: const Icon(
+          Icons.picture_in_picture_alt,
+          color: Colors.white70,
+          size: 26),
+      onPressed: _enterPip,
     ),
   ],
 ),
