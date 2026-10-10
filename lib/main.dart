@@ -2434,9 +2434,14 @@ WakelockPlus.enable();
 
 // 👇 Loop setting load करो
 SharedPreferences.getInstance().then((p) {
-  final loop = p.getBool('video_loop') ?? false;
-  if (mounted) setState(() => _isLooping = loop);
-  if (_isInitialized) _controller.setLooping(loop);
+  final mode = p.getInt('video_loop_mode') ?? 0;
+  if (mounted) {
+    setState(() {
+      _loopMode = mode;
+      _isLooping = (mode == 1);
+    });
+  }
+  if (_isInitialized) _controller.setLooping(mode == 1);
 });
 
     if (widget.videoUrl.startsWith('http')) {
