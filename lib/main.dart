@@ -2389,10 +2389,11 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _showGestureIndicator = false;
   String _gestureText = '';
   bool _isLooping = false;
-  bool _autoNextTriggered = false;
-  bool _locked = false;              // 👈 Lock state
-Timer? _sleepTimer;                // 👈 Sleep timer
-
+bool _autoNextTriggered = false;
+bool _locked = false;
+Timer? _sleepTimer;
+String _skipIndicator = '';              // 👈 नया
+Timer? _skipIndicatorTimer;              // 👈 नया
 @override
 void initState() {
   super.initState();
