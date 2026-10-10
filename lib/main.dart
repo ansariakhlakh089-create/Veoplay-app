@@ -2774,6 +2774,16 @@ void _cycleFit() {
 }
 
 void _playFirst() => _playAt(0);
+
+Future<void> _saveResume(String url, int pos, int dur) async {
+  final prefs = await SharedPreferences.getInstance();
+  final key = 'resume_$url';
+  if (pos >= 5 && (dur <= 0 || pos < dur - 3)) {
+    await prefs.setInt(key, pos);
+  } else {
+    await prefs.remove(key);
+  }
+}                            
   
 Widget _sideBtn(IconData icon, Color color, VoidCallback onTap) {
   return GestureDetector(
