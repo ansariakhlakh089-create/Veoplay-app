@@ -2400,6 +2400,8 @@ bool _locked = false;
 Timer? _sleepTimer;
 String _skipIndicator = '';              // 👈 नया
 Timer? _skipIndicatorTimer;              // 👈 नया
+Timer? _gestureTimer;
+bool _muted = false;
 @override
 void initState() {
   super.initState();
@@ -2582,6 +2584,22 @@ Widget _verticalIndicator({
   _skipIndicatorTimer = Timer(const Duration(milliseconds: 800), () {
     if (mounted) setState(() => _skipIndicator = '');
   });
+}
+
+void _showGestureFor(String text) {
+  _gestureTimer?.cancel();
+  setState(() {
+    _showGestureIndicator = true;
+    _gestureText = text;
+  });
+  _gestureTimer = Timer(const Duration(seconds: 3), () {
+    if (mounted) setState(() => _showGestureIndicator = false);
+  });
+}
+
+void _toggleMute() {
+  setState(() => _muted = !_muted);
+  _controller.setVolume(_muted ? 0.0 : 1.0);
 }
 
 void _skipForward() {
@@ -2835,6 +2853,7 @@ void dispose() {
   _hideTimer?.cancel();
 _sleepTimer?.cancel();
 _skipIndicatorTimer?.cancel();   // 👈 नया
+_gestureTimer?.cancel();
 _controller.dispose();
   // 👇 Fix: सिर्फ तब clean-up करो जब हम सच में बाहर जा रहे हों
   // (नया वीडियो खोल रहे हों तो नहीं)
@@ -2917,11 +2936,9 @@ onVerticalDragUpdate: _locked ? null : (details) {
                 if (dx < screenWidth / 2) {
                   final newBrightness = (_brightness + delta).clamp(0.0, 1.0);
                   ScreenBrightness().setScreenBrightness(newBrightness);
-                  setState(() {
-                    _brightness = newBrightness;
-                    _showGestureIndicator = true;
-                    _gestureText = 'Brightness ${(newBrightness * 100).toInt()}%';
-                  });
+                  setState(() => _brightness = newBrightness);
+                  _showGestureFor('Brightness ${(newBrightness * 100).toInt()}%');
+                });
                 } else {
   double newVol = (_volume + delta).clamp(0.0, 2.0);
   if (newVol <= 1.0) {
