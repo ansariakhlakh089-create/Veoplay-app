@@ -2562,6 +2562,8 @@ Widget _verticalIndicator({
       setState(() => _showVideoList = false);
       return;
     }
+    setState(() {
+      _showControls = !_showControls;
       if (_showControls) _startHideTimer();
     });
   }
