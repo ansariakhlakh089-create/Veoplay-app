@@ -2774,7 +2774,8 @@ Future<void> _enterPip() async {
   }
 
   // Enter PiP mode with 16:9 aspect ratio
-  await SimplePip().enterPipMode();
+  await SimplePip.enterPipMode(aspectRatio: const [16, 9]);
+}
   
   Future<void> _saveProgress() async {
     final prefs = await SharedPreferences.getInstance();
