@@ -12,6 +12,7 @@ dependencies:
   wakelock_plus: ^1.4.0
   video_player: ^2.8.1
   simple_pip_mode: ^1.1.0     # 👈 यह नई line
+  share_plus: ^10.0.0
   cupertino_icons: ^1.0.6
   permission_handler: ^11.3.1
   photo_manager: ^3.1.4
