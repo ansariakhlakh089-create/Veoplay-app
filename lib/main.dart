@@ -3332,7 +3332,7 @@ Align(
     ],
   ),
 ),
-const SizedBox(height: 8),Align(
+const SizedBox(height: 8),
 
                             // रोटेट बटन (सीक बार के ऊपर)
                             Align(
