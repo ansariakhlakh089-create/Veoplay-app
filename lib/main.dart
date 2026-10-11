@@ -5068,8 +5068,6 @@ await _player.play();
   }
 }
 
-Future<void> _toggleFavorite(SongModel song) async {
-  
   Future<void> _toggleFavorite(SongModel song) async {
     final prefs = await SharedPreferences.getInstance();
     final list = (prefs.getStringList('favorite_songs') ?? [])
