@@ -5043,7 +5043,14 @@ await _player.play();
       ),
     );
     final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
-    await globalAudioPlayer.insertAudioSource(nextIndex, source);
+    final current = globalAudioPlayer.audioSource;
+    if (current is! ConcatenatingAudioSource) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('अभी लिस्ट से गाना नहीं चल रहा')),
+      );
+      return;
+    }
+    await current.insert(nextIndex, source);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
