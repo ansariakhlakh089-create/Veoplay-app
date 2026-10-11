@@ -1611,8 +1611,19 @@ onToggleFavorite: isFavScreen ? (s) async { ... } : null,
             ),
             child: Row(
               children: [
-                const Icon(Icons.graphic_eq, color: Color(0xff2D8CFF)),
-                const SizedBox(width: 10),
+                Builder(builder: (_) {
+  final id = int.tryParse(tag.id);
+  if (id == null) {
+    return const Icon(Icons.graphic_eq,
+        color: Color(0xff2D8CFF));
+  }
+  return AlbumArtWidget(
+    songId: id,
+    size: 42,
+    radius: 10,
+  );
+}),
+const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
