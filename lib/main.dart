@@ -2717,6 +2717,20 @@ Widget _buildVideoListPanel() {
               ),
             ),
             const Divider(color: Colors.white24, height: 1),
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.vertical_split, color: Colors.amber),
+              title: const Text(
+                'Dual Video',
+                style: TextStyle(
+                    color: Colors.amber, fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                'दो वीडियो एक साथ',
+                style: TextStyle(color: Colors.white54, fontSize: 11),
+              ),
+              onTap: _openDual,
+            ),
             Expanded(
               child: (list == null || list.isEmpty)
                   ? const Center(
