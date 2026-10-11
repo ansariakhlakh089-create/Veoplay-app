@@ -2151,15 +2151,25 @@ return Column(
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.edit, color: Colors.white),
-                title: const Text("Rename",
-                    style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _renameSong(song);
-                },
-              ),
-             ListTile(
+  leading: const Icon(Icons.edit, color: Colors.white),
+  title: const Text("Rename",
+      style: TextStyle(color: Colors.white)),
+  onTap: () {
+    Navigator.pop(context);
+    _renameSong(song);
+  },
+),
+ListTile(
+  leading: const Icon(Icons.playlist_play,
+      color: Colors.white),
+  title: const Text("Play next",
+      style: TextStyle(color: Colors.white)),
+  onTap: () {
+    Navigator.pop(context);
+    _playNextSong(song);
+  },
+),
+ListTile(
   leading: const Icon(Icons.share, color: Colors.white),
   title: const Text("Share",
       style: TextStyle(color: Colors.white)),
