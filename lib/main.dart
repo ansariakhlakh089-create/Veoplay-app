@@ -3380,53 +3380,33 @@ PopupMenuButton<int>(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-// 👇 दाईं कतार: Order, Lock, Mute, कैंची (रोटेट के ऊपर)
-Align(
-  alignment: Alignment.centerRight,
-  child: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      _sideBtn(
-        Icons.playlist_play,
-        _showVideoList ? const Color(0xff2D8CFF) : Colors.white,
-        () => setState(() => _showVideoList = !_showVideoList),
-      ),
-      const SizedBox(height: 8),
-      _sideBtn(
-        _locked ? Icons.lock : Icons.lock_open,
-        _locked ? Colors.amber : Colors.white,
-        _toggleLock,
-      ),
-      const SizedBox(height: 8),
-      _sideBtn(
-        _muted ? Icons.volume_off : Icons.volume_up,
-        _muted ? Colors.redAccent : Colors.white,
-        _toggleMute,
-      ),
-      const SizedBox(height: 8),
-      _sideBtn(Icons.content_cut, Colors.white, _takeScreenshot),
-    ],
-  ),
-),
-const SizedBox(height: 8),
-
-                            // Fit बाईं तरफ, रोटेट दाईं तरफ (सीक बार के ऊपर)
+// 👇 सीक बार के ऊपर: बाएँ कैंची, Mute, Lock | दाएँ Order, Rotate
                             Row(
                               children: [
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: Icon(
-                                      _fitMode == 0
-                                          ? Icons.aspect_ratio
-                                          : (_fitMode == 1
-                                              ? Icons.zoom_out_map
-                                              : Icons.fullscreen),
-                                      color: Colors.white,
-                                      size: 20),
-                                  onPressed: _cycleFit,
+                                _sideBtn(Icons.content_cut, Colors.white,
+                                    _takeScreenshot),
+                                const SizedBox(width: 10),
+                                _sideBtn(
+                                  _muted ? Icons.volume_off : Icons.volume_up,
+                                  _muted ? Colors.redAccent : Colors.white,
+                                  _toggleMute,
+                                ),
+                                const SizedBox(width: 10),
+                                _sideBtn(
+                                  _locked ? Icons.lock : Icons.lock_open,
+                                  _locked ? Colors.amber : Colors.white,
+                                  _toggleLock,
                                 ),
                                 const Spacer(),
+                                _sideBtn(
+                                  Icons.playlist_play,
+                                  _showVideoList
+                                      ? const Color(0xff2D8CFF)
+                                      : Colors.white,
+                                  () => setState(
+                                      () => _showVideoList = !_showVideoList),
+                                ),
+                                const SizedBox(width: 6),
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
