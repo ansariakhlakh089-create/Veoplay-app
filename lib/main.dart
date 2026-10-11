@@ -4849,11 +4849,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         return AudioSource.uri(
           Uri.parse('content://media/external/audio/media/${song.id}'),
           tag: MediaItem(
-            id: song.id.toString(),
-            album: "VeoPlay",
-            title: globalSongNames[song.id] ?? song.title,
-            artist: song.artist ?? "Unknown",
-          ),
+  id: song.id.toString(),
+  album: "VeoPlay",
+  title: globalSongNames[song.id] ?? song.title,
+  artist: song.artist ?? "Unknown",
+  artUri: song.albumId != null
+      ? Uri.parse(
+          'content://media/external/audio/albumart/${song.albumId}')
+      : null,
+),
         );
       }).toList();
 
