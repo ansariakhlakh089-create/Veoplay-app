@@ -3828,25 +3828,25 @@ PopupMenuButton<int>(
 ),
     // दायाँ हिस्सा: Speed + PiP
     Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: const Icon(Icons.speed, color: Colors.white70, size: 24),
-            onPressed: _showSpeedDialog,
-          ),
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: const Icon(Icons.picture_in_picture_alt,
-                color: Colors.white70, size: 24),
-            onPressed: _enterPip,
-          ),
-        ],
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        icon: const Icon(Icons.speed, color: Colors.white70, size: 20),
+        onPressed: _showSpeedDialog,
       ),
-    ),
+      IconButton(
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+        icon: const Icon(Icons.picture_in_picture_alt,
+            color: Colors.white70, size: 18),
+        onPressed: _enterPip,
+      ),
+    ],
+  ),
+),
   ],
 ),
       ],
