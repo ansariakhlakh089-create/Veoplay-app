@@ -1423,19 +1423,31 @@ onToggleFavorite: isFavScreen ? (s) async { ... } : null,
         },
         child: Row(
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xff2D8CFF).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                  isPlaying ? Icons.graphic_eq : Icons.music_note,
-                  color: isPlaying
-                      ? const Color(0xff2D8CFF)
-                      : Colors.white),
-            ),
+            Stack(
+  children: [
+    AlbumArtWidget(
+      songId: song.id,
+      size: 50,
+      radius: 8,
+      fallbackIcon:
+          isPlaying ? Icons.graphic_eq : Icons.music_note,
+    ),
+    if (isPlaying)
+      Positioned.fill(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.graphic_eq,
+            color: Color(0xff2D8CFF),
+            size: 24,
+          ),
+        ),
+      ),
+  ],
+),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
