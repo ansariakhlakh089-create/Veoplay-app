@@ -4169,30 +4169,30 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
             ),
           ),
           Positioned(
-            left: 8,
-            top: 60,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    active ? Icons.volume_up : Icons.volume_off,
-                    color: active ? Colors.amber : Colors.white54,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text('Video ${slot + 1}',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 12)),
-                ],
-              ),
-            ),
-          ),
+  left: 8,
+  bottom: 70,
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+      color: Colors.black54,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          active ? Icons.volume_up : Icons.volume_off,
+          color: active ? Colors.amber : Colors.white54,
+          size: 11,
+        ),
+        const SizedBox(width: 4),
+        Text('Video ${slot + 1}',
+            style: const TextStyle(
+                color: Colors.white, fontSize: 10)),
+      ],
+    ),
+  ),
+),
           if (active)
             Positioned.fill(
               child: IgnorePointer(
