@@ -4226,12 +4226,15 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const Expanded(
-                child: Text(
-                  'Dual Video',
+  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+  onPressed: () => Navigator.pop(context),
+  padding: EdgeInsets.zero,
+  constraints: const BoxConstraints(),
+),
+const SizedBox(width: 8),
+const Expanded(
+  child: Text(
+    'Dual Video',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
