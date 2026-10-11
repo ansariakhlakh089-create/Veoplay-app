@@ -6107,3 +6107,142 @@ class QueueScreen extends StatelessWidget {
     );
   }
 }
+
+// ==================== Music Search Screen ====================
+class MusicSearchScreen extends StatefulWidget {
+  final List<SongModel> songs;
+  final void Function(SongModel song)? onMenu;
+  const MusicSearchScreen({
+    super.key,
+    required this.songs,
+    this.onMenu,
+  });
+
+  @override
+  State<MusicSearchScreen> createState() => _MusicSearchScreenState();
+}
+
+class _MusicSearchScreenState extends State<MusicSearchScreen> {
+  final _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _query.toLowerCase().trim();
+    final results = q.isEmpty
+        ? <SongModel>[]
+        : widget.songs.where((s) {
+            final title =
+                (globalSongNames[s.id] ?? s.title).toLowerCase();
+            final artist = (s.artist ?? '').toLowerCase();
+            return title.contains(q) || artist.contains(q);
+          }).toList();
+
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: TextField(
+          controller: _controller,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'गाना या कलाकार खोजें...',
+            hintStyle: TextStyle(color: Colors.white38),
+            border: InputBorder.none,
+          ),
+          onChanged: (v) => setState(() => _query = v),
+        ),
+      ),
+      body: q.isEmpty
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search, color: Colors.white24, size: 60),
+                  SizedBox(height: 12),
+                  Text('गाना या कलाकार का नाम लिखें',
+                      style: TextStyle(
+                          color: Colors.white54, fontSize: 14)),
+                ],
+              ),
+            )
+          : results.isEmpty
+              ? const Center(
+                  child: Text('कुछ नहीं मिला',
+                      style: TextStyle(
+                          color: Colors.white54, fontSize: 16)),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(18),
+                  itemCount: results.length,
+                  itemBuilder: (context, i) {
+                    final song = results[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AudioPlayerScreen(
+                                  songs: results, initialIndex: i),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            AlbumArtWidget(
+                              songId: song.id,
+                              size: 50,
+                              radius: 8,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    globalSongNames[song.id] ?? song.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    song.artist ?? 'Unknown',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (widget.onMenu != null)
+                              IconButton(
+                                onPressed: () => widget.onMenu!(song),
+                                icon: const Icon(Icons.more_vert,
+                                    color: Colors.white60, size: 20),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
