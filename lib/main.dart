@@ -1180,6 +1180,26 @@ if (mounted) {
     if (mounted) setState(() => _recentSongIds = list);
   }
 
+  Future<void> _shareSong(SongModel song) async {
+  try {
+    final file = File(song.data);
+    if (!await file.exists()) {
+      _toast('फ़ाइल नहीं मिली');
+      return;
+    }
+    await Share.shareXFiles(
+      [XFile(song.data, mimeType: 'audio/*')],
+      subject: globalSongNames[song.id] ?? song.title,
+      text: '${globalSongNames[song.id] ?? song.title}\n${song.artist ?? ''}',
+    );
+  } catch (e) {
+    debugPrint('Song share error: $e');
+    _toast('Share नहीं हो पाया');
+  }
+}
+
+Future<void> _toggleFavorite(SongModel song) async {
+  
   Future<void> _toggleFavorite(SongModel song) async {
     setState(() {
       if (_favoriteIds.contains(song.id)) {
