@@ -1197,7 +1197,12 @@ Future<void> _playNextSong(SongModel song) async {
       ),
     );
     final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
-    await globalAudioPlayer.insertAudioSource(nextIndex, source);
+    final current = globalAudioPlayer.audioSource;
+    if (current is! ConcatenatingAudioSource) {
+      _toast('अभी लिस्ट से गाना नहीं चल रहा');
+      return;
+    }
+    await current.insert(nextIndex, source);
     _toast('"${globalSongNames[song.id] ?? song.title}" अगला चलेगा');
   } catch (e) {
     debugPrint('Play next error: $e');
