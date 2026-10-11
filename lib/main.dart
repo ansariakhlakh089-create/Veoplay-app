@@ -3489,6 +3489,7 @@ if (_showGestureIndicator)
                       }
                     },
                   ),
+                ],
                           Expanded(
                             child: Text(
                               widget.title,
