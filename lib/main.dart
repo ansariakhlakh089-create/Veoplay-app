@@ -5468,10 +5468,12 @@ await prefs.setStringList(
   }
 
   @override
-  void dispose() {
-    _currentIndexSubscription?.cancel();
-    super.dispose();
-  }
+void dispose() {
+  _currentIndexSubscription?.cancel();
+  _musicSleepTimer?.cancel();
+  _sleepCountdown?.cancel();
+  super.dispose();
+}
 
   @override
   Widget build(BuildContext context) {
