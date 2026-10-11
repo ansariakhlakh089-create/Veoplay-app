@@ -4963,6 +4963,40 @@ await _player.play();
     return '$minutes:$seconds';
   }
 
+  Future<void> _playNextSong(SongModel song) async {
+  try {
+    if (globalAudioPlayer.sequence == null ||
+        globalAudioPlayer.sequence!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('पहले कोई गाना चलाओ')),
+      );
+      return;
+    }
+    final source = AudioSource.uri(
+      Uri.parse('content://media/external/audio/media/${song.id}'),
+      tag: MediaItem(
+        id: song.id.toString(),
+        album: 'VeoPlay',
+        title: globalSongNames[song.id] ?? song.title,
+        artist: song.artist ?? 'Unknown',
+      ),
+    );
+    final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
+    await globalAudioPlayer.insertAudioSource(nextIndex, source);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '"${globalSongNames[song.id] ?? song.title}" अगला चलेगा'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  } catch (e) {
+    debugPrint('Play next error: $e');
+  }
+}
+
   Future<void> _shareSong(SongModel song) async {
   try {
     final file = File(song.data);
