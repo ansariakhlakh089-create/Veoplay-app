@@ -2789,13 +2789,13 @@ Widget _sideBtn(IconData icon, Color color, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      width: 34,
-      height: 34,
+      width: 30,
+      height: 30,
       decoration: const BoxDecoration(
         color: Colors.black45,
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, color: color, size: 20),
+      child: Icon(icon, color: color, size: 18),
     ),
   );
 }
