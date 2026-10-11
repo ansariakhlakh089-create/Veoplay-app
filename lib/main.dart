@@ -5023,6 +5023,131 @@ Future<void> _toggleFavorite(SongModel song) async {
     }
   }
 
+  void _showMusicSleepTimerDialog() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xff1A1D24),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Sleep Timer",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+              if (_sleepRemaining > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '$_sleepRemaining मिनट बाकी',
+                  style: const TextStyle(
+                      color: Color(0xff2D8CFF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [5, 10, 15, 30, 60].map((min) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _startMusicSleepTimer(min);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.timer,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 6),
+                          Text('$min मिनट',
+                              style:
+                                  const TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+              if (_sleepRemaining > 0)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _cancelMusicSleepTimer();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text('Sleep Timer हटाओ',
+                        style: TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void _startMusicSleepTimer(int minutes) {
+  _cancelMusicSleepTimer();
+  setState(() => _sleepRemaining = minutes);
+  _musicSleepTimer = Timer(Duration(minutes: minutes), () {
+    if (mounted) {
+      _player.pause();
+      setState(() => _sleepRemaining = 0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sleep timer खत्म — गाना रुक गया')),
+      );
+    }
+  });
+  _sleepCountdown = Timer.periodic(const Duration(minutes: 1), (t) {
+    if (!mounted) return;
+    setState(() => _sleepRemaining--);
+    if (_sleepRemaining <= 0) t.cancel();
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('$minutes मिनट बाद गाना रुकेगा')),
+  );
+}
+
+void _cancelMusicSleepTimer() {
+  _musicSleepTimer?.cancel();
+  _musicSleepTimer = null;
+  _sleepCountdown?.cancel();
+  _sleepCountdown = null;
+  if (mounted) {
+    setState(() => _sleepRemaining = 0);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sleep timer हटाया')),
+    );
+  }
+}
+
   Future<void> _showEqualizerDialog() async {
     try {
       final session = await AudioSession.instance;
