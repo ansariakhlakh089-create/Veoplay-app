@@ -3149,8 +3149,54 @@ _controller.dispose();
   super.dispose();
 }
 
+  void _onPipAction(PipAction action) {
+    switch (action) {
+      case PipAction.play:
+        _controller.play();
+        setState(() {});
+        break;
+      case PipAction.pause:
+        _controller.pause();
+        setState(() {});
+        break;
+      case PipAction.next:
+        if (_hasNext) _playNext();
+        break;
+      case PipAction.previous:
+        if (_hasPrevious) _playPrevious();
+        break;
+      default:
+        break;
+    }
+  }
+
+  // पॉप-अप खिड़की में सिर्फ वीडियो दिखेगा
+  Widget _buildPipView() {
+    if (!_isInitialized) {
+      return const ColoredBox(color: Colors.black);
+    }
+    return Container(
+      color: Colors.black,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: _controller.value.aspectRatio,
+          child: VideoPlayer(_controller),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    return PipWidget(
+      pipLayout: PipActionsLayout.media,
+      onPipAction: _onPipAction,
+      pipChild: _buildPipView(),
+      child: _buildPlayer(context),
+    );
+  }
+
+  Widget _buildPlayer(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: _hasError
