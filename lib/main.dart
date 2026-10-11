@@ -1016,15 +1016,25 @@ if (mounted) {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.edit, color: Colors.white),
-                title: const Text("Rename", style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(context);
-                  _renameVideo(item, index);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete, color: Colors.redAccent),
+  leading: const Icon(Icons.edit, color: Colors.white),
+  title: const Text("Rename",
+      style: TextStyle(color: Colors.white)),
+  onTap: () {
+    Navigator.pop(context);
+    _renameSong(song);
+  },
+),
+ListTile(
+  leading: const Icon(Icons.share, color: Colors.white),
+  title: const Text("Share",
+      style: TextStyle(color: Colors.white)),
+  onTap: () {
+    Navigator.pop(context);
+    _shareSong(song);
+  },
+),
+ListTile(
+  leading: const Icon(Icons.delete, color: Colors.redAccent),
                 title: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
                 onTap: () {
                   Navigator.pop(context);
