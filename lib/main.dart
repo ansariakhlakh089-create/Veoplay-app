@@ -5507,13 +5507,27 @@ await prefs.setStringList(
     return Scaffold(
       backgroundColor: const Color(0xff0B0D12),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-          onPressed: () => Navigator.pop(context),
-        ),
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+    onPressed: () => Navigator.pop(context),
+  ),
+  actions: [
+    IconButton(
+      icon: Icon(
+        _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
+        color: _sleepRemaining > 0
+            ? const Color(0xff2D8CFF)
+            : Colors.white70,
       ),
+      tooltip: _sleepRemaining > 0
+          ? '$_sleepRemaining मिनट बाकी'
+          : 'Sleep timer',
+      onPressed: _showMusicSleepTimerDialog,
+    ),
+  ],
+),
       body: SingleChildScrollView(         // 👈 नया
   padding: const EdgeInsets.all(24),
   child: Column(
