@@ -5312,18 +5312,11 @@ await prefs.setStringList(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       const SizedBox(height: 20),     // 👈 ऊपर थोड़ी जगह
-      Container(
-        width: 250,
-        height: 250,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.music_note,
-                  color: Colors.white, size: 100),
-            ),
+      AlbumArtWidget(
+  songId: song.id,
+  size: 250,
+  radius: 20,
+),
             const SizedBox(height: 40),
             Text(
               songTitle,
