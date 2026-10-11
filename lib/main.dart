@@ -2895,22 +2895,62 @@ void _skipBackward() {
   void _showSpeedDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Playback Speed'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
-            return ListTile(
-              title: Text('${speed}x'),
-          onTap: () async {
-              _controller.setPlaybackSpeed(speed);
-             setState(() => _speed = speed);
-             final prefs = await SharedPreferences.getInstance();
-             await prefs.setDouble('video_speed', speed); // 👈 ये line
-             if (context.mounted) Navigator.pop(context);
-              },
-            );
-          }).toList(),
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xff1A1D24),
+        insetPadding:
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Playback Speed',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
+                  final selected = speed == _speed;
+                  return GestureDetector(
+                    onTap: () async {
+                      _controller.setPlaybackSpeed(speed);
+                      setState(() => _speed = speed);
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setDouble('video_speed', speed);
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? const Color(0xff2D8CFF)
+                            : Colors.white12,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${speed}x',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight:
+                              selected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
