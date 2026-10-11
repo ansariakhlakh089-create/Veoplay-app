@@ -5645,15 +5645,11 @@ class _SongListScreenState extends State<SongListScreen> {
                     },
                     child: Row(
                       children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: const Color(0xff2D8CFF).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.music_note, color: Colors.white),
-                        ),
+                        AlbumArtWidget(
+  songId: song.id,
+  size: 50,
+  radius: 8,
+),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
