@@ -1422,29 +1422,31 @@ Future<void> _removeSongFromPlaylist(
   }
 
   void _openSongList(String title, List<SongModel> songs,
-  {String? playlistName}) {
-Navigator.push(
-  context,
-  MaterialPageRoute(
-      builder: (_) => SongListScreen(
-            title: title,
-            songs: songs,
-            onMenu: _showSongOptions,
-            keep: (s) =>
-                _songs.any((x) => x.id == s.id) &&
-                (title != "Favorite" || _favoriteIds.contains(s.id)),
-            playlistName: playlistName,
-            onRemoveFromPlaylist: playlistName == null
-                ? null
-                : (s) => _removeSongFromPlaylist(playlistName, s),
-            final isFavScreen = title == "Favorite";
-favoriteIds: isFavScreen ? _favoriteIds : null,
-onToggleFavorite: isFavScreen ? (s) async { ... } : null,
-              await _toggleFavorite(s);
-              if (mounted) setState(() {});
-            },
-          )),
-);
+{String? playlistName}) {
+  final isFavScreen = title == "Favorite";
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (_) => SongListScreen(
+              title: title,
+              songs: songs,
+              onMenu: _showSongOptions,
+              keep: (s) =>
+                  _songs.any((x) => x.id == s.id) &&
+                  (title != "Favorite" || _favoriteIds.contains(s.id)),
+              playlistName: playlistName,
+              onRemoveFromPlaylist: playlistName == null
+                  ? null
+                  : (s) => _removeSongFromPlaylist(playlistName, s),
+              favoriteIds: isFavScreen ? _favoriteIds : null,
+              onToggleFavorite: isFavScreen
+                  ? (s) async {
+                      await _toggleFavorite(s);
+                      if (mounted) setState(() {});
+                    }
+                  : null,
+            )),
+  );
   }
   
   Widget _songTile(int index) {
