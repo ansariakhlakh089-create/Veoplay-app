@@ -4402,6 +4402,166 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   }
 }
 
+// ==================== Album Art Widget ====================
+class AlbumArtWidget extends StatefulWidget {
+  final int songId;
+  final double size;
+  final double radius;
+  final bool circle;
+  final IconData fallbackIcon;
+  const AlbumArtWidget({
+    super.key,
+    required this.songId,
+    this.size = 50,
+    this.radius = 8,
+    this.circle = false,
+    this.fallbackIcon = Icons.music_note,
+  });
+
+  @override
+  State<AlbumArtWidget> createState() => _AlbumArtWidgetState();
+}
+
+class _AlbumArtWidgetState extends State<AlbumArtWidget> {
+  Uint8List? _bytes;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant AlbumArtWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.songId != widget.songId) {
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _bytes = null;
+    });
+    try {
+      final bytes = await OnAudioQuery().queryArtwork(
+        widget.songId,
+        ArtworkType.AUDIO,
+        size: 300,
+        quality: 50,
+      );
+      if (mounted) {
+        setState(() {
+          _bytes = bytes;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Album art error: $e');
+      if (mounted) {
+        setState(() {
+          _bytes = null;
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rad = widget.circle
+        ? BorderRadius.circular(widget.size / 2)
+        : BorderRadius.circular(widget.radius);
+
+    // Fallback: vinyl-style premium design
+    Widget fallback() => Container(
+          width: widget.size,
+          height: widget.size,
+          decoration: BoxDecoration(
+            gradient: const RadialGradient(
+              center: Alignment(-0.3, -0.3),
+              radius: 1.2,
+              colors: [
+                Color(0xFF1E2A47),
+                Color(0xFF0F1626),
+              ],
+            ),
+            borderRadius: rad,
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+              width: 0.8,
+            ),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // विनाइल रिंग्स (हल्के)
+              for (final s in [0.85, 0.68, 0.51])
+                Container(
+                  width: widget.size * s,
+                  height: widget.size * s,
+                  decoration: BoxDecoration(
+                    shape: widget.circle ? BoxShape.circle : BoxShape.rectangle,
+                    borderRadius: widget.circle ? null : rad,
+                    border: Border.all(
+                      color: const Color(0xff2D8CFF).withOpacity(0.10),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              // Center में बड़ा note
+              Icon(
+                widget.fallbackIcon,
+                color: const Color(0xff2D8CFF).withOpacity(0.85),
+                size: widget.size * 0.42,
+              ),
+              // छोटे decorative notes
+              Positioned(
+                top: widget.size * 0.10,
+                right: widget.size * 0.10,
+                child: Icon(
+                  Icons.music_note,
+                  color: Colors.white.withOpacity(0.10),
+                  size: widget.size * 0.14,
+                ),
+              ),
+              Positioned(
+                bottom: widget.size * 0.12,
+                left: widget.size * 0.12,
+                child: Icon(
+                  Icons.graphic_eq,
+                  color: Colors.white.withOpacity(0.08),
+                  size: widget.size * 0.12,
+                ),
+              ),
+            ],
+          ),
+        );
+
+    if (_loading) {
+      return ClipRRect(borderRadius: rad, child: fallback());
+    }
+
+    if (_bytes == null || _bytes!.isEmpty) {
+      return ClipRRect(borderRadius: rad, child: fallback());
+    }
+
+    return ClipRRect(
+      borderRadius: rad,
+      child: Image.memory(
+        _bytes!,
+        width: widget.size,
+        height: widget.size,
+        fit: BoxFit.cover,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) => fallback(),
+      ),
+    );
+  }
+}
+
 // ==================== वीडियो थंबनेल विजेट ====================
 class VideoThumbnailWidget extends StatefulWidget {
   final String videoPath;
