@@ -3497,10 +3497,17 @@ if (_showGestureIndicator)
                             ),
                           ),
                           IconButton(
+  IconButton(
   icon: const Icon(Icons.closed_caption, color: Colors.white),
-  onPressed: () {},
+  onPressed: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Subtitles (CC) जल्द आएँगे'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  },
 ),
-
 PopupMenuButton<int>(
   icon: const Icon(Icons.more_vert, color: Colors.white),
   onSelected: (value) {
