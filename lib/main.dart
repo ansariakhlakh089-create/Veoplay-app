@@ -1198,8 +1198,6 @@ if (mounted) {
   }
 }
 
-Future<void> _toggleFavorite(SongModel song) async {
-  
   Future<void> _toggleFavorite(SongModel song) async {
     setState(() {
       if (_favoriteIds.contains(song.id)) {
