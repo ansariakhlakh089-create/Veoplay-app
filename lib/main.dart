@@ -1797,47 +1797,69 @@ if (_audioPermissionDenied) {
     );
   }
     const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
-    final recent = _songsByIds(_recentSongIds);
-    final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
-    return Column(
+final recent = _songsByIds(_recentSongIds);
+final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
+return Column(
+  children: [
+    Row(
       children: [
-        SizedBox(
-          height: 44,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            children: List.generate(tabs.length, (i) {
-              final sel = _musicSubTab == i;
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => _musicSubTab = i),
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 22),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(tabs[i],
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight:
-                                  sel ? FontWeight.bold : FontWeight.normal,
-                              color: sel
-                                  ? const Color(0xff2D8CFF)
-                                  : Colors.white54)),
-                      const SizedBox(height: 4),
-                      Container(
-                          height: 3,
-                          width: 28,
-                          color: sel
-                              ? const Color(0xff2D8CFF)
-                              : Colors.transparent),
-                    ],
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 18),
+              children: List.generate(tabs.length, (i) {
+                final sel = _musicSubTab == i;
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => _musicSubTab = i),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 22),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(tabs[i],
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight:
+                                    sel ? FontWeight.bold : FontWeight.normal,
+                                color: sel
+                                    ? const Color(0xff2D8CFF)
+                                    : Colors.white54)),
+                        const SizedBox(height: 4),
+                        Container(
+                            height: 3,
+                            width: 28,
+                            color: sel
+                                ? const Color(0xff2D8CFF)
+                                : Colors.transparent),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.white70),
+          padding: const EdgeInsets.only(right: 8),
+          constraints: const BoxConstraints(),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MusicSearchScreen(
+                  songs: _songs,
+                  onMenu: _showSongOptions,
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    ),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
           child: Row(
