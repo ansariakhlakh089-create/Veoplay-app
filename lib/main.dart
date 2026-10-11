@@ -1180,6 +1180,31 @@ if (mounted) {
     if (mounted) setState(() => _recentSongIds = list);
   }
 
+Future<void> _playNextSong(SongModel song) async {
+  try {
+    if (globalAudioPlayer.sequence == null ||
+        globalAudioPlayer.sequence!.isEmpty) {
+      _toast('पहले कोई गाना चलाओ');
+      return;
+    }
+    final source = AudioSource.uri(
+      Uri.parse('content://media/external/audio/media/${song.id}'),
+      tag: MediaItem(
+        id: song.id.toString(),
+        album: 'VeoPlay',
+        title: globalSongNames[song.id] ?? song.title,
+        artist: song.artist ?? 'Unknown',
+      ),
+    );
+    final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
+    await globalAudioPlayer.insertAudioSource(nextIndex, source);
+    _toast('"${globalSongNames[song.id] ?? song.title}" अगला चलेगा');
+  } catch (e) {
+    debugPrint('Play next error: $e');
+    _toast('नहीं हो पाया');
+  }
+}
+
   Future<void> _shareSong(SongModel song) async {
   try {
     final file = File(song.data);
