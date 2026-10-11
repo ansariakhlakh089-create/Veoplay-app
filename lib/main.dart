@@ -5516,19 +5516,32 @@ void dispose() {
     onPressed: () => Navigator.pop(context),
   ),
   actions: [
-    IconButton(
-      icon: Icon(
-        _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
-        color: _sleepRemaining > 0
-            ? const Color(0xff2D8CFF)
-            : Colors.white70,
-      ),
-      tooltip: _sleepRemaining > 0
-          ? '$_sleepRemaining मिनट बाकी'
-          : 'Sleep timer',
-      onPressed: _showMusicSleepTimerDialog,
+  IconButton(
+    icon: const Icon(Icons.queue_music,
+        color: Colors.white70),
+    tooltip: 'Queue',
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const QueueScreen(),
+        ),
+      );
+    },
+  ),
+  IconButton(
+    icon: Icon(
+      _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
+      color: _sleepRemaining > 0
+          ? const Color(0xff2D8CFF)
+          : Colors.white70,
     ),
-  ],
+    tooltip: _sleepRemaining > 0
+        ? '$_sleepRemaining मिनट बाकी'
+        : 'Sleep timer',
+    onPressed: _showMusicSleepTimerDialog,
+  ),
+],
 ),
       body: SingleChildScrollView(         // 👈 नया
   padding: const EdgeInsets.all(24),
