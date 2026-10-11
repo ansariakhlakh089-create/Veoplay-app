@@ -2936,50 +2936,77 @@ void _toggleLock() {
 void _showSleepTimerDialog() {
   showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
     backgroundColor: const Color(0xff1A1D24),
     builder: (context) {
       return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
                 "Sleep Timer",
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
-            ),
-            for (final min in [5, 10, 15, 30, 60])
-              ListTile(
-                leading: const Icon(Icons.timer, color: Colors.white70),
-                title: Text(
-                  '$min मिनट बाद रुकेगा',
-                  style: const TextStyle(color: Colors.white),
-                ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [5, 10, 15, 30, 60].map((min) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _startSleepTimer(min);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.timer,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 6),
+                          Text('$min मिनट',
+                              style: const TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
-                  _startSleepTimer(min);
+                  _sleepTimer?.cancel();
+                  _sleepTimer = null;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Sleep timer हटाया')),
+                  );
                 },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text('Sleep Timer हटाओ',
+                      style: TextStyle(color: Colors.redAccent)),
+                ),
               ),
-            ListTile(
-              leading: const Icon(Icons.cancel, color: Colors.redAccent),
-              title: const Text(
-                'Sleep Timer हटाओ',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _sleepTimer?.cancel();
-                _sleepTimer = null;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sleep timer हटाया')),
-                );
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       );
     },
