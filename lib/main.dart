@@ -3714,6 +3714,635 @@ PopupMenuButton<int>(
   }
 }
 
+// ===================== DUAL VIDEO SCREEN =====================
+class DualVideoScreen extends StatefulWidget {
+  final List<Map<String, String>> playlist;
+  final int index1;
+  final int index2;
+  final int startPosition1;
+
+  const DualVideoScreen({
+    Key? key,
+    required this.playlist,
+    required this.index1,
+    required this.index2,
+    this.startPosition1 = 0,
+  }) : super(key: key);
+
+  @override
+  State<DualVideoScreen> createState() => _DualVideoScreenState();
+}
+
+class _DualVideoScreenState extends State<DualVideoScreen> {
+  VideoPlayerController? _c1;
+  VideoPlayerController? _c2;
+  late int _i1;
+  late int _i2;
+  bool _ready1 = false;
+  bool _ready2 = false;
+  int _active = 0;        // 0 = Video 1, 1 = Video 2 (आवाज़ और सीक बार इसी का)
+  bool _together = true;  // true = साथ में चलाओ, false = बारी-बारी
+  bool _showList = false;
+  bool _showControls = true;
+  bool _leaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _i1 = widget.index1;
+    _i2 = widget.index2;
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+    WakelockPlus.enable();
+    _load(0, _i1, startSec: widget.startPosition1);
+    _load(1, _i2);
+  }
+
+  VideoPlayerController? _ctrl(int slot) => slot == 0 ? _c1 : _c2;
+
+  VideoPlayerController _make(String url) {
+    if (url.startsWith('http')) {
+      return VideoPlayerController.networkUrl(Uri.parse(url));
+    }
+    return VideoPlayerController.file(File(url));
+  }
+
+  void _onTick() {
+    if (mounted) setState(() {});
+  }
+
+  void _snack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), duration: const Duration(seconds: 1)),
+    );
+  }
+
+  Future<void> _saveResumeFor(String url, VideoPlayerController? c) async {
+    if (c == null) return;
+    final pos = c.value.position.inSeconds;
+    final dur = c.value.duration.inSeconds;
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'resume_$url';
+    if (pos >= 5 && (dur <= 0 || pos < dur - 3)) {
+      await prefs.setInt(key, pos);
+    } else {
+      await prefs.remove(key);
+    }
+  }
+
+  // किसी भी हिस्से (0 या 1) में नया वीडियो लगाना
+  Future<void> _load(int slot, int index, {int startSec = 0}) async {
+    final old = _ctrl(slot);
+    if (old != null) {
+      old.removeListener(_onTick);
+      final oldIndex = slot == 0 ? _i1 : _i2;
+      _saveResumeFor(widget.playlist[oldIndex]['url']!, old);
+    }
+    if (mounted) {
+      setState(() {
+        if (slot == 0) {
+          _c1 = null;
+          _ready1 = false;
+          _i1 = index;
+        } else {
+          _c2 = null;
+          _ready2 = false;
+          _i2 = index;
+        }
+      });
+    }
+    await Future.delayed(const Duration(milliseconds: 80));
+    await old?.dispose();
+
+    final url = widget.playlist[index]['url']!;
+    final c = _make(url);
+    try {
+      await c.initialize();
+    } catch (e) {
+      await c.dispose();
+      if (mounted) _snack('वीडियो नहीं खुल पाया');
+      return;
+    }
+    if (!mounted || _leaving) {
+      await c.dispose();
+      return;
+    }
+    var start = startSec;
+    if (start <= 0) {
+      final prefs = await SharedPreferences.getInstance();
+      start = prefs.getInt('resume_$url') ?? 0;
+    }
+    if (start > 0) await c.seekTo(Duration(seconds: start));
+    if (!mounted || _leaving) {
+      await c.dispose();
+      return;
+    }
+    c.addListener(_onTick);
+    setState(() {
+      if (slot == 0) {
+        _c1 = c;
+        _ready1 = true;
+      } else {
+        _c2 = c;
+        _ready2 = true;
+      }
+    });
+    if (!_together) {
+      _active = slot;
+      _ctrl(1 - slot)?.pause();
+    }
+    _applyAudio();
+    await c.play();
+  }
+
+  void _applyAudio() {
+    _c1?.setVolume(_active == 0 ? 1.0 : 0.0);
+    _c2?.setVolume(_active == 1 ? 1.0 : 0.0);
+  }
+
+  bool get _anyPlaying =>
+      (_c1?.value.isPlaying ?? false) || (_c2?.value.isPlaying ?? false);
+
+  void _togglePlay() {
+    if (_anyPlaying) {
+      _c1?.pause();
+      _c2?.pause();
+    } else {
+      if (_together) {
+        _c1?.play();
+        _c2?.play();
+      } else {
+        _ctrl(_active)?.play();
+      }
+    }
+    setState(() {});
+  }
+
+  // किसी हिस्से पर टैप: उसकी आवाज़ और सीक बार
+  void _selectSlot(int slot) {
+    setState(() => _active = slot);
+    _applyAudio();
+    if (!_together) {
+      _ctrl(1 - slot)?.pause();
+      _ctrl(slot)?.play();
+    }
+  }
+
+  void _toggleMode() {
+    final wasPlaying = _anyPlaying;
+    setState(() => _together = !_together);
+    if (_together) {
+      if (wasPlaying) {
+        _c1?.play();
+        _c2?.play();
+      }
+    } else {
+      _ctrl(1 - _active)?.pause();
+    }
+    _snack(_together ? 'साथ में चलाओ' : 'बारी-बारी');
+  }
+
+  void _seekTo(double sec) {
+    final d = Duration(seconds: sec.toInt());
+    if (_together) {
+      _c1?.seekTo(d);
+      _c2?.seekTo(d);
+    } else {
+      _ctrl(_active)?.seekTo(d);
+    }
+  }
+
+  // वापस पुराने (अकेले वीडियो वाले) प्लेयर पर
+  void _exitToSingle() {
+    final ac = _ctrl(_active);
+    if (ac == null) {
+      Navigator.pop(context);
+      return;
+    }
+    final idx = _active == 0 ? _i1 : _i2;
+    final pos = ac.value.position.inSeconds;
+    final item = widget.playlist[idx];
+    _leaving = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RealVideoPlayer(
+          videoUrl: item['url']!,
+          title: item['title']!,
+          startPosition: pos,
+          playlist: widget.playlist,
+          currentIndex: idx,
+          startLandscape: true,
+        ),
+      ),
+    );
+  }
+
+  String _fmt(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
+  }
+
+  @override
+  void dispose() {
+    final c1 = _c1;
+    final c2 = _c2;
+    c1?.removeListener(_onTick);
+    c2?.removeListener(_onTick);
+    if (c1 != null) _saveResumeFor(widget.playlist[_i1]['url']!, c1);
+    if (c2 != null) _saveResumeFor(widget.playlist[_i2]['url']!, c2);
+    c1?.dispose();
+    c2?.dispose();
+    if (!_leaving) {
+      WakelockPlus.disable();
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+    super.dispose();
+  }
+
+  // ---------------- UI ----------------
+
+  Widget _panel(int slot) {
+    final c = _ctrl(slot);
+    final ready = slot == 0 ? _ready1 : _ready2;
+    final active = _active == slot;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        if (active) {
+          setState(() => _showControls = !_showControls);
+        } else {
+          _selectSlot(slot);
+        }
+      },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              color: Colors.black,
+              child: (ready && c != null)
+                  ? Center(
+                      child: AspectRatio(
+                        aspectRatio: c.value.aspectRatio,
+                        child: VideoPlayer(c),
+                      ),
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(color: Colors.amber),
+                    ),
+            ),
+          ),
+          Positioned(
+            left: 8,
+            top: 60,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    active ? Icons.volume_up : Icons.volume_off,
+                    color: active ? Colors.amber : Colors.white54,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text('Video ${slot + 1}',
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 12)),
+                ],
+              ),
+            ),
+          ),
+          if (active)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.amber, width: 2),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.black87, Colors.transparent],
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const Expanded(
+                child: Text(
+                  'Dual Video',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              Text(
+                _together ? 'साथ में' : 'बारी-बारी',
+                style: const TextStyle(color: Colors.amber, fontSize: 12),
+              ),
+              IconButton(
+                icon: Icon(_together ? Icons.sync : Icons.swap_horiz,
+                    color: Colors.amber),
+                onPressed: _toggleMode,
+              ),
+              IconButton(
+                icon: Icon(Icons.playlist_play,
+                    color: _showList ? Colors.amber : Colors.white),
+                onPressed: () => setState(() => _showList = !_showList),
+              ),
+              TextButton.icon(
+                onPressed: _exitToSingle,
+                icon: const Icon(Icons.crop_square,
+                    color: Colors.white, size: 18),
+                label: const Text('Single',
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    final ac = _ctrl(_active);
+    final pos = ac?.value.position ?? Duration.zero;
+    final dur = ac?.value.duration ?? Duration.zero;
+    final max = dur.inSeconds > 0 ? dur.inSeconds.toDouble() : 1.0;
+    final val = pos.inSeconds.toDouble().clamp(0.0, max).toDouble();
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
+            colors: [Colors.black87, Colors.transparent],
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(_fmt(pos),
+                      style: const TextStyle(color: Colors.white70)),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        activeTrackColor: Colors.amber,
+                        inactiveTrackColor: Colors.white24,
+                        thumbColor: Colors.amber,
+                        thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 7),
+                      ),
+                      child: Slider(
+                        value: val,
+                        min: 0,
+                        max: max,
+                        onChanged: _seekTo,
+                      ),
+                    ),
+                  ),
+                  Text(_fmt(dur),
+                      style: const TextStyle(color: Colors.white70)),
+                ],
+              ),
+              GestureDetector(
+                onTap: _togglePlay,
+                child: Container(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(
+                    color: Color(0xff2D8CFF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _anyPlaying ? Icons.pause : Icons.play_arrow,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _pickSlot(int i) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: Text(
+          widget.playlist[i]['title'] ?? '',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.white, fontSize: 14),
+        ),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _load(0, i);
+            },
+            child: const Text('Video 1 में लगाओ',
+                style: TextStyle(color: Colors.white)),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _load(1, i);
+            },
+            child: const Text('Video 2 में लगाओ',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _slotCard(int slot) {
+    final idx = slot == 0 ? _i1 : _i2;
+    final active = _active == slot;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+            color: active ? Colors.amber : Colors.transparent),
+      ),
+      child: Row(
+        children: [
+          Icon(active ? Icons.volume_up : Icons.volume_off,
+              color: active ? Colors.amber : Colors.white54, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Video ${slot + 1}: ${widget.playlist[idx]['title'] ?? ''}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListPanel() {
+    final list = widget.playlist;
+    final panelWidth =
+        (MediaQuery.of(context).size.width * 0.5).clamp(260.0, 380.0).toDouble();
+    return Positioned(
+      top: 0,
+      bottom: 0,
+      right: 0,
+      width: panelWidth,
+      child: Container(
+        color: Colors.black.withOpacity(0.8),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Videos (${list.length})',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => setState(() => _showList = false),
+                    ),
+                  ],
+                ),
+              ),
+              _slotCard(0),
+              _slotCard(1),
+              const SizedBox(height: 4),
+              const Divider(color: Colors.white24, height: 1),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (context, i) {
+                    final inSlot = i == _i1 ? '1' : (i == _i2 ? '2' : '');
+                    return ListTile(
+                      dense: true,
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: SizedBox(
+                          width: 80,
+                          height: 46,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            clipBehavior: Clip.hardEdge,
+                            child: VideoThumbnailWidget(
+                                videoPath: list[i]['url']!),
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        list[i]['title'] ?? '',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: inSlot.isEmpty
+                          ? null
+                          : CircleAvatar(
+                              radius: 11,
+                              backgroundColor: Colors.amber,
+                              child: Text(inSlot,
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                      onTap: () => _pickSlot(i),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _panel(0)),
+              Container(width: 2, color: Colors.white24),
+              Expanded(child: _panel(1)),
+            ],
+          ),
+          if (_showControls) _buildTopBar(),
+          if (_showControls) _buildBottomBar(),
+          if (_showList) _buildListPanel(),
+        ],
+      ),
+    );
+  }
+}
+
 // ==================== वीडियो थंबनेल विजेट ====================
 class VideoThumbnailWidget extends StatefulWidget {
   final String videoPath;
