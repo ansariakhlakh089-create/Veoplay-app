@@ -5939,3 +5939,101 @@ class _SongListScreenState extends State<SongListScreen> {
     );
   }
 }
+
+// ==================== Queue Screen ====================
+class QueueScreen extends StatelessWidget {
+  const QueueScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text('Queue'),
+      ),
+      body: StreamBuilder<SequenceState?>(
+        stream: globalAudioPlayer.sequenceStateStream,
+        builder: (context, snapshot) {
+          final sequence = snapshot.data?.sequence ?? [];
+          final currentIndex = snapshot.data?.currentIndex ?? 0;
+
+          if (sequence.isEmpty) {
+            return const Center(
+              child: Text('Queue खाली है',
+                  style: TextStyle(color: Colors.white54, fontSize: 16)),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(18),
+            itemCount: sequence.length,
+            itemBuilder: (context, i) {
+              final source = sequence[i];
+              final tag = source.tag;
+              final title = tag is MediaItem ? tag.title : 'Unknown';
+              final artist = tag is MediaItem ? (tag.artist ?? '') : '';
+              final isCurrent = i == currentIndex;
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  width: 45,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: isCurrent
+                        ? const Color(0xff2D8CFF)
+                        : Colors.white10,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: isCurrent
+                        ? const Icon(Icons.graphic_eq,
+                            color: Colors.white, size: 22)
+                        : Text('${i + 1}',
+                            style: const TextStyle(
+                                color: Colors.white60,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                title: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: isCurrent
+                          ? const Color(0xff2D8CFF)
+                          : Colors.white,
+                      fontSize: 14,
+                      fontWeight:
+                          isCurrent ? FontWeight.bold : FontWeight.normal),
+                ),
+                subtitle: Text(
+                  artist,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      color: Colors.white54, fontSize: 12),
+                ),
+                trailing: isCurrent
+                    ? const Text('चल रहा',
+                        style: TextStyle(
+                            color: Color(0xff2D8CFF),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold))
+                    : null,
+                onTap: () async {
+                  if (i == currentIndex) return;
+                  await globalAudioPlayer.seek(Duration.zero, index: i);
+                  await globalAudioPlayer.play();
+                  if (context.mounted) Navigator.pop(context);
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
