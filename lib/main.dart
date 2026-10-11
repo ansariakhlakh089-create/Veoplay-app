@@ -3788,44 +3788,44 @@ PopupMenuButton<int>(
 ),
     // बीच: Previous, Play, Next
     Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: Icon(Icons.skip_previous,
-              color: _hasPrevious ? Colors.white : Colors.white24,
-              size: 32),
-          onPressed: _hasPrevious ? _playPrevious : null,
-        ),
-        const SizedBox(width: 12),
-        GestureDetector(
-          onTap: _togglePlay,
-          child: Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              color: Color(0xff2D8CFF),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-              color: Colors.white,
-              size: 32,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: Icon(Icons.skip_next,
-              color: _hasNext ? Colors.white : Colors.white24,
-              size: 32),
-          onPressed: _hasNext ? _playNext : null,
-        ),
-      ],
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(Icons.skip_previous,
+          color: _hasPrevious ? Colors.white : Colors.white24,
+          size: 24),
+      onPressed: _hasPrevious ? _playPrevious : null,
     ),
+    const SizedBox(width: 10),
+    GestureDetector(
+      onTap: _togglePlay,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: const BoxDecoration(
+          color: Color(0xff2D8CFF),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+          color: Colors.white,
+          size: 26,
+        ),
+      ),
+    ),
+    const SizedBox(width: 10),
+    IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(Icons.skip_next,
+          color: _hasNext ? Colors.white : Colors.white24,
+          size: 24),
+      onPressed: _hasNext ? _playNext : null,
+    ),
+  ],
+),
     // दायाँ हिस्सा: Speed + PiP
     Expanded(
       child: Row(
