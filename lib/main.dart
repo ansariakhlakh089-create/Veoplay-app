@@ -3488,21 +3488,38 @@ const SizedBox(height: 8),
                             // प्ले कंट्रोल्स
                             Row(
   children: [
-    // बायाँ हिस्सा: Loop (नीला)
+    // बायाँ हिस्सा: Loop (नीला) + Fit
     Expanded(
-      child: Center(
-        child: IconButton(
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
-          icon: Icon(
-            _loopMode == 1 ? Icons.repeat_one : Icons.repeat,
-            color: _loopMode == 0
-                ? Colors.white54
-                : const Color(0xff2D8CFF),
-            size: 24,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(
+              _loopMode == 1 ? Icons.repeat_one : Icons.repeat,
+              color: _loopMode == 0
+                  ? Colors.white54
+                  : const Color(0xff2D8CFF),
+              size: 24,
+            ),
+            onPressed: _cycleLoop,
           ),
-          onPressed: _cycleLoop,
-        ),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(
+              _fitMode == 0
+                  ? Icons.aspect_ratio
+                  : (_fitMode == 1
+                      ? Icons.zoom_out_map
+                      : Icons.fullscreen),
+              color: Colors.white70,
+              size: 24,
+            ),
+            onPressed: _cycleFit,
+          ),
+        ],
       ),
     ),
     // बीच: Previous, Play, Next
