@@ -3496,7 +3496,6 @@ if (_showGestureIndicator)
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          IconButton(
   IconButton(
   icon: const Icon(Icons.closed_caption, color: Colors.white),
   onPressed: () {
