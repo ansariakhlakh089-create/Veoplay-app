@@ -1394,8 +1394,9 @@ Navigator.push(
             onRemoveFromPlaylist: playlistName == null
                 ? null
                 : (s) => _removeSongFromPlaylist(playlistName, s),
-            favoriteIds: _favoriteIds,                        // 👈 नया
-            onToggleFavorite: (s) async {                     // 👈 नया
+            final isFavScreen = title == "Favorite";
+favoriteIds: isFavScreen ? _favoriteIds : null,
+onToggleFavorite: isFavScreen ? (s) async { ... } : null,
               await _toggleFavorite(s);
               if (mounted) setState(() {});
             },
