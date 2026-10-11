@@ -5422,27 +5422,47 @@ await prefs.setStringList(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
-                  onTap: () => _showAddToPlaylistDialog(song),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xff2D8CFF).withOpacity(0.5),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-                GestureDetector(
-                  onTap: _showEqualizerDialog,
+  onTap: () => _showAddToPlaylistDialog(song),
+  child: Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: const Color(0xff2D8CFF).withOpacity(0.5),
+        width: 1.5,
+      ),
+    ),
+    child: const Icon(
+      Icons.add,
+      color: Colors.white,
+      size: 22,
+    ),
+  ),
+),
+const SizedBox(width: 24),
+GestureDetector(
+  onTap: () => _shareSong(song),
+  child: Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: const Color(0xff2D8CFF).withOpacity(0.5),
+        width: 1.5,
+      ),
+    ),
+    child: const Icon(
+      Icons.share,
+      color: Colors.white,
+      size: 22,
+    ),
+  ),
+),
+const SizedBox(width: 24),
+GestureDetector(
+  onTap: _showEqualizerDialog,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
