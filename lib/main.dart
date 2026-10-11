@@ -2729,11 +2729,26 @@ Widget _buildVideoListPanel() {
                         final isCurrent = i == widget.currentIndex;
                         return ListTile(
                           dense: true,
-                          leading: Icon(
-                            isCurrent ? Icons.play_arrow : Icons.movie_outlined,
-                            color: isCurrent
-                                ? const Color(0xff2D8CFF)
-                                : Colors.white54,
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              width: 80,
+                              height: 46,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: isCurrent
+                                      ? const Color(0xff2D8CFF)
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.cover,
+                                clipBehavior: Clip.hardEdge,
+                                child: VideoThumbnailWidget(
+                                    videoPath: list[i]['url']!),
+                              ),
+                            ),
                           ),
                           title: Text(
                             list[i]['title'] ?? '',
