@@ -2777,7 +2777,29 @@ void _cycleFit() {
 }
 
 void _playFirst() => _playAt(0);
-
+void _openDual() {
+  final list = widget.playlist;
+  if (list == null || list.length < 2) {
+    _snack('Dual के लिए लिस्ट में कम से कम 2 वीडियो चाहिए');
+    return;
+  }
+  final i1 = widget.currentIndex ?? 0;
+  final i2 = (i1 + 1 < list.length) ? i1 + 1 : 0;
+  final pos = _controller.value.position.inSeconds;
+  _controller.pause();
+  _replacing = true;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => DualVideoScreen(
+        playlist: list,
+        index1: i1,
+        index2: i2,
+        startPosition1: pos,
+      ),
+    ),
+  );
+}
 Future<void> _saveResume(String url, int pos, int dur) async {
   final prefs = await SharedPreferences.getInstance();
   final key = 'resume_$url';
