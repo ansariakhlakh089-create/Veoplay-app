@@ -4827,7 +4827,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
 
   StreamSubscription<int?>? _currentIndexSubscription;
   String? _setupError;
-
+  Timer? _musicSleepTimer;
+  int _sleepRemaining = 0;
+  Timer? _sleepCountdown;
+  
   @override
   void initState() {
     super.initState();
