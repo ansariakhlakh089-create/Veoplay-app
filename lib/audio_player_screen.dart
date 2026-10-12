@@ -1024,20 +1024,10 @@ GestureDetector(
                                   _player.setSpeed(s);
                                   Navigator.pop(context);
                                 },
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-      ),
-    );
-  }
-}
+                              )).toList(),
+                            ),
+                          );
+                        },
+                      ),
+                    },
+                  ),
