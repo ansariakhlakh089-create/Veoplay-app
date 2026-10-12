@@ -3913,9 +3913,19 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   bool _ready1 = false;
   bool _ready2 = false;
   bool _showList = false;
-  bool _showControls = true;
-  bool _leaving = false;
-
+bool _showControls = true;
+bool _leaving = false;
+// 👇 skip indicators (per-panel)
+String _skip1 = '';
+String _skip2 = '';
+Timer? _skipTimer1;
+Timer? _skipTimer2;
+// 👇 drag seek (per-panel)
+double _dragSec1 = 0;
+double _dragSec2 = 0;
+bool _dragging1 = false;
+bool _dragging2 = false;
+  
   @override
   void initState() {
     super.initState();
