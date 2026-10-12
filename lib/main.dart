@@ -4381,7 +4381,6 @@ const Expanded(
             ],
           ),
           if (_showControls) _buildTopBar(),
-          if (_showControls) _buildBottomBar(),
           if (_showList) _buildListPanel(),
         ],
       ),
