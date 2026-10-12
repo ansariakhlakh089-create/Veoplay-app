@@ -948,13 +948,12 @@ const Expanded(
                 ),
               ),
             ],
-          ),  
-         // 👇 SingleChildScrollView का closing — बस closing bracket के पहले `)` हटा देना, and check karna
+          ),
         ),
       ),
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
