@@ -498,119 +498,205 @@ void _seekToSlot(int slot, double sec) {
   // ---------------- UI ----------------
 
   Widget _panel(int slot) {
-    final c = _ctrl(slot);
-    final ready = slot == 0 ? _ready1 : _ready2;
-    final active = _active == slot;
-    return GestureDetector(
-  behavior: HitTestBehavior.opaque,
-  onTap: () => setState(() => _showControls = !_showControls),
-  onDoubleTapDown: (details) {
-    final panelW = MediaQuery.of(context).size.width / 2;
-    if (details.localPosition.dx < panelW / 3) {
-      _skipSlot(slot, -10);
-    } else if (details.localPosition.dx > panelW * 2 / 3) {
-      _skipSlot(slot, 10);
-    } else {
-      _togglePlaySlot(slot);
-    }
-  },
-  onHorizontalDragStart: (_) => _onDragStart(slot),
-  onHorizontalDragUpdate: (details) => _onDragUpdate(slot, details.delta.dx),
-  onHorizontalDragEnd: (_) => _onDragEnd(slot),
-  child: Stack(
-        children: [
-          // 👇 Skip indicator (per-panel)
-if (slot == 0 && _skip1.isNotEmpty)
-  _centerIndicator(
-    icon: _skip1.startsWith('+')
-        ? Icons.fast_forward
-        : Icons.fast_rewind,
-    label: _skip1,
-  ),
-if (slot == 1 && _skip2.isNotEmpty)
-  _centerIndicator(
-    icon: _skip2.startsWith('+')
-        ? Icons.fast_forward
-        : Icons.fast_rewind,
-    label: _skip2,
-  ),
+  final c = _ctrl(slot);
+  final ready = slot == 0 ? _ready1 : _ready2;
+  final pos = c?.value.position ?? Duration.zero;
+  final dur = c?.value.duration ?? Duration.zero;
+  final maxSec = dur.inSeconds > 0 ? dur.inSeconds.toDouble() : 1.0;
+  final val = pos.inSeconds.toDouble().clamp(0.0, maxSec).toDouble();
+  final isPlaying = c?.value.isPlaying ?? false;
+  final locked = slot == 0 ? _lock1 : _lock2;
 
-// 👇 Drag seek indicator (per-panel)
-if (slot == 0 && _dragging1)
-  _centerIndicator(
-    icon: _dragSec1 >= 0
-        ? Icons.fast_forward
-        : Icons.fast_rewind,
-    label: _dragSec1 >= 0
-        ? '+${_fmt(Duration(seconds: _dragSec1.toInt()))}'
-        : '-${_fmt(Duration(seconds: _dragSec1.abs().toInt()))}',
-  ),
-if (slot == 1 && _dragging2)
-  _centerIndicator(
-    icon: _dragSec2 >= 0
-        ? Icons.fast_forward
-        : Icons.fast_rewind,
-    label: _dragSec2 >= 0
-        ? '+${_fmt(Duration(seconds: _dragSec2.toInt()))}'
-        : '-${_fmt(Duration(seconds: _dragSec2.abs().toInt()))}',
-  ),
-
-// वीडियो
-          Positioned.fill(
-            child: Container(
-              color: Colors.black,
-              child: (ready && c != null)
-                  ? Center(
-                      child: AspectRatio(
-                        aspectRatio: c.value.aspectRatio,
-                        child: VideoPlayer(c),
-                      ),
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(color: Colors.amber),
-                    ),
-            ),
-          ),
-          Positioned(
-  left: 8,
-  bottom: 70,
-  child: Container(
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-    decoration: BoxDecoration(
-      color: Colors.black54,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
+  return GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: () => setState(() => _showControls = !_showControls),
+    onDoubleTapDown: (details) {
+      final panelW = MediaQuery.of(context).size.width / 2;
+      if (details.localPosition.dx < panelW / 3) {
+        _skipSlot(slot, -10);
+      } else if (details.localPosition.dx > panelW * 2 / 3) {
+        _skipSlot(slot, 10);
+      } else {
+        _togglePlaySlot(slot);
+      }
+    },
+    onHorizontalDragStart: (_) => _onDragStart(slot),
+    onHorizontalDragUpdate: (details) =>
+        _onDragUpdate(slot, details.delta.dx),
+    onHorizontalDragEnd: (_) => _onDragEnd(slot),
+    child: Stack(
       children: [
-        Icon(
-          active ? Icons.volume_up : Icons.volume_off,
-          color: active ? Colors.amber : Colors.white54,
-          size: 11,
-        ),
-        const SizedBox(width: 4),
-        Text('Video ${slot + 1}',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 10)),
-      ],
-    ),
-  ),
-),
-          if (active)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.amber, width: 2),
+        // 👇 Skip indicator (per-panel)
+        if (slot == 0 && _skip1.isNotEmpty)
+          _centerIndicator(
+            icon: _skip1.startsWith('+')
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            label: _skip1,
+          ),
+        if (slot == 1 && _skip2.isNotEmpty)
+          _centerIndicator(
+            icon: _skip2.startsWith('+')
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            label: _skip2,
+          ),
+
+        // 👇 Drag seek indicator (per-panel)
+        if (slot == 0 && _dragging1)
+          _centerIndicator(
+            icon: _dragSec1 >= 0
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            label: _dragSec1 >= 0
+                ? '+${_fmt(Duration(seconds: _dragSec1.toInt()))}'
+                : '-${_fmt(Duration(seconds: _dragSec1.abs().toInt()))}',
+          ),
+        if (slot == 1 && _dragging2)
+          _centerIndicator(
+            icon: _dragSec2 >= 0
+                ? Icons.fast_forward
+                : Icons.fast_rewind,
+            label: _dragSec2 >= 0
+                ? '+${_fmt(Duration(seconds: _dragSec2.toInt()))}'
+                : '-${_fmt(Duration(seconds: _dragSec2.abs().toInt()))}',
+          ),
+
+        // वीडियो
+        Positioned.fill(
+          child: Container(
+            color: Colors.black,
+            child: (ready && c != null)
+                ? Center(
+                    child: AspectRatio(
+                      aspectRatio: c.value.aspectRatio,
+                      child: VideoPlayer(c),
+                    ),
+                  )
+                : const Center(
+                    child: CircularProgressIndicator(color: Colors.amber),
                   ),
+          ),
+        ),
+
+        // 👇 नीचे के controls (सिर्फ unlocked होने पर)
+        if (ready && c != null && _showControls && !locked)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(10, 30, 10, 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.85),
+                    Colors.transparent,
+                  ],
                 ),
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Function buttons row (⚙️ 🔁 ✂️ 🔊 🔒)
+                  _buildSlotButtons(slot),
+                  const SizedBox(height: 6),
+                  // Time + Slider + Time
+                  Row(
+                    children: [
+                      Text(_fmt(pos),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 11)),
+                      Expanded(
+                        child: SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 2.5,
+                            activeTrackColor: Colors.amber,
+                            inactiveTrackColor: Colors.white24,
+                            thumbColor: Colors.amber,
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 6),
+                            overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 12),
+                          ),
+                          child: Slider(
+                            value: val,
+                            min: 0,
+                            max: maxSec,
+                            onChanged: (v) => _seekToSlot(slot, v),
+                          ),
+                        ),
+                      ),
+                      Text(_fmt(dur),
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 11)),
+                    ],
+                  ),
+                  // Play/Pause
+                  GestureDetector(
+                    onTap: () => _togglePlaySlot(slot),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: Color(0xff2D8CFF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isPlaying ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // "Video 1" / "Video 2" label
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Video ${slot + 1}',
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
 
+        // 🔒 Lock icon (unlocked करने के लिए)
+        if (ready && c != null && locked)
+          Positioned(
+            top: 50,
+            right: 8,
+            child: GestureDetector(
+              onTap: () => _toggleLockSlot(slot),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.lock,
+                    color: Colors.amber, size: 16),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+  }
+      
   Widget _buildTopBar() {
     return Positioned(
       top: 0,
