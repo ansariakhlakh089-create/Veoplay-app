@@ -4032,6 +4032,104 @@ bool _dragging2 = false;
   await c.play();
   }
 
+// 👇 Skip ±10s (per-panel)
+void _skipSlot(int slot, int seconds) {
+  final c = _ctrl(slot);
+  if (c == null) return;
+  final newPos = c.value.position + Duration(seconds: seconds);
+  Duration target = newPos;
+  if (target < Duration.zero) target = Duration.zero;
+  if (target > c.value.duration) target = c.value.duration;
+  c.seekTo(target);
+  _showSkipInd(slot, seconds > 0 ? '+${seconds}s' : '${seconds}s');
+}
+
+void _showSkipInd(int slot, String text) {
+  if (slot == 0) {
+    _skipTimer1?.cancel();
+    setState(() => _skip1 = text);
+    _skipTimer1 = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) setState(() => _skip1 = '');
+    });
+  } else {
+    _skipTimer2?.cancel();
+    setState(() => _skip2 = text);
+    _skipTimer2 = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) setState(() => _skip2 = '');
+    });
+  }
+}
+
+// 👇 Drag seek (per-panel)
+void _onDragStart(int slot) {
+  if (slot == 0) {
+    setState(() => _dragging1 = true);
+  } else {
+    setState(() => _dragging2 = true);
+  }
+}
+
+void _onDragUpdate(int slot, double deltaX) {
+  if (slot == 0) {
+    setState(() => _dragSec1 += deltaX / 5);
+  } else {
+    setState(() => _dragSec2 += deltaX / 5);
+  }
+}
+
+void _onDragEnd(int slot) {
+  final c = _ctrl(slot);
+  final sec = slot == 0 ? _dragSec1 : _dragSec2;
+  if (c != null) {
+    final newPos = c.value.position + Duration(seconds: sec.toInt());
+    Duration target = newPos;
+    if (target < Duration.zero) target = Duration.zero;
+    if (target > c.value.duration) target = c.value.duration;
+    c.seekTo(target);
+  }
+  if (slot == 0) {
+    setState(() {
+      _dragging1 = false;
+      _dragSec1 = 0;
+    });
+  } else {
+    setState(() {
+      _dragging2 = false;
+      _dragSec2 = 0;
+    });
+  }
+}
+
+// 👇 Center indicator (skip/drag दोनों के लिए)
+Widget _centerIndicator({required IconData icon, required String label}) {
+  return Center(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: const Color(0xff2D8CFF), size: 20),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+void _togglePlaySlot(int slot) {
+  
   // 👇 हर panel का अपना play/pause
 void _togglePlaySlot(int slot) {
   final c = _ctrl(slot);
