@@ -21,13 +21,7 @@ import 'package:simple_pip_mode/actions/pip_action.dart';
 import 'package:simple_pip_mode/actions/pip_actions_layout.dart';
 import 'package:share_plus/share_plus.dart';
 
-// ==================== ग्लोबल variables ====================
-final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
-final AudioPlayer globalAudioPlayer = AudioPlayer();
-final Map<int, String> globalSongNames = {};
-final ValueNotifier<int> musicDataNotifier = ValueNotifier<int>(0);
-
-// ==================== Part files ====================
+// ================== Part files ==================
 part 'splash_screen.dart';
 part 'home_screen.dart';
 part 'video_player_screen.dart';
@@ -36,7 +30,13 @@ part 'audio_player_screen.dart';
 part 'media_widgets.dart';
 part 'music_screens.dart';
 
-// ==================== main() ====================
+// ================== Global variables ==================
+final ValueNotifier<int> recentChangeNotifier = ValueNotifier<int>(0);
+final AudioPlayer globalAudioPlayer = AudioPlayer();
+final Map<int, String> globalSongNames = {};
+final ValueNotifier<int> musicDataNotifier = ValueNotifier<int>(0);
+
+// ================== main() ==================
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -51,7 +51,7 @@ void main() async {
   runApp(const VeoPlay());
 }
 
-// ==================== Root Widget ====================
+// ================== Root Widget ==================
 class VeoPlay extends StatelessWidget {
   const VeoPlay({super.key});
 
@@ -59,10 +59,10 @@ class VeoPlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: "VeoPlay",
+      title: 'VeoPlay',
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xff0B0D12),
+        scaffoldBackgroundColor: const Color(0xff0B0012),
         useMaterial3: true,
       ),
       home: const SplashScreen(),
