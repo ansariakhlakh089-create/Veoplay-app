@@ -4198,20 +4198,11 @@ const Expanded(
                       fontWeight: FontWeight.bold),
                 ),
               ),
-              Text(
-                _together ? 'साथ में' : 'बारी-बारी',
-                style: const TextStyle(color: Colors.amber, fontSize: 12),
-              ),
               IconButton(
-                icon: Icon(_together ? Icons.sync : Icons.swap_horiz,
-                    color: Colors.amber),
-                onPressed: _toggleMode,
-              ),
-              IconButton(
-                icon: Icon(Icons.playlist_play,
-                    color: _showList ? Colors.amber : Colors.white),
-                onPressed: () => setState(() => _showList = !_showList),
-              ),
+  icon: Icon(Icons.playlist_play,
+      color: _showList ? Colors.amber : Colors.white),
+  onPressed: () => setState(() => _showList = !_showList),
+),
               TextButton.icon(
                 onPressed: _exitToSingle,
                 icon: const Icon(Icons.crop_square,
