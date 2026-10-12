@@ -4027,62 +4027,22 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
     await c.play();
   }
 
-  void _applyAudio() {
-    _c1?.setVolume(_active == 0 ? 1.0 : 0.0);
-    _c2?.setVolume(_active == 1 ? 1.0 : 0.0);
+  // 👇 हर panel का अपना play/pause
+void _togglePlaySlot(int slot) {
+  final c = _ctrl(slot);
+  if (c == null) return;
+  if (c.value.isPlaying) {
+    c.pause();
+  } else {
+    c.play();
   }
+  setState(() {});
+}
 
-  bool get _anyPlaying =>
-      (_c1?.value.isPlaying ?? false) || (_c2?.value.isPlaying ?? false);
-
-  void _togglePlay() {
-    if (_anyPlaying) {
-      _c1?.pause();
-      _c2?.pause();
-    } else {
-      if (_together) {
-        _c1?.play();
-        _c2?.play();
-      } else {
-        _ctrl(_active)?.play();
-      }
-    }
-    setState(() {});
-  }
-
-  // किसी हिस्से पर टैप: उसकी आवाज़ और सीक बार
-  void _selectSlot(int slot) {
-    setState(() => _active = slot);
-    _applyAudio();
-    if (!_together) {
-      _ctrl(1 - slot)?.pause();
-      _ctrl(slot)?.play();
-    }
-  }
-
-  void _toggleMode() {
-    final wasPlaying = _anyPlaying;
-    setState(() => _together = !_together);
-    if (_together) {
-      if (wasPlaying) {
-        _c1?.play();
-        _c2?.play();
-      }
-    } else {
-      _ctrl(1 - _active)?.pause();
-    }
-    _snack(_together ? 'साथ में चलाओ' : 'बारी-बारी');
-  }
-
-  void _seekTo(double sec) {
-    final d = Duration(seconds: sec.toInt());
-    if (_together) {
-      _c1?.seekTo(d);
-      _c2?.seekTo(d);
-    } else {
-      _ctrl(_active)?.seekTo(d);
-    }
-  }
+// 👇 हर panel का अपना seek
+void _seekToSlot(int slot, double sec) {
+  _ctrl(slot)?.seekTo(Duration(seconds: sec.toInt()));
+}
 
   // वापस पुराने (अकेले वीडियो वाले) प्लेयर पर
   void _exitToSingle() {
