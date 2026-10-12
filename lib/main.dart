@@ -4668,33 +4668,30 @@ const Expanded(
   }
 
   Widget _slotCard(int slot) {
-    final idx = slot == 0 ? _i1 : _i2;
-    final active = _active == slot;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white10,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-            color: active ? Colors.amber : Colors.transparent),
-      ),
-      child: Row(
-        children: [
-          Icon(active ? Icons.volume_up : Icons.volume_off,
-              color: active ? Colors.amber : Colors.white54, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Video ${slot + 1}: ${widget.playlist[idx]['title'] ?? ''}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
+  final idx = slot == 0 ? _i1 : _i2;
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.videocam,
+            color: Color(0xff2D8CFF), size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            'Video ${slot + 1}: ${widget.playlist[idx]['title'] ?? ''}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
   }
 
   Widget _buildListPanel() {
