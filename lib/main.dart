@@ -4128,8 +4128,6 @@ Widget _centerIndicator({required IconData icon, required String label}) {
   );
 }
 
-void _togglePlaySlot(int slot) {
-  
   // 👇 हर panel का अपना play/pause
 void _togglePlaySlot(int slot) {
   final c = _ctrl(slot);
