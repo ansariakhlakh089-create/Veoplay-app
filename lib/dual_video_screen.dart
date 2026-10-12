@@ -442,12 +442,9 @@ void _seekToSlot(int slot, double sec) {
 
   // वापस पुराने (अकेले वीडियो वाले) प्लेयर पर
   void _exitToSingle() {
-    final ac = _ctrl(_active);
-    if (ac == null) {
-      Navigator.pop(context);
-      return;
-    }
-    final idx = _active == 0 ? _i1 : _i2;
+  final ac = _ctrl(0);                    // ✅ Video 1
+  if (ac == null) { ... }
+  final idx = _i1;                        // ✅ Video 1 index
     final pos = ac.value.position.inSeconds;
     final item = widget.playlist[idx];
     _leaving = true;
