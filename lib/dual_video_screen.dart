@@ -495,12 +495,60 @@ void _seekToSlot(int slot, double sec) {
     super.dispose();
   }
 
-    // ---------------- UI ----------------
+    // ---------------- C-3 helpers ----------------
+  bool _adv1 = false; // Loop All में अगला वीडियो लग रहा है
+  bool _adv2 = false;
+
+  // नया वीडियो लगने पर speed / mute / loop फिर से वही लगा दो,
+  // और Loop All में वीडियो खत्म होते ही अगला लगा दो
+  void _syncSlot(int slot) {
+    final c = _ctrl(slot);
+    if (c == null || !c.value.isInitialized) return;
+    final speed = slot == 0 ? _speed1 : _speed2;
+    final muted = slot == 0 ? _mute1 : _mute2;
+    final loop = slot == 0 ? _loop1 : _loop2;
+    if (c.value.playbackSpeed != speed) c.setPlaybackSpeed(speed);
+    final vol = muted ? 0.0 : 1.0;
+    if (c.value.volume != vol) c.setVolume(vol);
+    final wantLoop = loop == 1;
+    if (c.value.isLooping != wantLoop) c.setLooping(wantLoop);
+    _checkLoopAll(slot);
+  }
+
+  void _checkLoopAll(int slot) {
+    final loop = slot == 0 ? _loop1 : _loop2;
+    if (loop != 2) return;
+    final busy = slot == 0 ? _adv1 : _adv2;
+    if (busy) return;
+    final c = _ctrl(slot);
+    if (c == null || !c.value.isInitialized) return;
+    final d = c.value.duration;
+    if (d <= Duration.zero) return;
+    if (c.value.position < d - const Duration(milliseconds: 400)) return;
+    if (slot == 0) {
+      _adv1 = true;
+    } else {
+      _adv2 = true;
+    }
+    final cur = slot == 0 ? _i1 : _i2;
+    final next = (cur + 1) % widget.playlist.length;
+    _load(slot, next).then((_) {
+      if (!mounted) return;
+      if (slot == 0) {
+        _adv1 = false;
+      } else {
+        _adv2 = false;
+      }
+    });
+  }
+
+  // ---------------- UI ----------------
 
   Widget _panel(int slot) {
     final c = _ctrl(slot);
     final ready = slot == 0 ? _ready1 : _ready2;
-    final showCtrl = slot == 0 ? _showCtrl1 : _showCtrl2;
+    final locked = slot == 0 ? _lock1 : _lock2;
+    final showCtrl = (slot == 0 ? _showCtrl1 : _showCtrl2) && !locked;
     final muted = slot == 0 ? _mute1 : _mute2;
     final skipText = slot == 0 ? _skip1 : _skip2;
     final dragging = slot == 0 ? _dragging1 : _dragging2;
@@ -514,14 +562,18 @@ void _seekToSlot(int slot, double sec) {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() {
-        if (slot == 0) {
-          _showCtrl1 = !_showCtrl1;
-        } else {
-          _showCtrl2 = !_showCtrl2;
-        }
-      }),
-      onDoubleTapDown: (details) {
+      onTap: locked
+          ? null
+          : () => setState(() {
+                if (slot == 0) {
+                  _showCtrl1 = !_showCtrl1;
+                } else {
+                  _showCtrl2 = !_showCtrl2;
+                }
+              }),
+      onDoubleTapDown: locked
+          ? null
+          : (details) {
         final panelW = MediaQuery.of(context).size.width / 2;
         if (details.localPosition.dx < panelW / 3) {
           _skipSlot(slot, -10);
@@ -531,10 +583,11 @@ void _seekToSlot(int slot, double sec) {
           _togglePlaySlot(slot);
         }
       },
-      onHorizontalDragStart: (_) => _onDragStart(slot),
-      onHorizontalDragUpdate: (details) =>
-          _onDragUpdate(slot, details.delta.dx),
-      onHorizontalDragEnd: (_) => _onDragEnd(slot),
+      onHorizontalDragStart: locked ? null : (_) => _onDragStart(slot),
+      onHorizontalDragUpdate: locked
+          ? null
+          : (details) => _onDragUpdate(slot, details.delta.dx),
+      onHorizontalDragEnd: locked ? null : (_) => _onDragEnd(slot),
       child: Stack(
         children: [
           // वीडियो
@@ -575,7 +628,7 @@ void _seekToSlot(int slot, double sec) {
           // Video 1 / Video 2 का नाम
           Positioned(
             left: 8,
-            bottom: showCtrl ? 56 : 10,
+            bottom: showCtrl ? 92 : 10,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
@@ -598,6 +651,34 @@ void _seekToSlot(int slot, double sec) {
               ),
             ),
           ),
+
+          // 👇 C-3: function buttons (⚙️ 🔁 ✂️ 🔊 🔒) seek bar के ऊपर
+          if (showCtrl)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 52,
+              child: Center(child: _buildSlotButtons(slot)),
+            ),
+
+          // 👇 Lock होने पर सिर्फ़ यह छोटा 🔒 बटन, इससे unlock
+          if (locked)
+            Positioned(
+              right: 10,
+              bottom: 10,
+              child: GestureDetector(
+                onTap: () => _toggleLockSlot(slot),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child:
+                      const Icon(Icons.lock, color: Colors.amber, size: 20),
+                ),
+              ),
+            ),
 
           // 👇 C-1: नीचे time + seek bar + play/pause (हर panel का अपना)
           if (showCtrl)
@@ -875,6 +956,11 @@ const Expanded(
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _syncSlot(0);
+      _syncSlot(1);
+    });
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
