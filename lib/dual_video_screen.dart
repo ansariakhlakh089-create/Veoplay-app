@@ -442,25 +442,29 @@ void _seekToSlot(int slot, double sec) {
 
   // वापस पुराने (अकेले वीडियो वाले) प्लेयर पर
   void _exitToSingle() {
-  final ac = _ctrl(0);                    // ✅ Video 1
-  if (ac == null) { ... }
-  final idx = _i1;                        // ✅ Video 1 index
-    final pos = ac.value.position.inSeconds;
-    final item = widget.playlist[idx];
-    _leaving = true;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RealVideoPlayer(
-          videoUrl: item['url']!,
-          title: item['title']!,
-          startPosition: pos,
-          playlist: widget.playlist,
-          currentIndex: idx,
-          startLandscape: true,
-        ),
+  // Video 1 से single player खोलो
+  final ac = _ctrl(0);
+  if (ac == null) {
+    Navigator.pop(context);
+    return;
+  }
+  final idx = _i1;
+  final pos = ac.value.position.inSeconds;
+  final item = widget.playlist[idx];
+  _leaving = true;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => RealVideoPlayer(
+        videoUrl: item['url']!,
+        title: item['title']!,
+        startPosition: pos,
+        playlist: widget.playlist,
+        currentIndex: idx,
+        startLandscape: true,
       ),
-    );
+    ),
+  );
   }
 
   String _fmt(Duration d) {
