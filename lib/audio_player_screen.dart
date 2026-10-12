@@ -1,1 +1,1043 @@
+part of 'main.dart';
 
+// ==================== ऑडियो प्लेयर स्क्रीन ====================
+class AudioPlayerScreen extends StatefulWidget {
+  final List<SongModel> songs;
+  final int initialIndex;
+
+  const AudioPlayerScreen({
+    super.key,
+    required this.songs,
+    required this.initialIndex,
+  });
+
+  @override
+  State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
+}
+
+class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
+  late final AudioPlayer _player;
+  late int _currentIndex;
+
+  int _loopMode = 0;
+  Set<int> _favoriteIds = {};
+
+  StreamSubscription<int?>? _currentIndexSubscription;
+  String? _setupError;
+  Timer? _musicSleepTimer;
+  int _sleepRemaining = 0;
+  Timer? _sleepCountdown;
+  
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _player = globalAudioPlayer;
+
+    _currentIndexSubscription = _player.currentIndexStream.listen((index) {
+      if (index != null && mounted) {
+        setState(() => _currentIndex = index);
+      }
+    });
+
+    if (_player.loopMode == LoopMode.one) {
+      _loopMode = 1;
+    } else if (_player.shuffleModeEnabled) {
+      _loopMode = 2;
+    } else {
+      _loopMode = 0;
+    }
+
+    _loadFavorites();
+
+    final currentTag = _player.sequenceState?.currentSource?.tag;
+    final selectedId = widget.songs.isNotEmpty
+        ? widget.songs[_currentIndex].id.toString()
+        : '';
+    if (currentTag is MediaItem &&
+        currentTag.id == selectedId &&
+        (_player.sequence?.length ?? 0) == widget.songs.length) {
+      _currentIndex = _player.currentIndex ?? _currentIndex;
+    } else {
+      _setupPlaylist();
+    }
+  }
+
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+    if (mounted) setState(() => _favoriteIds = ids);
+  }
+
+  Future<void> _setupPlaylist() async {
+    try {
+      final sources = widget.songs.map((song) {
+        return AudioSource.uri(
+          Uri.parse('content://media/external/audio/media/${song.id}'),
+          tag: MediaItem(
+  id: song.id.toString(),
+  album: "VeoPlay",
+  title: globalSongNames[song.id] ?? song.title,
+  artist: song.artist ?? "Unknown",
+  artUri: song.albumId != null
+      ? Uri.parse(
+          'content://media/external/audio/albumart/${song.albumId}')
+      : null,
+),
+        );
+      }).toList();
+
+      await _player.setAudioSource(
+    ConcatenatingAudioSource(children: sources),
+    initialIndex: _currentIndex,
+);
+await _player.play();
+    } catch (e) {
+      debugPrint('Song setup error: $e');
+      if (mounted) {
+        final messenger = ScaffoldMessenger.of(context);
+        Navigator.pop(context);
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text("ये गाना नहीं चल पाया, फ़ाइल हट चुकी हो सकती है"),
+          ),
+        );
+      }
+    }
+  }
+    
+  void _togglePlay() {
+    if (_player.playing) {
+      _player.pause();
+    } else {
+      _player.play();
+    }
+  }
+
+  Future<void> _playNext() async {
+    try {
+      if (_player.hasNext) {
+        await _player.seekToNext();
+        await _player.play();
+      }
+    } catch (e) {
+      debugPrint("Next error: $e");
+    }
+  }
+
+  Future<void> _playPrevious() async {
+    try {
+      if (_player.hasPrevious) {
+        await _player.seekToPrevious();
+        await _player.play();
+      }
+    } catch (e) {
+      debugPrint("Previous error: $e");
+    }
+  }
+
+  Future<void> _toggleLoop() async {
+    setState(() {
+      _loopMode = (_loopMode + 1) % 3;
+    });
+
+    if (_loopMode == 0) {
+      await _player.setShuffleModeEnabled(false);
+      await _player.setLoopMode(LoopMode.off);
+    } else if (_loopMode == 1) {
+      await _player.setShuffleModeEnabled(false);
+      await _player.setLoopMode(LoopMode.one);
+    } else {
+      await _player.setLoopMode(LoopMode.all);
+      await _player.setShuffleModeEnabled(true);
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.toString().padLeft(2, '0');
+    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  Future<void> _playNextSong(SongModel song) async {
+  try {
+    if (globalAudioPlayer.sequence == null ||
+        globalAudioPlayer.sequence!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('पहले कोई गाना चलाओ')),
+      );
+      return;
+    }
+    final source = AudioSource.uri(
+      Uri.parse('content://media/external/audio/media/${song.id}'),
+      tag: MediaItem(
+        id: song.id.toString(),
+        album: 'VeoPlay',
+        title: globalSongNames[song.id] ?? song.title,
+        artist: song.artist ?? 'Unknown',
+      ),
+    );
+    final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
+    final current = globalAudioPlayer.audioSource;
+    if (current is! ConcatenatingAudioSource) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('अभी लिस्ट से गाना नहीं चल रहा')),
+      );
+      return;
+    }
+    await current.insert(nextIndex, source);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+              '"${globalSongNames[song.id] ?? song.title}" अगला चलेगा'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  } catch (e) {
+    debugPrint('Play next error: $e');
+  }
+}
+
+  Future<void> _shareSong(SongModel song) async {
+  try {
+    final file = File(song.data);
+    if (!await file.exists()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('फ़ाइल नहीं मिली')),
+      );
+      return;
+    }
+    await Share.shareXFiles(
+      [XFile(song.data, mimeType: 'audio/*')],
+      subject: globalSongNames[song.id] ?? song.title,
+      text: '${globalSongNames[song.id] ?? song.title}\n${song.artist ?? ''}',
+    );
+  } catch (e) {
+    debugPrint('Song share error: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Share नहीं हो पाया')),
+    );
+  }
+}
+
+  Future<void> _toggleFavorite(SongModel song) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = (prefs.getStringList('favorite_songs') ?? [])
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
+        .toSet();
+
+    setState(() {
+      if (list.contains(song.id)) {
+        list.remove(song.id);
+      } else {
+        list.add(song.id);
+      }
+      _favoriteIds = list;
+    });
+
+    await prefs.setStringList(
+      'favorite_songs',
+      list.map((e) => e.toString()).toList(),
+    );
+    musicDataNotifier.value++;
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_favoriteIds.contains(song.id)
+              ? "❤️ Added to Favorite"
+              : "Removed from Favorite"),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
+  void _showMusicSleepTimerDialog() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xff1A1D24),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (ctx) {
+      return SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Sleep Timer",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
+              ),
+              if (_sleepRemaining > 0) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '$_sleepRemaining मिनट बाकी',
+                  style: const TextStyle(
+                      color: Color(0xff2D8CFF),
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [5, 10, 15, 30, 60].map((min) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _startMusicSleepTimer(min);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.timer,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 6),
+                          Text('$min मिनट',
+                              style:
+                                  const TextStyle(color: Colors.white)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 14),
+              if (_sleepRemaining > 0)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _cancelMusicSleepTimer();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text('Sleep Timer हटाओ',
+                        style: TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void _startMusicSleepTimer(int minutes) {
+  _cancelMusicSleepTimer();
+  setState(() => _sleepRemaining = minutes);
+  _musicSleepTimer = Timer(Duration(minutes: minutes), () {
+    if (mounted) {
+      _player.pause();
+      setState(() => _sleepRemaining = 0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sleep timer खत्म — गाना रुक गया')),
+      );
+    }
+  });
+  _sleepCountdown = Timer.periodic(const Duration(minutes: 1), (t) {
+    if (!mounted) return;
+    setState(() => _sleepRemaining--);
+    if (_sleepRemaining <= 0) t.cancel();
+  });
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('$minutes मिनट बाद गाना रुकेगा')),
+  );
+}
+
+void _cancelMusicSleepTimer() {
+  _musicSleepTimer?.cancel();
+  _musicSleepTimer = null;
+  _sleepCountdown?.cancel();
+  _sleepCountdown = null;
+  if (mounted) {
+    setState(() => _sleepRemaining = 0);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sleep timer हटाया')),
+    );
+  }
+}
+
+  Future<void> _showEqualizerDialog() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    } catch (e) {
+      debugPrint('AudioSession error: $e');
+    }
+
+    double bass = 1.0, mid = 1.0, treble = 1.0;
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Equalizer",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _eqSlider("Bass", bass, (v) {
+                    setModalState(() => bass = v);
+                  }),
+                  _eqSlider("Mid", mid, (v) {
+                    setModalState(() => mid = v);
+                  }),
+                  _eqSlider("Treble", treble, (v) {
+                    setModalState(() => treble = v);
+                  }),
+                  const SizedBox(height: 12),
+                  const Text("Presets",
+                      style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _presetBtn("Normal", () {
+                        setModalState(() {
+                          bass = 1.0; mid = 1.0; treble = 1.0;
+                        });
+                      }),
+                      _presetBtn("Bass Boost", () {
+                        setModalState(() {
+                          bass = 1.7; mid = 1.0; treble = 0.9;
+                        });
+                      }),
+                      _presetBtn("Vocal", () {
+                        setModalState(() {
+                          bass = 0.9; mid = 1.5; treble = 1.2;
+                        });
+                      }),
+                      _presetBtn("Rock", () {
+                        setModalState(() {
+                          bass = 1.4; mid = 1.1; treble = 1.5;
+                        });
+                      }),
+                      _presetBtn("Pop", () {
+                        setModalState(() {
+                          bass = 1.2; mid = 1.2; treble = 1.3;
+                        });
+                      }),
+                      _presetBtn("Classical", () {
+                        setModalState(() {
+                          bass = 1.3; mid = 1.0; treble = 1.3;
+                        });
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Note: Equalizer effect device ke audio hardware par depend karta hai",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _eqSlider(String label, double value, Function(double) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 55,
+            child: Text(label,
+                style: const TextStyle(color: Colors.white70, fontSize: 13)),
+          ),
+          Expanded(
+            child: SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 3,
+                activeTrackColor: const Color(0xff2D8CFF),
+                inactiveTrackColor: Colors.white24,
+                thumbColor: const Color(0xff2D8CFF),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              ),
+              child: Slider(
+                value: value,
+                min: 0.5,
+                max: 2.0,
+                divisions: 30,
+                onChanged: onChanged,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 30,
+            child: Text(
+              value.toStringAsFixed(1),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _presetBtn(String name, VoidCallback onTap) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xff2D8CFF),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      onPressed: onTap,
+      child: Text(name, style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+    Future<void> _showAddToPlaylistDialog(SongModel song) async {
+    final prefs = await SharedPreferences.getInstance();
+    final pl = prefs.getStringList('user_playlists') ?? [];
+    final playlists = <String, List<int>>{};
+    for (final s in pl) {
+      final i = s.indexOf('|||');
+      if (i <= 0) continue;
+      playlists[s.substring(0, i)] = s
+          .substring(i + 3)
+          .split(',')
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
+          .toList();
+    }
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xff1A1D24),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  "Add to Playlist",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: const Text("Create New Playlist",
+                    style: TextStyle(color: Colors.white)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final controller = TextEditingController();
+                  final name = await showDialog<String>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: const Color(0xff1A1D24),
+                      title: const Text("New Playlist",
+                          style: TextStyle(color: Colors.white)),
+                      content: TextField(
+                        controller: controller,
+                        autofocus: true,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: "Enter playlist name",
+                          hintStyle: TextStyle(color: Colors.white54),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.pop(context, controller.text.trim()),
+                          child: const Text("Create"),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (name == null || name.isEmpty) return;
+final clean =
+    name.replaceAll('|', '').replaceAll(',', '').trim();
+if (clean.isEmpty) return;
+
+// 👇 Fix: पहले से हो तो उसमें जोड़ो, वरना नई बनाओ
+if (playlists.containsKey(clean)) {
+  final existing = playlists[clean] ?? [];
+  if (!existing.contains(song.id)) {
+    existing.add(song.id);
+  }
+  playlists[clean] = existing;
+} else {
+  playlists[clean] = [song.id];
+}
+
+await prefs.setStringList(
+  'user_playlists',
+  playlists.entries
+      .map((e) => '${e.key}|||${e.value.join(",")}')
+      .toList(),
+);
+                  musicDataNotifier.value++;
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("✅ Created '$clean' & added song"),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+              ),
+              if (playlists.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    "No playlist yet. Create one!",
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ),
+              ...playlists.keys.map((name) => ListTile(
+                    leading: const Icon(Icons.queue_music,
+                        color: Colors.white),
+                    title: Text(name,
+                        style: const TextStyle(color: Colors.white)),
+                    subtitle: Text(
+                      "${playlists[name]!.length} songs",
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final list = playlists[name] ?? [];
+                      if (!list.contains(song.id)) {
+                        list.add(song.id);
+                        playlists[name] = list;
+                        await prefs.setStringList(
+                          'user_playlists',
+                          playlists.entries
+                              .map((e) =>
+                                  '${e.key}|||${e.value.join(",")}')
+                              .toList(),
+                        );
+                        musicDataNotifier.value++;
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("✅ Added to '$name'"),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Already in playlist"),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                  )),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+void dispose() {
+  _currentIndexSubscription?.cancel();
+  _musicSleepTimer?.cancel();
+  _sleepCountdown?.cancel();
+  super.dispose();
+}
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.songs.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Color(0xff0B0D12),
+        body: Center(
+          child: Text("No songs found",
+              style: TextStyle(color: Colors.white)),
+        ),
+      );
+    }
+    if (_setupError != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xff0B0D12),
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SelectableText(
+              "ERROR:\n$_setupError",
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final song = widget.songs[_currentIndex];
+    final songTitle = globalSongNames[song.id] ?? song.title;
+    final isFav = _favoriteIds.contains(song.id);
+
+    return Scaffold(
+      backgroundColor: const Color(0xff0B0D12),
+      appBar: AppBar(
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+    onPressed: () => Navigator.pop(context),
+  ),
+  actions: [
+  IconButton(
+    icon: const Icon(Icons.queue_music,
+        color: Colors.white70),
+    tooltip: 'Queue',
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const QueueScreen(),
+        ),
+      );
+    },
+  ),
+  IconButton(
+    icon: Icon(
+      _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
+      color: _sleepRemaining > 0
+          ? const Color(0xff2D8CFF)
+          : Colors.white70,
+    ),
+    tooltip: _sleepRemaining > 0
+        ? '$_sleepRemaining मिनट बाकी'
+        : 'Sleep timer',
+    onPressed: _showMusicSleepTimerDialog,
+  ),
+],
+),
+      body: SingleChildScrollView(         // 👈 नया
+  padding: const EdgeInsets.all(24),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const SizedBox(height: 20),     // 👈 ऊपर थोड़ी जगह
+      AlbumArtWidget(
+  songId: song.id,
+  size: 250,
+  radius: 20,
+),
+            const SizedBox(height: 40),
+            Text(
+              songTitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              song.artist ?? "Unknown",
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white54, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+  onTap: () => _showAddToPlaylistDialog(song),
+  child: Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: const Color(0xff2D8CFF).withOpacity(0.5),
+        width: 1.5,
+      ),
+    ),
+    child: const Icon(
+      Icons.add,
+      color: Colors.white,
+      size: 22,
+    ),
+  ),
+),
+const SizedBox(width: 24),
+GestureDetector(
+  onTap: () => _shareSong(song),
+  child: Container(
+    padding: const EdgeInsets.all(10),
+    decoration: BoxDecoration(
+      color: Colors.white10,
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: const Color(0xff2D8CFF).withOpacity(0.5),
+        width: 1.5,
+      ),
+    ),
+    child: const Icon(
+      Icons.share,
+      color: Colors.white,
+      size: 22,
+    ),
+  ),
+),
+const SizedBox(width: 24),
+GestureDetector(
+  onTap: _showEqualizerDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xff2D8CFF).withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.equalizer,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                GestureDetector(
+                  onTap: () => _toggleFavorite(song),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isFav
+                          ? Colors.pinkAccent.withOpacity(0.2)
+                          : Colors.white10,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isFav
+                            ? Colors.pinkAccent
+                            : const Color(0xff2D8CFF).withOpacity(0.5),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.pinkAccent : Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            StreamBuilder<Duration>(
+              stream: _player.positionStream,
+              builder: (context, positionSnapshot) {
+                final position = positionSnapshot.data ?? Duration.zero;
+                return StreamBuilder<Duration?>(
+                  stream: _player.durationStream,
+                  builder: (context, durationSnapshot) {
+                    final duration = durationSnapshot.data ?? Duration.zero;
+                    final maxSeconds = duration.inSeconds > 0
+                        ? duration.inSeconds.toDouble()
+                        : 1.0;
+                    final currentSeconds = position.inSeconds
+                        .toDouble()
+                        .clamp(0.0, maxSeconds);
+
+                    return Column(
+                      children: [
+                        Slider(
+                          value: currentSeconds,
+                          min: 0,
+                          max: maxSeconds,
+                          activeColor: const Color(0xff2D8CFF),
+                          inactiveColor: Colors.white24,
+                          onChanged: duration.inSeconds > 0
+                              ? (value) {
+                                  _player.seek(
+                                    Duration(seconds: value.toInt()),
+                                  );
+                                }
+                              : null,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(_formatDuration(position),
+                                style: const TextStyle(color: Colors.white70)),
+                            Text(_formatDuration(duration),
+                                style: const TextStyle(color: Colors.white70)),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _loopMode == 0
+                        ? Icons.repeat
+                        : _loopMode == 1
+                            ? Icons.repeat_one
+                            : Icons.shuffle,
+                    color: _loopMode == 0
+                        ? Colors.white54
+                        : const Color(0xff2D8CFF),
+                    size: 24,
+                  ),
+                  onPressed: _toggleLoop,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_previous,
+                      color: Colors.white, size: 32),
+                  onPressed: _playPrevious,
+                ),
+                StreamBuilder<PlayerState>(
+                  stream: _player.playerStateStream,
+                  builder: (context, snapshot) {
+                    final playing = snapshot.data?.playing ?? false;
+                    return GestureDetector(
+                      onTap: _togglePlay,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: const BoxDecoration(
+                          color: Color(0xff2D8CFF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          playing ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next,
+                      color: Colors.white, size: 32),
+                  onPressed: _playNext,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.speed,
+                      color: Colors.white54, size: 24),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: const Color(0xff1A1D24),
+                      builder: (context) {
+                        final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+                        return Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: speeds.map((s) {
+                              return ChoiceChip(
+                                label: Text('${s}x',
+                                    style: TextStyle(
+                                      color: _player.speed == s
+                                          ? Colors.white
+                                          : Colors.white70,
+                                    )),
+                                selected: _player.speed == s,
+                                selectedColor: const Color(0xff2D8CFF),
+                                backgroundColor: Colors.white10,
+                                onSelected: (_) {
+                                  _player.setSpeed(s);
+                                  Navigator.pop(context);
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      // 👇 SingleChildScrollView का closing — बस closing bracket के पहले `)` हटा देना, and check karna
+    );
+  }
+}
