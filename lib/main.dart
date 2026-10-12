@@ -4009,22 +4009,17 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
       await c.dispose();
       return;
     }
-    c.addListener(_onTick);
-    setState(() {
-      if (slot == 0) {
-        _c1 = c;
-        _ready1 = true;
-      } else {
-        _c2 = c;
-        _ready2 = true;
-      }
-    });
-    if (!_together) {
-      _active = slot;
-      _ctrl(1 - slot)?.pause();
+      c.addListener(_onTick);
+  setState(() {
+    if (slot == 0) {
+      _c1 = c;
+      _ready1 = true;
+    } else {
+      _c2 = c;
+      _ready2 = true;
     }
-    _applyAudio();
-    await c.play();
+  });
+  await c.play();
   }
 
   // 👇 हर panel का अपना play/pause
