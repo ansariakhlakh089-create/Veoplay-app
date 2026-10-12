@@ -4206,15 +4206,22 @@ void _seekToSlot(int slot, double sec) {
     final ready = slot == 0 ? _ready1 : _ready2;
     final active = _active == slot;
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        if (active) {
-          setState(() => _showControls = !_showControls);
-        } else {
-          _selectSlot(slot);
-        }
-      },
-      child: Stack(
+  behavior: HitTestBehavior.opaque,
+  onTap: () => setState(() => _showControls = !_showControls),
+  onDoubleTapDown: (details) {
+    final panelW = MediaQuery.of(context).size.width / 2;
+    if (details.localPosition.dx < panelW / 3) {
+      _skipSlot(slot, -10);
+    } else if (details.localPosition.dx > panelW * 2 / 3) {
+      _skipSlot(slot, 10);
+    } else {
+      _togglePlaySlot(slot);
+    }
+  },
+  onHorizontalDragStart: (_) => _onDragStart(slot),
+  onHorizontalDragUpdate: (details) => _onDragUpdate(slot, details.delta.dx),
+  onHorizontalDragEnd: (_) => _onDragEnd(slot),
+  child: Stack(
         children: [
           Positioned.fill(
             child: Container(
