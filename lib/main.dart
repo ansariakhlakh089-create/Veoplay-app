@@ -4137,6 +4137,178 @@ Widget _centerIndicator({required IconData icon, required String label}) {
   );
 }
 
+// 👇 Speed cycle (per-panel)
+static const List<double> _speedList = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+void _cycleSpeed(int slot) {
+  final c = _ctrl(slot);
+  if (c == null) return;
+  final cur = slot == 0 ? _speed1 : _speed2;
+  final idx = _speedList.indexOf(cur);
+  final next = _speedList[(idx + 1) % _speedList.length];
+  c.setPlaybackSpeed(next);
+  setState(() {
+    if (slot == 0) {
+      _speed1 = next;
+    } else {
+      _speed2 = next;
+    }
+  });
+  _snack('Video ${slot + 1}: ${next}x');
+}
+
+// 👇 Loop cycle (per-panel)
+void _cycleLoopSlot(int slot) {
+  final c = _ctrl(slot);
+  if (c == null) return;
+  final cur = slot == 0 ? _loop1 : _loop2;
+  final next = (cur + 1) % 3;
+  c.setLooping(next == 1);
+  setState(() {
+    if (slot == 0) {
+      _loop1 = next;
+    } else {
+      _loop2 = next;
+    }
+  });
+  _snack(next == 0
+      ? 'Video ${slot + 1}: Loop Off'
+      : (next == 1
+          ? 'Video ${slot + 1}: Loop One'
+          : 'Video ${slot + 1}: Loop All'));
+}
+
+// 👇 Mute toggle (per-panel)
+void _toggleMuteSlot(int slot) {
+  final c = _ctrl(slot);
+  if (c == null) return;
+  final muted = slot == 0 ? _mute1 : _mute2;
+  c.setVolume(muted ? 1.0 : 0.0);
+  setState(() {
+    if (slot == 0) {
+      _mute1 = !muted;
+    } else {
+      _mute2 = !muted;
+    }
+  });
+}
+
+// 👇 Screenshot (per-panel)
+Future<void> _takeScreenshotSlot(int slot) async {
+  final c = _ctrl(slot);
+  if (c == null || !c.value.isInitialized) return;
+  try {
+    final idx = slot == 0 ? _i1 : _i2;
+    final url = widget.playlist[idx]['url']!;
+    final bytes = await VideoThumbnail.thumbnailData(
+      video: url,
+      imageFormat: ImageFormat.JPEG,
+      timeMs: c.value.position.inMilliseconds,
+      quality: 100,
+    );
+    if (bytes == null) {
+      _snack('Screenshot नहीं बन पाया');
+      return;
+    }
+    final perm = await PhotoManager.requestPermissionExtend();
+    if (!perm.hasAccess) {
+      _snack('Gallery की permission दो');
+      return;
+    }
+    final name = 'VeoPlay_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    await PhotoManager.editor.saveImage(
+      bytes,
+      filename: name,
+      title: name,
+    );
+    _snack('Video ${slot + 1} का screenshot सेव हो गया');
+  } catch (e) {
+    debugPrint('Screenshot error: $e');
+    _snack('Screenshot में दिक्कत आई');
+  }
+}
+
+// 👇 Lock toggle (per-panel)
+void _toggleLockSlot(int slot) {
+  setState(() {
+    if (slot == 0) {
+      _lock1 = !_lock1;
+    } else {
+      _lock2 = !_lock2;
+    }
+  });
+  final locked = slot == 0 ? _lock1 : _lock2;
+  _snack(locked
+      ? 'Video ${slot + 1}: 🔒 Locked'
+      : 'Video ${slot + 1}: 🔓 Unlocked');
+}
+
+// 👇 Function buttons row (per-panel)
+Widget _buildSlotButtons(int slot) {
+  final c = _ctrl(slot);
+  if (c == null) return const SizedBox.shrink();
+  final speed = slot == 0 ? _speed1 : _speed2;
+  final loop = slot == 0 ? _loop1 : _loop2;
+  final mute = slot == 0 ? _mute1 : _mute2;
+  final lock = slot == 0 ? _lock1 : _lock2;
+
+  Widget btn({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+    bool active = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: active
+              ? const Color(0xff2D8CFF).withOpacity(0.3)
+              : Colors.black.withOpacity(0.5),
+          shape: BoxShape.circle,
+          border: active
+              ? Border.all(color: const Color(0xff2D8CFF), width: 1)
+              : null,
+        ),
+        child: Icon(icon, color: color ?? Colors.white, size: 16),
+      ),
+    );
+  }
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      btn(
+        icon: Icons.speed,
+        onTap: () => _cycleSpeed(slot),
+        active: speed != 1.0,
+        color: speed != 1.0 ? const Color(0xff2D8CFF) : Colors.white70,
+      ),
+      btn(
+        icon: loop == 1 ? Icons.repeat_one : Icons.repeat,
+        onTap: () => _cycleLoopSlot(slot),
+        active: loop != 0,
+        color: loop != 0 ? const Color(0xff2D8CFF) : Colors.white70,
+      ),
+      btn(
+        icon: Icons.content_cut,
+        onTap: () => _takeScreenshotSlot(slot),
+      ),
+      btn(
+        icon: mute ? Icons.volume_off : Icons.volume_up,
+        onTap: () => _toggleMuteSlot(slot),
+        color: mute ? Colors.redAccent : Colors.white70,
+      ),
+      btn(
+        icon: lock ? Icons.lock : Icons.lock_open,
+        onTap: () => _toggleLockSlot(slot),
+        color: lock ? Colors.amber : Colors.white70,
+      ),
+    ],
+  );
+}
+
   // 👇 हर panel का अपना play/pause
 void _togglePlaySlot(int slot) {
   final c = _ctrl(slot);
