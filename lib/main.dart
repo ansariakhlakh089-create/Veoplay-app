@@ -4223,6 +4223,43 @@ void _seekToSlot(int slot, double sec) {
   onHorizontalDragEnd: (_) => _onDragEnd(slot),
   child: Stack(
         children: [
+          // 👇 Skip indicator (per-panel)
+if (slot == 0 && _skip1.isNotEmpty)
+  _centerIndicator(
+    icon: _skip1.startsWith('+')
+        ? Icons.fast_forward
+        : Icons.fast_rewind,
+    label: _skip1,
+  ),
+if (slot == 1 && _skip2.isNotEmpty)
+  _centerIndicator(
+    icon: _skip2.startsWith('+')
+        ? Icons.fast_forward
+        : Icons.fast_rewind,
+    label: _skip2,
+  ),
+
+// 👇 Drag seek indicator (per-panel)
+if (slot == 0 && _dragging1)
+  _centerIndicator(
+    icon: _dragSec1 >= 0
+        ? Icons.fast_forward
+        : Icons.fast_rewind,
+    label: _dragSec1 >= 0
+        ? '+${_fmt(Duration(seconds: _dragSec1.toInt()))}'
+        : '-${_fmt(Duration(seconds: _dragSec1.abs().toInt()))}',
+  ),
+if (slot == 1 && _dragging2)
+  _centerIndicator(
+    icon: _dragSec2 >= 0
+        ? Icons.fast_forward
+        : Icons.fast_rewind,
+    label: _dragSec2 >= 0
+        ? '+${_fmt(Duration(seconds: _dragSec2.toInt()))}'
+        : '-${_fmt(Duration(seconds: _dragSec2.abs().toInt()))}',
+  ),
+
+// वीडियो
           Positioned.fill(
             child: Container(
               color: Colors.black,
