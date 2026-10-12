@@ -3925,6 +3925,15 @@ double _dragSec1 = 0;
 double _dragSec2 = 0;
 bool _dragging1 = false;
 bool _dragging2 = false;
+// 👇 function buttons (per-panel)
+double _speed1 = 1.0;
+double _speed2 = 1.0;
+int _loop1 = 0;
+int _loop2 = 0;
+bool _mute1 = false;
+bool _mute2 = false;
+bool _lock1 = false;
+bool _lock2 = false;
   
   @override
   void initState() {
