@@ -3912,8 +3912,6 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   late int _i2;
   bool _ready1 = false;
   bool _ready2 = false;
-  int _active = 0;        // 0 = Video 1, 1 = Video 2 (आवाज़ और सीक बार इसी का)
-  bool _together = true;  // true = साथ में चलाओ, false = बारी-बारी
   bool _showList = false;
   bool _showControls = true;
   bool _leaving = false;
