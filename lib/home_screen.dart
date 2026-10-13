@@ -1431,8 +1431,7 @@ Future<void> _removeSongFromPlaylist(
               if (trailing != null)
                 trailing
               else
-                const Icon(Icons.chevron_right, color: Colors.white38),
-            ],
+                Icon(Icons.chevron_right, color: AppTheme.textTertiary),
           ),
         ),
       ),
