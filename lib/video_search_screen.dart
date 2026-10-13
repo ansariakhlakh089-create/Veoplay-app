@@ -51,7 +51,7 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.video_search, color: Colors.white24, size: 60),
+                  Icon(Icons.search, color: Colors.white24, size: 60),
                   SizedBox(height: 12),
                   Text('वीडियो या फोल्डर का नाम लिखें',
                       style: TextStyle(color: Colors.white54, fontSize: 14)),
