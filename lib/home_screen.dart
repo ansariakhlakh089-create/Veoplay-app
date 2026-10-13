@@ -409,7 +409,7 @@ if (mounted) {
                   SizedBox(height: 20),
                   Text(
                     "Discovering videos...",
-                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                   ),
                 ],
               ),
