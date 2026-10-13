@@ -650,14 +650,7 @@ if (mounted) {
                                                     CrossAxisAlignment
                                                         .start,
                                                 children: [
-                                                  Text(folderName,
-                                                      style: const TextStyle(
-                                                          color:
-                                                              Colors.white,
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight
-                                                                  .bold)),
+                                                  Text(folderName, style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
                                                   const SizedBox(height: 4),
                                                   Text(
                                                       "${folderVideos.length} videos",
