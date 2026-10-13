@@ -361,8 +361,11 @@ if (mounted) {
               ),
             ),
             const SizedBox(width: 10),
-            const Text("VeoPlay",          
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text("VeoPlay",
+    style: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: AppTheme.textPrimary)),
           ],
         ),
         actions: [
