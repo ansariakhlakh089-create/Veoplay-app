@@ -816,6 +816,38 @@ if (mounted) {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    Row(
+  children: [
+    Expanded(
+      child: Text(
+        item['source'] ?? '',
+        style: const TextStyle(color: Colors.white38, fontSize: 12),
+        overflow: TextOverflow.ellipsis,
+      ),
+    ),
+    IconButton(                                          // 👈 नया Heart button
+      onPressed: () => _toggleVideoFavorite(item),
+      icon: Icon(
+        _favoriteVideoIds.contains(item['id'])
+            ? Icons.favorite
+            : Icons.favorite_border,
+        color: _favoriteVideoIds.contains(item['id'])
+            ? Colors.pinkAccent
+            : Colors.white60,
+        size: 18,
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+    ),
+    const SizedBox(width: 4),                             // 👈 नया spacing
+    IconButton(                                          // 👈 पुराना Menu button
+      onPressed: () => _showVideoOptions(context, item, index),
+      icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+    ),
+  ],
+),
                     IconButton(
                       onPressed: () => _showVideoOptions(context, item, index),
                       icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
