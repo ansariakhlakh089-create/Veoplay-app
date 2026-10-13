@@ -421,8 +421,7 @@ if (mounted) {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.folder_off,
-                            color: Colors.white54, size: 60),
+                        Icon(Icons.folder_off, color: AppTheme.textSecondary, size: 60),
                         const SizedBox(height: 16),
                         const Text(
                           "Video access permission चाहिए",
