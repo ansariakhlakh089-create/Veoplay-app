@@ -48,13 +48,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text("नाम बदलें",
-            style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.card,
+        title: Text("नाम बदलें",
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppTheme.textPrimary),
           decoration: const InputDecoration(hintText: "अपना नाम लिखें"),
         ),
         actions: [
@@ -77,7 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showGetCoinDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xff1A1D24),
+      backgroundColor: AppTheme.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -87,9 +87,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Get Coins',
+              Text('Get Coins',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
@@ -135,13 +135,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: AppTheme.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         onTap: onTap,
         title: Text(title,
-            style: const TextStyle(color: Colors.white, fontSize: 15)),
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontSize: 15)),
         trailing: Text(reward,
             style: const TextStyle(
                 color: Color(0xff2D8CFF),
@@ -169,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showRedeemDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xff1A1D24),
+      backgroundColor: AppTheme.card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -179,9 +180,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Redeem Gift',
+              Text('Redeem Gift',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
@@ -201,12 +202,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: AppTheme.bg,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
         title: Text(title,
-            style: const TextStyle(color: Colors.white, fontSize: 15)),
+            style: TextStyle(
+                color: AppTheme.textPrimary, fontSize: 15)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -243,24 +245,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text('⭐ VIP Benefits',
-            style: TextStyle(color: Colors.white)),
-        content: const Column(
+        backgroundColor: AppTheme.card,
+        title: Text('⭐ VIP Benefits',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('• 7 Day Free Trial',
-                style: TextStyle(color: Colors.white70, fontSize: 14)),
-            SizedBox(height: 6),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 14)),
+            const SizedBox(height: 6),
             Text('• No Ads',
-                style: TextStyle(color: Colors.white70, fontSize: 14)),
-            SizedBox(height: 6),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 14)),
+            const SizedBox(height: 6),
             Text('• Unlimited HD Quality',
-                style: TextStyle(color: Colors.white70, fontSize: 14)),
-            SizedBox(height: 6),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 14)),
+            const SizedBox(height: 6),
             Text('• Unlimited Downloads',
-                style: TextStyle(color: Colors.white70, fontSize: 14)),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 14)),
           ],
         ),
         actions: [
@@ -291,35 +297,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text('Privacy Policy',
-            style: TextStyle(color: Colors.white)),
-        content: const SingleChildScrollView(
+        backgroundColor: AppTheme.card,
+        title: Text('Privacy Policy',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'VeoPlay stores all data locally on your device. No personal information is collected, uploaded, or shared with anyone.',
-                style:
-                    TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 13),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text('What we store:',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.bold)),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
                 '• Your name (for display)\n• Favorites and playlists\n• Playback positions\n• App preferences',
-                style:
-                    TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 13),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
                 'To delete all data, use "Clear All Data" from Settings.',
-                style:
-                    TextStyle(color: Colors.white54, fontSize: 12),
+                style: TextStyle(
+                    color: AppTheme.textTertiary, fontSize: 12),
               ),
             ],
           ),
@@ -334,15 +340,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showHistoryDialog() {
-    final prefs = SharedPreferences.getInstance();
-    prefs.then((p) {
-      final recentSongs =
-          p.getStringList('recent_songs') ?? [];
+    SharedPreferences.getInstance().then((p) {
+      final recentSongs = p.getStringList('recent_songs') ?? [];
       final recentVideos = p.getString('recent_title');
       if (!mounted) return;
       showModalBottomSheet(
         context: context,
-        backgroundColor: const Color(0xff1A1D24),
+        backgroundColor: AppTheme.card,
         shape: const RoundedRectangleBorder(
           borderRadius:
               BorderRadius.vertical(top: Radius.circular(20)),
@@ -354,9 +358,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('History',
+                Text('History',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                         fontSize: 20,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
@@ -367,9 +371,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _historyItem(Icons.music_note,
                       '${recentSongs.length} songs recently played'),
                 if (recentVideos == null && recentSongs.isEmpty)
-                  const Text('कोई history नहीं है',
+                  Text('कोई history नहीं है',
                       style: TextStyle(
-                          color: Colors.white54, fontSize: 14)),
+                          color: AppTheme.textSecondary,
+                          fontSize: 14)),
                 const SizedBox(height: 10),
               ],
             ),
@@ -384,12 +389,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xff2D8CFF), size: 20),
+          const Icon(icon, color: Color(0xff2D8CFF), size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: const TextStyle(
-                    color: Colors.white70, fontSize: 14)),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 14)),
           ),
         ],
       ),
@@ -402,23 +407,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(
             vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
-          color: Colors.white10,
+          color: AppTheme.card,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: AppTheme.cardBorder, width: 1),
         ),
         child: Column(
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
             Text('$value',
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: AppTheme.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 1),
             Text(label,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    color: Colors.white54, fontSize: 10)),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 10)),
           ],
         ),
       ),
@@ -440,7 +447,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white10,
+              color: AppTheme.card,
               border: Border.all(
                 color: const Color(0xff2D8CFF).withOpacity(0.5),
                 width: 2,
@@ -451,8 +458,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 4),
           Text(label,
-              style: const TextStyle(
-                  color: Colors.white,
+              style: TextStyle(
+                  color: AppTheme.textPrimary,
                   fontSize: 11,
                   fontWeight: FontWeight.w600)),
         ],
@@ -468,19 +475,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: AppTheme.card,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: AppTheme.cardBorder, width: 1),
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: Colors.white70, size: 22),
+        leading: Icon(icon, color: AppTheme.iconColor, size: 22),
         title: Text(title,
-            style: const TextStyle(
-                color: Colors.white,
+            style: TextStyle(
+                color: AppTheme.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.w500)),
-        trailing: const Icon(Icons.chevron_right,
-            color: Colors.white38),
+        trailing: Icon(Icons.chevron_right,
+            color: AppTheme.textTertiary),
       ),
     );
   }
@@ -488,16 +497,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Column(
             children: [
-              // ==================== TOP BAR: AVATAR + NAME + SETTINGS ====================
+              // ==================== TOP BAR ====================
               Row(
                 children: [
-                  // Avatar
                   GestureDetector(
                     onTap: _editName,
                     child: Container(
@@ -519,8 +527,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-
-                  // Name + Edit
                   Expanded(
                     child: GestureDetector(
                       onTap: _editName,
@@ -536,16 +542,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   maxLines: 1,
                                   overflow:
                                       TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: Colors.white,
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimary,
                                       fontSize: 17,
                                       fontWeight:
                                           FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Icon(Icons.edit,
-                                  color: Colors.white54,
+                              Icon(Icons.edit,
+                                  color: AppTheme.textSecondary,
                                   size: 14),
                             ],
                           ),
@@ -558,8 +564,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   size: 14),
                               const SizedBox(width: 4),
                               Text('$_userCoins coins',
-                                  style: const TextStyle(
-                                      color: Colors.white54,
+                                  style: TextStyle(
+                                      color:
+                                          AppTheme.textSecondary,
                                       fontSize: 12)),
                             ],
                           ),
@@ -567,8 +574,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-
-                                    // Settings Button
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -582,7 +587,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color: Colors.white10,
+                        color: AppTheme.card,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: const Color(0xff2D8CFF)
@@ -597,7 +602,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
+              
               // ==================== COIN SECTION ====================
               Row(
                 children: [
@@ -607,7 +612,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: 'My Coin',
                       badgeText: '$_userCoins',
                       badgeColor: Colors.transparent,
-                      textColor: Colors.white,
                       onTap: () {},
                     ),
                   ),
@@ -618,7 +622,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: 'Get Coin',
                       badgeText: 'FREE',
                       badgeColor: const Color(0xff2D8CFF),
-                      textColor: Colors.white,
                       onTap: _showGetCoinDialog,
                     ),
                   ),
@@ -629,7 +632,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: 'Redeem Gift',
                       badgeText: 'GIFT',
                       badgeColor: const Color(0xff6B4DFF),
-                      textColor: Colors.white,
                       onTap: _showRedeemDialog,
                     ),
                   ),
@@ -721,12 +723,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.palette_outlined,
                     label: 'Theme',
                     onTap: () {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                                'Theme feature जल्द आएगा'),
-                            duration: Duration(seconds: 2)),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const SettingsScreen()),
                       );
                     },
                   ),
@@ -806,12 +807,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
 
               const SizedBox(height: 16),
-              const Center(
+              Center(
                 child: Text(
                   '© 2026 Akhlakh Ansari\nAll Rights Reserved',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.white38, fontSize: 11),
+                      color: AppTheme.textTertiary, fontSize: 11),
                 ),
               ),
               const SizedBox(height: 16),
@@ -827,7 +828,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required String badgeText,
     required Color badgeColor,
-    required Color textColor,
     required VoidCallback onTap,
   }) {
     final isBadge = badgeColor != Colors.transparent;
@@ -837,7 +837,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.symmetric(
             vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: Colors.white10,
+          color: AppTheme.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: const Color(0xff2D8CFF).withOpacity(0.5),
@@ -849,8 +849,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(icon, color: const Color(0xff2D8CFF), size: 26),
             const SizedBox(height: 6),
             Text(label,
-                style: const TextStyle(
-                    color: Colors.white70, fontSize: 11)),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 11)),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(
@@ -863,7 +863,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Text(badgeText,
                   style: TextStyle(
-                      color: textColor,
+                      color: isBadge
+                          ? Colors.white
+                          : AppTheme.textPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold)),
             ),
@@ -877,35 +879,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text('About VeoPlay',
-            style: TextStyle(color: Colors.white)),
-        content: const Column(
+        backgroundColor: AppTheme.card,
+        title: Text('About VeoPlay',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('VeoPlay - Video & Music Player',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text('Version: 1.0.0',
                 style: TextStyle(
-                    color: Colors.white70, fontSize: 13)),
-            SizedBox(height: 6),
+                    color: AppTheme.textSecondary, fontSize: 13)),
+            const SizedBox(height: 6),
             Text('Developer: Akhlakh Ansari',
                 style: TextStyle(
-                    color: Colors.white70, fontSize: 13)),
-            SizedBox(height: 6),
+                    color: AppTheme.textSecondary, fontSize: 13)),
+            const SizedBox(height: 6),
             Text('Build: Release',
                 style: TextStyle(
-                    color: Colors.white70, fontSize: 13)),
-            SizedBox(height: 14),
+                    color: AppTheme.textSecondary, fontSize: 13)),
+            const SizedBox(height: 14),
             Text(
                 'A lightweight, ad-free video and music player with dual video mode, equalizer, and background playback.',
                 style: TextStyle(
-                    color: Colors.white54, fontSize: 12)),
+                    color: AppTheme.textTertiary, fontSize: 12)),
           ],
         ),
         actions: [
