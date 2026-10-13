@@ -634,7 +634,7 @@ if (mounted) {
                                       child: Container(
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
-                                          color: Colors.white10,
+                                          color: AppTheme.card,
                                           borderRadius:
                                               BorderRadius.circular(12),
                                         ),
