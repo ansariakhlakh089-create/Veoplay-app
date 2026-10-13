@@ -12,6 +12,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'VeoPlay User';
   int _userCoins = 0;
   int _totalVideos = 0;
+  int _totalSongs = 0;
   int _totalFavorites = 0;
   int _totalPlaylists = 0;
 
@@ -26,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final name = prefs.getString('user_name') ?? 'VeoPlay User';
     final coins = prefs.getInt('user_coins') ?? 0;
     final videos = prefs.getStringList('cached_videos') ?? [];
+    final songs = prefs.getStringList('cached_songs') ?? [];
     final favSongs = prefs.getStringList('favorite_songs') ?? [];
     final favVideos = prefs.getStringList('favorite_videos') ?? [];
     final playlists = prefs.getStringList('user_playlists') ?? [];
@@ -35,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _userName = name;
       _userCoins = coins;
       _totalVideos = videos.length;
+      _totalSongs = songs.length;
       _totalFavorites = favSongs.length + favVideos.length;
       _totalPlaylists = playlists.length;
     });
@@ -98,7 +101,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pop(context);
                 final prefs = await SharedPreferences.getInstance();
                 final last = prefs.getString('last_daily_claim');
-                final today = DateTime.now().toIso8601String().substring(0, 10);
+                final today =
+                    DateTime.now().toIso8601String().substring(0, 10);
                 if (last == today) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -224,7 +228,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (mounted) {
                   setState(() {});
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('🎉 $title unlock हो गया!')),
+                    SnackBar(
+                        content:
+                            Text('🎉 $title unlock हो गया!')),
                   );
                 }
               }
@@ -281,24 +287,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showPrivacyDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xff1A1D24),
+        title: const Text('Privacy Policy',
+            style: TextStyle(color: Colors.white)),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'VeoPlay stores all data locally on your device. No personal information is collected, uploaded, or shared with anyone.',
+                style:
+                    TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              SizedBox(height: 12),
+              Text('What we store:',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold)),
+              SizedBox(height: 6),
+              Text(
+                '• Your name (for display)\n• Favorites and playlists\n• Playback positions\n• App preferences',
+                style:
+                    TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'To delete all data, use "Clear All Data" from Settings.',
+                style:
+                    TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  void _showHistoryDialog() {
+    final prefs = SharedPreferences.getInstance();
+    prefs.then((p) {
+      final recentSongs =
+          p.getStringList('recent_songs') ?? [];
+      final recentVideos = p.getString('recent_title');
+      if (!mounted) return;
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: const Color(0xff1A1D24),
+        shape: const RoundedRectangleBorder(
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('History',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                if (recentVideos != null)
+                  _historyItem(
+                      Icons.videocam, 'Last video: $recentVideos'),
+                if (recentSongs.isNotEmpty)
+                  _historyItem(Icons.music_note,
+                      '${recentSongs.length} songs recently played'),
+                if (recentVideos == null && recentSongs.isEmpty)
+                  const Text('कोई history नहीं है',
+                      style: TextStyle(
+                          color: Colors.white54, fontSize: 14)),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _historyItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xff2D8CFF), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text,
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 14)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _statBox(String label, int value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(
+            vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
           color: Colors.white10,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 6),
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
             Text('$value',
                 style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold)),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             Text(label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
@@ -313,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    double size = 100,
+    double size = 80,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -333,11 +449,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Icon(icon,
                 color: const Color(0xff2D8CFF), size: size * 0.4),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(label,
               style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600)),
         ],
       ),
@@ -363,8 +479,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.white,
                 fontSize: 15,
                 fontWeight: FontWeight.w500)),
-        trailing:
-            const Icon(Icons.chevron_right, color: Colors.white38),
+        trailing: const Icon(Icons.chevron_right,
+            color: Colors.white38),
       ),
     );
   }
@@ -373,337 +489,384 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xff0B0D12),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text('Profile'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const SettingsScreen()),
-              );
-            },
-            icon: const Icon(Icons.settings, color: Colors.white),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ==================== TOP: AVATAR + NAME ====================
-            GestureDetector(
-              onTap: _editName,
-              child: Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
-                  ),
-                  border: Border.all(color: Colors.white, width: 3),
-                ),
-                child: const Icon(Icons.person,
-                    color: Colors.white, size: 50),
-              ),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: _editName,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            children: [
+              // ==================== TOP BAR: AVATAR + NAME + SETTINGS ====================
+              Row(
                 children: [
-                  Text(_userName,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.edit,
-                      color: Colors.white54, size: 16),
+                  // Avatar
+                  GestureDetector(
+                    onTap: _editName,
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xff2D8CFF),
+                            Color(0xff6B4DFF)
+                          ],
+                        ),
+                        border: Border.all(
+                            color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.person,
+                          color: Colors.white, size: 28),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Name + Edit
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _editName,
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _userName,
+                                  maxLines: 1,
+                                  overflow:
+                                      TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight:
+                                          FontWeight.bold),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.edit,
+                                  color: Colors.white54,
+                                  size: 14),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(
+                                  Icons.monetization_on,
+                                  color: Color(0xffFFD700),
+                                  size: 14),
+                              const SizedBox(width: 4),
+                              Text('$_userCoins coins',
+                                  style: const TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                                    // Settings Button
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const SettingsScreen()),
+                      );
+                    },
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white10,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xff2D8CFF)
+                              .withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(Icons.settings,
+                          color: Color(0xff2D8CFF), size: 22),
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-            // ==================== COIN SECTION ====================
-            Row(
-              children: [
-                // My Coin
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 14, horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white10,
-                      borderRadius: BorderRadius.circular(14),
+              // ==================== COIN SECTION ====================
+              Row(
+                children: [
+                  Expanded(
+                    child: _coinBox(
+                      icon: Icons.monetization_on,
+                      label: 'My Coin',
+                      badgeText: '$_userCoins',
+                      badgeColor: Colors.transparent,
+                      textColor: Colors.white,
+                      onTap: () {},
                     ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.monetization_on,
-                            color: Color(0xff2D8CFF), size: 28),
-                        const SizedBox(height: 6),
-                        const Text('My Coin',
-                            style: TextStyle(
-                                color: Colors.white54, fontSize: 11)),
-                        const SizedBox(height: 2),
-                        Text('$_userCoins',
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _coinBox(
+                      icon: Icons.shopping_cart,
+                      label: 'Get Coin',
+                      badgeText: 'FREE',
+                      badgeColor: const Color(0xff2D8CFF),
+                      textColor: Colors.white,
+                      onTap: _showGetCoinDialog,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _coinBox(
+                      icon: Icons.card_giftcard,
+                      label: 'Redeem Gift',
+                      badgeText: 'GIFT',
+                      badgeColor: const Color(0xff6B4DFF),
+                      textColor: Colors.white,
+                      onTap: _showRedeemDialog,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // ==================== VIP BANNER ====================
+              GestureDetector(
+                onTap: _showVipDialog,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xff1E3A8A),
+                        Color(0xff6B4DFF)
                       ],
                     ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xff2D8CFF),
+                      width: 1.5,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-
-                // Get Coin
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _showGetCoinDialog,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xff2D8CFF)
-                              .withOpacity(0.5),
-                          width: 1.5,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.workspace_premium,
+                                color: Color(0xff1E3A8A),
+                                size: 14),
+                            SizedBox(width: 3),
+                            Text('VIP',
+                                style: TextStyle(
+                                    color: Color(0xff1E3A8A),
+                                    fontSize: 13,
+                                    fontWeight:
+                                        FontWeight.bold)),
+                          ],
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.add_shopping_cart,
-                              color: Color(0xff2D8CFF), size: 28),
-                          const SizedBox(height: 6),
-                          const Text('Get Coin',
-                              style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 11)),
-                          const SizedBox(height: 2),
-                          const Text('FREE',
-                              style: TextStyle(
-                                  color: Color(0xff2D8CFF),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // Redeem Gift
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _showRedeemDialog,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xff2D8CFF)
-                              .withOpacity(0.5),
-                          width: 1.5,
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text('7 Day Free Trial',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight:
+                                        FontWeight.bold)),
+                            SizedBox(height: 2),
+                            Text(
+                                'no ads • unlimited HD • unlimited download',
+                                style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10)),
+                          ],
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.card_giftcard,
-                              color: Color(0xff2D8CFF), size: 28),
-                          const SizedBox(height: 6),
-                          const Text('Redeem Gift',
-                              style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 11)),
-                          const SizedBox(height: 2),
-                          const Text('GIFT',
-                              style: TextStyle(
-                                  color: Color(0xff2D8CFF),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
+                      const Icon(Icons.arrow_forward_ios,
+                          color: Colors.white, size: 14),
+                    ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-
-            // ==================== VIP BANNER ====================
-            GestureDetector(
-              onTap: _showVipDialog,
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xff1E3A8A), Color(0xff6B4DFF)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xff2D8CFF),
-                    width: 2,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('VIP',
-                          style: TextStyle(
-                              color: Color(0xff1E3A8A),
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('7 Day Free Trial',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold)),
-                          SizedBox(height: 4),
-                          Text(
-                              'no ads • unlimited HD • unlimited download',
-                              style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11)),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios,
-                        color: Colors.white, size: 16),
-                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
-            // ==================== PRIVACY / THEME / HISTORY ====================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _circleButton(
-                  icon: Icons.privacy_tip_outlined,
-                  label: 'Privacy',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Privacy Policy जल्द add होगी')),
-                    );
-                  },
-                ),
-                _circleButton(
-                  icon: Icons.palette_outlined,
-                  label: 'Theme',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Theme जल्द add होगी')),
-                    );
-                  },
-                ),
-                _circleButton(
-                  icon: Icons.history,
-                  label: 'History',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('History जल्द add होगी')),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // ==================== STATS ====================
-            Row(
-              children: [
-                _statBox('Videos', _totalVideos, Icons.video_library,
-                    const Color(0xff2D8CFF)),
-                const SizedBox(width: 8),
-                _statBox('Favorites', _totalFavorites, Icons.favorite,
-                    Colors.pinkAccent),
-                const SizedBox(width: 8),
-                _statBox('Playlists', _totalPlaylists, Icons.queue_music,
-                    Colors.orangeAccent),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // ==================== LIST ITEMS ====================
-            _listItem(
-              icon: Icons.settings,
-              title: 'Setting',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const SettingsScreen()),
-                );
-              },
-            ),
-            _listItem(
-              icon: Icons.help_outline,
-              title: 'Help & Feedback',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Help & Feedback feature जल्द आएगा'),
-                    duration: Duration(seconds: 2),
+              // ==================== PRIVACY / THEME / HISTORY ====================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _circleButton(
+                    icon: Icons.privacy_tip_outlined,
+                    label: 'Privacy',
+                    onTap: _showPrivacyDialog,
                   ),
-                );
-              },
-            ),
-            _listItem(
-              icon: Icons.star_outline,
-              title: 'Rate Us',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Play Store पर rate करें'),
-                    duration: Duration(seconds: 2),
+                  _circleButton(
+                    icon: Icons.palette_outlined,
+                    label: 'Theme',
+                    onTap: () {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Theme feature जल्द आएगा'),
+                            duration: Duration(seconds: 2)),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            _listItem(
-              icon: Icons.info_outline,
-              title: 'About',
-              onTap: () => _showAboutDialog(),
-            ),
-
-            const SizedBox(height: 20),
-            const Center(
-              child: Text(
-                '© 2026 Akhlakh Ansari\nAll Rights Reserved',
-                textAlign: TextAlign.center,
-                style:
-                    TextStyle(color: Colors.white38, fontSize: 11),
+                  _circleButton(
+                    icon: Icons.history,
+                    label: 'History',
+                    onTap: _showHistoryDialog,
+                  ),
+                ],
               ),
+              const SizedBox(height: 16),
+
+              // ==================== STATS ====================
+              Row(
+                children: [
+                  _statBox('Videos', _totalVideos,
+                      Icons.video_library,
+                      const Color(0xff2D8CFF)),
+                  const SizedBox(width: 6),
+                  _statBox('Songs', _totalSongs, Icons.music_note,
+                      Colors.greenAccent),
+                  const SizedBox(width: 6),
+                  _statBox('Favorites', _totalFavorites,
+                      Icons.favorite, Colors.pinkAccent),
+                  const SizedBox(width: 6),
+                  _statBox('Playlists', _totalPlaylists,
+                      Icons.queue_music, Colors.orangeAccent),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // ==================== LIST ITEMS ====================
+              _listItem(
+                icon: Icons.settings,
+                title: 'Setting',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const SettingsScreen()),
+                  );
+                },
+              ),
+              _listItem(
+                icon: Icons.help_outline,
+                title: 'Help & Feedback',
+                onTap: () {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Help & Feedback जल्द आएगा'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              _listItem(
+                icon: Icons.star_outline,
+                title: 'Rate Us',
+                onTap: () {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(
+                    const SnackBar(
+                      content:
+                          Text('Play Store पर rate करें'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+              _listItem(
+                icon: Icons.info_outline,
+                title: 'About',
+                onTap: () => _showAboutDialog(),
+              ),
+
+              const SizedBox(height: 16),
+              const Center(
+                child: Text(
+                  '© 2026 Akhlakh Ansari\nAll Rights Reserved',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white38, fontSize: 11),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _coinBox({
+    required IconData icon,
+    required String label,
+    required String badgeText,
+    required Color badgeColor,
+    required Color textColor,
+    required VoidCallback onTap,
+  }) {
+    final isBadge = badgeColor != Colors.transparent;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xff2D8CFF).withOpacity(0.5),
+            width: 1.2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: const Color(0xff2D8CFF), size: 26),
+            const SizedBox(height: 6),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 11)),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: isBadge
+                    ? badgeColor
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(badgeText,
+                  style: TextStyle(
+                      color: textColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -728,20 +891,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
             Text('Version: 1.0.0',
-                style:
-                    TextStyle(color: Colors.white70, fontSize: 13)),
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 13)),
             SizedBox(height: 6),
             Text('Developer: Akhlakh Ansari',
-                style:
-                    TextStyle(color: Colors.white70, fontSize: 13)),
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 13)),
             SizedBox(height: 6),
             Text('Build: Release',
-                style:
-                    TextStyle(color: Colors.white70, fontSize: 13)),
+                style: TextStyle(
+                    color: Colors.white70, fontSize: 13)),
             SizedBox(height: 14),
             Text(
                 'A lightweight, ad-free video and music player with dual video mode, equalizer, and background playback.',
-                style: TextStyle(color: Colors.white54, fontSize: 12)),
+                style: TextStyle(
+                    color: Colors.white54, fontSize: 12)),
           ],
         ),
         actions: [
