@@ -573,9 +573,7 @@ if (mounted) {
                                     style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
-                                        color: _showPlaylist
-                                            ? Colors.white
-                                            : Colors.white38)),
+                                        color: _showPlaylist ? AppTheme.textPrimary : AppTheme.textTertiary
                               ),
                               const Spacer(),
                               IconButton(
