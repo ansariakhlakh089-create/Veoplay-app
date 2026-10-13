@@ -48,6 +48,7 @@ bool _audioLoading = false; // 👈 नया
     });
     _loadVideos();
     _loadRecent();
+    _loadFavoriteVideos();   // 👈 नई line
   }
 
   void _onRecentChanged() {
