@@ -366,16 +366,34 @@ if (mounted) {
           ],
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
-              child: const Icon(Icons.person, color: Colors.white, size: 20),
-            ),
-          ),
-        ],
+  IconButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VideoSearchScreen(videos: videoList),
+        ),
+      );
+    },
+    icon: const Icon(Icons.search),
+  ),
+  Padding(
+    padding: const EdgeInsets.only(right: 12),
+    child: GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+        );
+      },
+      child: CircleAvatar(
+        radius: 18,
+        backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
+        child: const Icon(Icons.person, color: Colors.white, size: 20),
+      ),
+    ),
+  ),
+],
              ),
              body: _currentTab == 2
     ? _buildMusicTab()
