@@ -794,7 +794,7 @@ if (mounted) {
                 // रेज़ॉल्यूशन और साइज़
                 Text(
                   "${item['res'] ?? ''} | ${item['size'] ?? ''}",
-                  style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 0),
                 // सोर्स और more_vert आइकन वाली Row
