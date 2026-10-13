@@ -58,15 +58,20 @@ class VeoPlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "VeoPlay",
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xff0B0D12),
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(),
+    return ValueListenableBuilder<bool>(
+      valueListenable: isDarkMode,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: "VeoPlay",
+          theme: ThemeData(
+            brightness: isDark ? Brightness.dark : Brightness.light,
+            scaffoldBackgroundColor: AppTheme.bg,
+            useMaterial3: true,
+          ),
+          home: const SplashScreen(),
+        );
+      },
     );
   }
 }
