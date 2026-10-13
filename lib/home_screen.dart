@@ -676,6 +676,8 @@ if (mounted) {
                     ),
                   ),
       bottomNavigationBar: NavigationBar(
+  backgroundColor: AppTheme.card,
+  indicatorColor: const Color(0xff2D8CFF).withOpacity(0.2),
   selectedIndex: _currentTab,
   onDestinationSelected: (index) {
     if (index == 1) {
