@@ -30,6 +30,7 @@ bool _audioLoading = false; // 👈 नया
   List<int> _recentSongIds = [];
   Map<String, List<int>> _playlists = {};
   StreamSubscription<dynamic>? _seqSub;
+  Set<String> _favoriteVideoIds = {};   // 👈 नई line
 
   @override
   void initState() {
