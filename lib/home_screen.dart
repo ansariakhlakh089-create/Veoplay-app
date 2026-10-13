@@ -803,7 +803,7 @@ if (mounted) {
                     Expanded(
                       child: Text(
                         item['source'] ?? '',
-                        style: const TextStyle(color: Colors.white38, fontSize: 12),
+                        style: TextStyle(color: AppTheme.textTertiary, fontSize: 12),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -833,7 +833,7 @@ if (mounted) {
     const SizedBox(width: 4),                             // 👈 नया spacing
     IconButton(                                          // 👈 पुराना Menu button
       onPressed: () => _showVideoOptions(context, item, index),
-      icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
+      icon: Icon(Icons.more_vert, color: AppTheme.iconColor, size: 20),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(),
     ),
