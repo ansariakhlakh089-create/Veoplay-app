@@ -370,16 +370,16 @@ if (mounted) {
         ),
         actions: [
   IconButton(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => VideoSearchScreen(videos: videoList),
-        ),
-      );
-    },
-    icon: const Icon(Icons.search),
-  ),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VideoSearchScreen(videos: videoList),
+      ),
+    );
+  },
+  icon: Icon(Icons.search, color: AppTheme.textPrimary),
+),
   Padding(
     padding: const EdgeInsets.only(right: 12),
     child: GestureDetector(
