@@ -786,7 +786,7 @@ if (mounted) {
                 // वीडियो का टाइटल
                 Text(
                   item['title'] ?? 'No Title',
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
