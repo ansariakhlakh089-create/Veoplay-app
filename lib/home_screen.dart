@@ -390,10 +390,10 @@ if (mounted) {
         );
       },
       child: CircleAvatar(
-        radius: 18,
-        backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
-        child: const Icon(Icons.person, color: Colors.white, size: 20),
-      ),
+  radius: 18,
+  backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
+  child: const Icon(Icons.person, color: Color(0xff2D8CFF), size: 20),
+),
     ),
   ),
 ],
