@@ -462,7 +462,7 @@ if (mounted) {
                           Container(
                             height: 80,
                             decoration: BoxDecoration(
-                              color: Colors.white10,
+                              color: AppTheme.card,
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
