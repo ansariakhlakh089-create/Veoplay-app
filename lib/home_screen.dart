@@ -8,19 +8,17 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-
 class _HomeScreenState extends State<HomeScreen>
     with WidgetsBindingObserver {
   List<Map<String, String>> videoList = [];
   bool _isLoading = true;
   bool _permissionDenied = false;
-    bool _showPlaylist = false;
-    int _currentTab = 0;
-    List<SongModel> _songs = [];
-bool _audioLoaded = false;
-bool _audioPermissionDenied = false;
-bool _audioLoading = false; // 👈 नया
-  
+  int _currentTab = 0;
+  List<SongModel> _songs = [];
+  bool _audioLoaded = false;
+  bool _audioPermissionDenied = false;
+  bool _audioLoading = false;
+
   String? _recentTitle;
   String? _recentUrl;
   int _recentPosition = 0;
@@ -30,7 +28,9 @@ bool _audioLoading = false; // 👈 नया
   List<int> _recentSongIds = [];
   Map<String, List<int>> _playlists = {};
   StreamSubscription<dynamic>? _seqSub;
-  Set<String> _favoriteVideoIds = {};   // 👈 नई line
+  Set<String> _favoriteVideoIds = {};
+  Map<String, List<String>> _videoPlaylists = {};
+  int _videoTab = 0;
 
   @override
   void initState() {
@@ -48,11 +48,17 @@ bool _audioLoading = false; // 👈 नया
     });
     _loadVideos();
     _loadRecent();
-    _loadFavoriteVideos();   // 👈 नई line
+    _loadFavoriteVideos();
+    _loadVideoPlaylists();
   }
 
   void _onRecentChanged() {
     if (mounted) _loadRecent();
+  }
+
+  void _onMusicDataChanged() async {
+    await _loadMusicData();
+    if (mounted) setState(() {});
   }
 
   @override
@@ -79,7 +85,7 @@ bool _audioLoading = false; // 👈 नया
     final url = prefs.getString('recent_url');
     final position = prefs.getInt('recent_position') ?? 0;
     final duration = prefs.getInt('recent_duration') ?? 0;
-   if (mounted && title != null && url != null) {
+    if (mounted && title != null && url != null) {
       setState(() {
         _recentTitle = title;
         _recentUrl = url;
@@ -89,61 +95,248 @@ bool _audioLoading = false; // 👈 नया
     }
   }
 
- 
-Future<void> _loadFavoriteVideos() async {
-  final prefs = await SharedPreferences.getInstance();
-  final ids = (prefs.getStringList('favorite_videos') ?? []).toSet();
-  if (mounted) setState(() => _favoriteVideoIds = ids);
-}
+  Future<void> _loadFavoriteVideos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final ids = (prefs.getStringList('favorite_videos') ?? []).toSet();
+    if (mounted) setState(() => _favoriteVideoIds = ids);
+  }
 
-Future<void> _toggleVideoFavorite(Map<String, String> item) async {
-  final id = item['id'];
-  if (id == null || id.isEmpty) return;
-  final prefs = await SharedPreferences.getInstance();
-  setState(() {
-    if (_favoriteVideoIds.contains(id)) {
-      _favoriteVideoIds.remove(id);
-    } else {
-      _favoriteVideoIds.add(id);
+  Future<void> _toggleVideoFavorite(Map<String, String> item) async {
+    final id = item['id'];
+    if (id == null || id.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (_favoriteVideoIds.contains(id)) {
+        _favoriteVideoIds.remove(id);
+      } else {
+        _favoriteVideoIds.add(id);
+      }
+    });
+    await prefs.setStringList('favorite_videos', _favoriteVideoIds.toList());
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_favoriteVideoIds.contains(id)
+              ? '❤️ Favorite में जोड़ा'
+              : 'Favorite से हटाया'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
     }
-  });
-  await prefs.setStringList('favorite_videos', _favoriteVideoIds.toList());
-  if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_favoriteVideoIds.contains(id)
-            ? '❤️ Favorite में जोड़ा'
-            : 'Favorite से हटाया'),
-        duration: const Duration(seconds: 1),
-      ),
+  }
+
+  Future<void> _loadVideoPlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('video_playlists') ?? [];
+    final map = <String, List<String>>{};
+    for (final s in list) {
+      final i = s.indexOf('|||');
+      if (i <= 0) continue;
+      map[s.substring(0, i)] = s
+          .substring(i + 3)
+          .split(',')
+          .where((e) => e.isNotEmpty)
+          .toList();
+    }
+    if (mounted) setState(() => _videoPlaylists = map);
+  }
+
+  Future<void> _saveVideoPlaylists() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'video_playlists',
+      _videoPlaylists.entries
+          .map((e) => '${e.key}|||${e.value.join(",")}')
+          .toList(),
     );
   }
-}
-  
-  Future<void> _loadSongs() async {
-if (_audioLoaded) {
-  _quickSyncSongs();
-  return;
-}
-if (mounted) setState(() => _audioLoading = true); // 👈 नया
-final OnAudioQuery audioQuery = OnAudioQuery();
-bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
-if (!hasPermission) {
-  if (mounted) {
-    setState(() {
-      _audioPermissionDenied = true;
-      _audioLoading = false; // 👈
-    });
+
+  Future<String?> _askVideoPlaylistName({String? initial}) async {
+    final controller = TextEditingController(text: initial ?? '');
+    final name = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text(initial == null ? "नई Playlist" : "नाम बदलें",
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: AppTheme.textPrimary),
+          decoration: InputDecoration(
+              hintText: "Playlist का नाम",
+              hintStyle: TextStyle(color: AppTheme.textSecondary)),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+    if (name == null || name.isEmpty) return null;
+    final clean = name.replaceAll('|', '').replaceAll(',', '').trim();
+    return clean.isEmpty ? null : clean;
   }
-  return;
-}
-if (mounted) {
-  setState(() {
-    _audioPermissionDenied = false;
-    // _audioLoading बाद में false होगा, डेटा मिलने पर
-  });
-}
-  final songs = await audioQuery.querySongs(
+
+  Future<void> _createVideoPlaylist() async {
+    final name = await _askVideoPlaylistName();
+    if (name == null) return;
+    if (_videoPlaylists.containsKey(name)) {
+      _toast("इस नाम की Playlist पहले से है");
+      return;
+    }
+    setState(() => _videoPlaylists[name] = []);
+    await _saveVideoPlaylists();
+    _toast("Playlist बन गई");
+  }
+
+  Future<void> _deleteVideoPlaylist(String name) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text("'$name' हटाएँ?",
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text("Playlist हटेगी, वीडियो फोन में रहेंगे।",
+            style: TextStyle(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete",
+                  style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    setState(() => _videoPlaylists.remove(name));
+    await _saveVideoPlaylists();
+    _toast("Playlist हटा दी");
+  }
+
+  Future<void> _renameVideoPlaylist(String oldName) async {
+    final newName = await _askVideoPlaylistName(initial: oldName);
+    if (newName == null || newName == oldName) return;
+    if (_videoPlaylists.containsKey(newName)) {
+      _toast("इस नाम की Playlist पहले से है");
+      return;
+    }
+    setState(() {
+      final list = _videoPlaylists.remove(oldName) ?? [];
+      _videoPlaylists[newName] = list;
+    });
+    await _saveVideoPlaylists();
+    _toast("नाम बदल दिया");
+  }
+
+  Future<void> _addVideoToPlaylist(String name, String videoId) async {
+    final list = _videoPlaylists[name] ?? [];
+    if (!list.contains(videoId)) list.add(videoId);
+    setState(() => _videoPlaylists[name] = list);
+    await _saveVideoPlaylists();
+    _toast("'$name' में जोड़ दिया");
+  }
+
+  Future<void> _removeVideoFromPlaylist(
+      String name, String videoId) async {
+    final list = _videoPlaylists[name] ?? [];
+    list.remove(videoId);
+    setState(() => _videoPlaylists[name] = list);
+    await _saveVideoPlaylists();
+    _toast("'$name' से हटा दिया");
+  }
+
+  void _showAddVideoToPlaylistDialog(Map<String, String> video) {
+    final videoId = video['id'];
+    if (videoId == null || videoId.isEmpty) {
+      _toast("इस वीडियो को add नहीं कर सकते");
+      return;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text("Add to Playlist",
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                title: Text("नई Playlist बनाएँ",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final name = await _askVideoPlaylistName();
+                  if (name == null) return;
+                  if (!_videoPlaylists.containsKey(name)) {
+                    setState(() => _videoPlaylists[name] = []);
+                  }
+                  await _addVideoToPlaylist(name, videoId);
+                },
+              ),
+              ..._videoPlaylists.keys.map((name) => ListTile(
+                    leading: Icon(Icons.queue_music,
+                        color: AppTheme.iconColor),
+                    title: Text(name,
+                        style: TextStyle(color: AppTheme.textPrimary)),
+                    subtitle: Text(
+                      "${_videoPlaylists[name]!.length} videos",
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 12),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addVideoToPlaylist(name, videoId);
+                    },
+                  )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _loadSongs() async {
+    if (_audioLoaded) {
+      _quickSyncSongs();
+      return;
+    }
+    if (mounted) setState(() => _audioLoading = true);
+    final OnAudioQuery audioQuery = OnAudioQuery();
+    bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
+    if (!hasPermission) {
+      if (mounted) {
+        setState(() {
+          _audioPermissionDenied = true;
+          _audioLoading = false;
+        });
+      }
+      return;
+    }
+    if (mounted) {
+      setState(() {
+        _audioPermissionDenied = false;
+      });
+    }
+    final songs = await audioQuery.querySongs(
       sortType: SongSortType.TITLE,
       orderType: OrderType.ASC_OR_SMALLER,
       uriType: UriType.EXTERNAL,
@@ -155,11 +348,11 @@ if (mounted) {
     final sorted = List<SongModel>.of(songs);
     _sortSongs(sorted);
     if (!mounted) return;
-      setState(() {
-    _songs = sorted;
-    _audioLoaded = true;
-    _audioLoading = false; // 👈 नया
-  });
+    setState(() {
+      _songs = sorted;
+      _audioLoaded = true;
+      _audioLoading = false;
+    });
   }
 
   Future<void> _loadVideos() async {
@@ -192,9 +385,6 @@ if (mounted) {
     await _scanVideos();
   }
 
-  Future<void> _refreshVideosInBackground() async {
-    await _scanVideos(silent: true);
-  }
   bool _syncingVideos = false;
   Future<void> _quickSyncVideos() async {
     if (_syncingVideos) return;
@@ -269,7 +459,7 @@ if (mounted) {
       return;
     }
 
-     int count = await albums[0].assetCountAsync;
+    int count = await albums[0].assetCountAsync;
     final List<AssetEntity> assets =
         await albums[0].getAssetListRange(start: 0, end: count);
 
@@ -277,7 +467,7 @@ if (mounted) {
     final List<Map<String, String>> loaded = [];
     int processed = 0;
     final customNames = await _loadCustomNames();
-    
+
     List<String> toCache(List<Map<String, String>> list) => list
         .map((m) =>
             "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
@@ -328,7 +518,7 @@ if (mounted) {
       });
     }
   }
-        
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -355,652 +545,837 @@ if (mounted) {
                         colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
                       ),
                     ),
-                    child: const Icon(Icons.play_arrow, color: Colors.white),
+                    child:
+                        const Icon(Icons.play_arrow, color: Colors.white),
                   );
                 },
               ),
             ),
             const SizedBox(width: 10),
             Text("VeoPlay",
-    style: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: AppTheme.textPrimary)),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary)),
           ],
         ),
         actions: [
-  IconButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VideoSearchScreen(videos: videoList),
-      ),
-    );
-  },
-  icon: Icon(Icons.search, color: AppTheme.textPrimary),
-),
-  Padding(
-    padding: const EdgeInsets.only(right: 12),
-    child: GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
-        );
-      },
-      child: CircleAvatar(
-  radius: 18,
-  backgroundColor: const Color(0xff2D8CFF).withOpacity(0.2),
-  child: const Icon(Icons.person, color: Color(0xff2D8CFF), size: 20),
-),
-    ),
-  ),
-],
-             ),
-             body: _currentTab == 2
-    ? _buildMusicTab()
-          : _isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  CircularProgressIndicator(color: Colors.blue),
-                  SizedBox(height: 20),
-                  Text(
-                    "Discovering videos...",
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                  ),
-                ],
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VideoSearchScreen(videos: videoList),
+                ),
+              );
+            },
+            icon: Icon(Icons.search, color: AppTheme.textPrimary),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ProfileScreen()),
+                );
+              },
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor:
+                    const Color(0xff2D8CFF).withOpacity(0.2),
+                child: const Icon(Icons.person,
+                    color: Color(0xff2D8CFF), size: 20),
               ),
-            )
-          : _permissionDenied
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.folder_off, color: AppTheme.textSecondary, size: 60),
-                        const SizedBox(height: 16),
-                        const Text(
-                          "Video access permission चाहिए",
+            ),
+          ),
+        ],
+      ),
+      body: _currentTab == 2
+          ? _buildMusicTab()
+          : _isLoading
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: Colors.blue),
+                      SizedBox(height: 20),
+                      Text("Discovering videos...",
                           style: TextStyle(
-                              color: AppTheme.textPrimary, fontSize: 16),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => PhotoManager.openSetting(),
-                          child: const Text("Settings खोलें"),
-                        ),
-                      ],
-                    ),
+                              color: Colors.white54, fontSize: 14)),
+                    ],
                   ),
                 )
-              : videoList.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "कोई वीडियो नहीं मिला",
-                        style: TextStyle(color: Colors.white54, fontSize: 16),
+              : _permissionDenied
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.folder_off,
+                                color: AppTheme.textSecondary, size: 60),
+                            const SizedBox(height: 16),
+                            Text("Video access permission चाहिए",
+                                style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 16),
+                                textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () =>
+                                  PhotoManager.openSetting(),
+                              child: const Text("Settings खोलें"),
+                            ),
+                          ],
+                        ),
                       ),
                     )
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                      try {
-                        await PhotoManager.editor.android.removeAllNoExistsAsset();
-                      } catch (_) {}
-                        await _scanVideos(silent: true);
-                        await _loadRecent();
-                      },
-                      child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: AppTheme.card,
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          if (_recentTitle != null) ...[
-                            Text("Recent",
-                                style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () async {
-                                final result = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => RealVideoPlayer(
-                                      videoUrl: _recentUrl!,
-                                      title: _recentTitle!,
-                                      startPosition: _recentPosition,
-                                    ),
+                  : videoList.isEmpty
+                      ? Center(
+                          child: Text("कोई वीडियो नहीं मिला",
+                              style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 16)),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: () async {
+                            try {
+                              await PhotoManager.editor.android
+                                  .removeAllNoExistsAsset();
+                            } catch (_) {}
+                            await _scanVideos(silent: true);
+                            await _loadRecent();
+                          },
+                          child: SingleChildScrollView(
+                            physics:
+                                const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(
+                                16, 12, 16, 18),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.card,
+                                    borderRadius:
+                                        BorderRadius.circular(18),
                                   ),
-                                );
-                                if (result != null && result is Map) {
-                                  setState(() {
-                                    _recentTitle = result['title'];
-                                    _recentUrl = result['url'];
-                                    _recentPosition = result['position'];
-                                    _recentDuration = result['duration'];
-                                  });
-                                } else {
-                            await Future.delayed(
-                                const Duration(milliseconds: 300));
-                            if (mounted) _loadRecent();
-                                }
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(24),
-                                child: SizedBox(
-                                  height: 150,
-                                  width: double.infinity,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      VideoThumbnailWidget(
-                                          videoPath: _recentUrl!),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.transparent,
-                                              Colors.black.withOpacity(0.6),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      const Center(
-                                        child: Icon(Icons.play_circle_fill,
-                                            color: Colors.white, size: 70),
-                                      ),
-                                    Positioned(
-                                      left: 18,
-                                      bottom: 18,
-                                      right: 18,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text("Continue Watching",
-                                              style: TextStyle(
-                                                  color: Colors.white70)),
-                                          const SizedBox(height: 5),
-                                          Text(_recentTitle!,
-                                              maxLines: 1,
-                                              overflow:
-                                                  TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight:
-                                                      FontWeight.bold)),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ),
-                            ),
-                          ),
-                            const SizedBox(height: 12),
-                          ],
-                          Row(
-                            children: [
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => _showPlaylist = false),
-                                child: Text("Videos",
-                                    style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: !_showPlaylist ? AppTheme.textPrimary : AppTheme.textTertiary
-                              ),
-                              const SizedBox(width: 20),
-                              GestureDetector(
-                                onTap: () =>
-                                    setState(() => _showPlaylist = true),
-                                child: Text("Playlist",
-                                    style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: _showPlaylist ? AppTheme.textPrimary : AppTheme.textTertiary
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                onPressed: _showSortMenu,
-                                icon: const Icon(Icons.sort,
-                                    color: Colors.white70),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          if (!_showPlaylist)
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: videoList.length,
-                              itemBuilder: (context, index) {
-                                final item = videoList[index];
-                                return _buildVideoTile(context, item);
-                              },
-                            )
-                          else
-                            Builder(builder: (context) {
-                              final Map<String, List<Map<String, String>>>
-                                  grouped = {};
-                              for (final video in videoList) {
-                                final folder = video['folder'] ?? 'Unknown';
-                                grouped
-                                    .putIfAbsent(folder, () => [])
-                                    .add(video);
-                              }
-                              final folderNames = grouped.keys.toList();
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics:
-                                    const NeverScrollableScrollPhysics(),
-                                itemCount: folderNames.length,
-                                itemBuilder: (context, index) {
-                                  final folderName = folderNames[index];
-                                  final folderVideos = grouped[folderName]!;
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 10),
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                FolderVideosScreen(
-                                              folderName: folderName,
-                                              videos: folderVideos,
-                                            ),
+                                const SizedBox(height: 12),
+                                if (_recentTitle != null) ...[
+                                  Text("Recent",
+                                      style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.textPrimary)),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => RealVideoPlayer(
+                                            videoUrl: _recentUrl!,
+                                            title: _recentTitle!,
+                                            startPosition:
+                                                _recentPosition,
                                           ),
-                                        );
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.all(14),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.card,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
                                         ),
-                                        child: Row(
+                                      );
+                                      if (result != null && result is Map) {
+                                        setState(() {
+                                          _recentTitle = result['title'];
+                                          _recentUrl = result['url'];
+                                          _recentPosition =
+                                              result['position'];
+                                          _recentDuration =
+                                              result['duration'];
+                                        });
+                                      } else {
+                                        await Future.delayed(const Duration(
+                                            milliseconds: 300));
+                                        if (mounted) _loadRecent();
+                                      }
+                                    },
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(24),
+                                      child: SizedBox(
+                                        height: 150,
+                                        width: double.infinity,
+                                        child: Stack(
+                                          fit: StackFit.expand,
                                           children: [
-                                            const Icon(Icons.folder,
-                                                color: Color(0xff2D8CFF),
-                                                size: 32),
-                                            const SizedBox(width: 14),
-                                            Expanded(
+                                            VideoThumbnailWidget(
+                                                videoPath: _recentUrl!),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin:
+                                                      Alignment.topCenter,
+                                                  end: Alignment
+                                                      .bottomCenter,
+                                                  colors: [
+                                                    Colors.transparent,
+                                                    Colors.black
+                                                        .withOpacity(0.6),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            const Center(
+                                              child: Icon(
+                                                  Icons.play_circle_fill,
+                                                  color: Colors.white,
+                                                  size: 70),
+                                            ),
+                                            Positioned(
+                                              left: 18,
+                                              bottom: 18,
+                                              right: 18,
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment
                                                         .start,
                                                 children: [
-                                                  Text(folderName, style: TextStyle(color: AppTheme.textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                      "${folderVideos.length} videos",
-                                                      style: const TextStyle(
+                                                  const Text(
+                                                      "ContinueWatching",
+                                                      style: TextStyle(
                                                           color: Colors
-                                                              .white54,
-                                                          fontSize: 13)),
+                                                              .white70)),
+                                                  const SizedBox(
+                                                      height: 5),
+                                                  Text(_recentTitle!,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow
+                                                              .ellipsis,
+                                                      style: const TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight
+                                                                  .bold,
+                                                          color: Colors
+                                                              .white)),
                                                 ],
                                               ),
                                             ),
-                                            const Icon(Icons.chevron_right,
-                                                color: Colors.white38),
                                           ],
                                         ),
                                       ),
                                     ),
-                                  );
-                                },
-                              );
-                            }),
-                        ],
-                      ),
-                    ),
-                  ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                          () => _videoTab = 0),
+                                      child: Text("Videos",
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: _videoTab == 0
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme
+                                                      .textTertiary)),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                          () => _videoTab = 1),
+                                      child: Text("Folders",
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: _videoTab == 1
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme
+                                                      .textTertiary)),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    GestureDetector(
+                                      onTap: () => setState(
+                                          () => _videoTab = 2),
+                                      child: Text("My List",
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: _videoTab == 2
+                                                  ? AppTheme.textPrimary
+                                                  : AppTheme
+                                                      .textTertiary)),
+                                    ),
+                                    const Spacer(),
+                                    if (_videoTab == 2)
+                                      IconButton(
+                                        onPressed: _createVideoPlaylist,
+                                        icon: Icon(Icons.add,
+                                            color: AppTheme.iconColor),
+                                        padding: EdgeInsets.zero,
+                                        constraints:
+                                            const BoxConstraints(),
+                                      ),
+                                    if (_videoTab != 2)
+                                      IconButton(
+                                        onPressed: _showSortMenu,
+                                        icon: Icon(Icons.sort,
+                                            color: AppTheme.iconColor),
+                                        padding: EdgeInsets.zero,
+                                        constraints:
+                                            const BoxConstraints(),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                if (_videoTab == 0)
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    itemCount: videoList.length,
+                                    itemBuilder: (context, index) {
+                                      final item = videoList[index];
+                                      return _buildVideoTile(context, item);
+                                    },
+                                  )
+                                else if (_videoTab == 1)
+                                  _buildFoldersList()
+                                else
+                                  _buildPlaylistsList(),
+                              ],
+                            ),
+                          ),
+                        ),
       bottomNavigationBar: NavigationBar(
-  backgroundColor: AppTheme.card,
-  indicatorColor: const Color(0xff2D8CFF).withOpacity(0.2),
-  selectedIndex: _currentTab,
-  onDestinationSelected: (index) {
-    if (index == 1) {
-      // Beech wala Play button — seedha Recent video kholiye
-      if (_recentUrl != null && _recentTitle != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => RealVideoPlayer(
-              videoUrl: _recentUrl!,
-              title: _recentTitle!,
-              startPosition: _recentPosition,
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("कोई हाल ही में चलाया गया वीडियो नहीं है")),
-        );
-      }
-      return; // tab switch nahi karna, isliye yahin ruk jaayenge
-    }
-
-    setState(() => _currentTab = index);
-    if (index == 2 && !_audioLoaded) {
-      _loadSongs();
-    }
-  },
-  destinations: const [
-    NavigationDestination(
-        icon: Icon(Icons.video_library), label: "Videos"),
-    NavigationDestination(
-        icon: Icon(Icons.play_circle_fill, size: 36),  // 👈 bada size
-        label: "Play"),
-    NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
-  ],
-),
-     );
+        backgroundColor: AppTheme.card,
+        indicatorColor:
+            const Color(0xff2D8CFF).withOpacity(0.2),
+        selectedIndex: _currentTab,
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            if (_recentUrl != null && _recentTitle != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RealVideoPlayer(
+                    videoUrl: _recentUrl!,
+                    title: _recentTitle!,
+                    startPosition: _recentPosition,
+                  ),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content:
+                        Text("कोई हाल ही में चलाया गया वीडियो नहीं है")),
+              );
+            }
+            return;
+          }
+          setState(() => _currentTab = index);
+          if (index == 2 && !_audioLoaded) {
+            _loadSongs();
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+              icon: Icon(Icons.video_library), label: "Videos"),
+          NavigationDestination(
+              icon: Icon(Icons.play_circle_fill, size: 36),
+              label: "Play"),
+          NavigationDestination(
+              icon: Icon(Icons.music_note), label: "Music"),
+        ],
+      ),
+    );
   }
 
-  
-  Widget _buildVideoTile(BuildContext context, Map<String, String> item) {
-  final index = videoList.indexOf(item);
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 0),
-    child: GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => RealVideoPlayer(
-              videoUrl: item['url']!,
-              title: item['title']!,
-              playlist: videoList,
-              currentIndex: index,
+  Widget _buildFoldersList() {
+    final grouped = <String, List<Map<String, String>>>{};
+    for (final video in videoList) {
+      final folder = video['folder'] ?? 'Unknown';
+      grouped.putIfAbsent(folder, () => []).add(video);
+    }
+    final folderNames = grouped.keys.toList();
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: folderNames.length,
+      itemBuilder: (context, index) {
+        final folderName = folderNames[index];
+        final folderVideos = grouped[folderName]!;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FolderVideosScreen(
+                    folderName: folderName,
+                    videos: folderVideos,
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: AppTheme.cardBorder, width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.folder,
+                      color: Color(0xff2D8CFF), size: 32),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(folderName,
+                            style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text("${folderVideos.length} videos",
+                            style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_right,
+                      color: AppTheme.textTertiary),
+                ],
+              ),
             ),
           ),
         );
-        if (result != null && result is Map) {
-          setState(() {
-            _recentTitle = result['title'];
-            _recentUrl = result['url'];
-            _recentPosition = result['position'];
-            _recentDuration = result['duration'];
-          });
-        } else {
-          await Future.delayed(const Duration(milliseconds: 300));
-          if (mounted) _loadRecent();
-        }
       },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: VideoThumbnailWidget(videoPath: item['url']!),
-              ),
-              Positioned(
-                bottom: 4,
-                right: 6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(4),
+    );
+  }
+
+  Widget _buildPlaylistsList() {
+    final names = _videoPlaylists.keys.toList();
+    if (names.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30),
+          child: Text(
+            "अभी कोई Playlist नहीं है\nऊपर + दबाकर बनाओ",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: AppTheme.textSecondary, fontSize: 15),
+          ),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: names.length,
+      itemBuilder: (context, index) {
+        final name = names[index];
+        final ids = _videoPlaylists[name] ?? [];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VideoPlaylistScreen(
+                    playlistName: name,
+                    videoIds: ids,
+                    allVideos: videoList,
+                    onRemove: (vid) =>
+                        _removeVideoFromPlaylist(name, vid),
+                    onDelete: () => _deleteVideoPlaylist(name),
+                    onRename: () => _renameVideoPlaylist(name),
                   ),
-                  child: Text(
-                    item['duration']!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: AppTheme.cardBorder, width: 1),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.queue_music,
+                      color: Color(0xff2D8CFF), size: 32),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(name,
+                            style: TextStyle(
+                                color: AppTheme.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text("${ids.length} videos",
+                            style: TextStyle(
+                                color: AppTheme.textSecondary,
+                                fontSize: 13)),
+                      ],
                     ),
                   ),
-                ),
+                  IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: AppTheme.card,
+                        builder: (_) => SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.edit,
+                                    color: AppTheme.iconColor),
+                                title: Text('Rename',
+                                    style: TextStyle(
+                                        color:
+                                            AppTheme.textPrimary)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _renameVideoPlaylist(name);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.delete,
+                                    color: Colors.redAccent),
+                                title: const Text('Delete',
+                                    style: TextStyle(
+                                        color: Colors.redAccent)),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _deleteVideoPlaylist(name);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    icon: Icon(Icons.more_vert,
+                        color: AppTheme.iconColor, size: 20),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-          const SizedBox(width: 12),
-          // ---- जानकारी वाला भाग (टाइटल, res, size, source + more_vert) ----
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoTile(
+      BuildContext context, Map<String, String> item) {
+    final index = videoList.indexOf(item);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 0),
+      child: GestureDetector(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => RealVideoPlayer(
+                videoUrl: item['url']!,
+                title: item['title']!,
+                playlist: videoList,
+                currentIndex: index,
+              ),
+            ),
+          );
+          if (result != null && result is Map) {
+            setState(() {
+              _recentTitle = result['title'];
+              _recentUrl = result['url'];
+              _recentPosition = result['position'];
+              _recentDuration = result['duration'];
+            });
+          } else {
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (mounted) _loadRecent();
+          }
+        },
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
-                // वीडियो का टाइटल
-                Text(
-                  item['title'] ?? 'No Title',
-                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: VideoThumbnailWidget(videoPath: item['url']!),
                 ),
-                const SizedBox(height: 2),
-                // रेज़ॉल्यूशन और साइज़
-                Text(
-                  "${item['res'] ?? ''} | ${item['size'] ?? ''}",
-                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
-                ),
-                const SizedBox(height: 0),
-                // सोर्स और more_vert आइकन वाली Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item['source'] ?? '',
-                        style: TextStyle(color: AppTheme.textTertiary, fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
+                Positioned(
+                  bottom: 4,
+                  right: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      item['duration']!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Row(
-  children: [
-    Expanded(
-      child: Text(
-        item['source'] ?? '',
-        style: const TextStyle(color: Colors.white38, fontSize: 12),
-        overflow: TextOverflow.ellipsis,
-      ),
-    ),
-    IconButton(                                          // 👈 नया Heart button
-      onPressed: () => _toggleVideoFavorite(item),
-      icon: Icon(
-        _favoriteVideoIds.contains(item['id'])
-            ? Icons.favorite
-            : Icons.favorite_border,
-        color: _favoriteVideoIds.contains(item['id'])
-            ? Colors.pinkAccent
-            : Colors.white60,
-        size: 18,
-      ),
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-    ),
-    const SizedBox(width: 4),                             // 👈 नया spacing
-    IconButton(                                          // 👈 पुराना Menu button
-      onPressed: () => _showVideoOptions(context, item, index),
-      icon: Icon(Icons.more_vert, color: AppTheme.iconColor, size: 20),
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-    ),
-  ],
-),
-                    IconButton(
-                      onPressed: () => _showVideoOptions(context, item, index),
-                      icon: const Icon(Icons.more_vert, color: Colors.white60, size: 20),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-void _showVideoOptions(BuildContext context, Map<String, String> item, int index) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: const Color(0xff1A1D24),
-    builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.info_outline, color: Colors.white),
-              title: const Text("Details", style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _showVideoDetails(item);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.white),
-              title: const Text("Rename", style: TextStyle(color: Colors.white)),
-              onTap: () {
-                Navigator.pop(context);
-                _renameVideo(item, index);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.redAccent),
-              title: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
-              onTap: () {
-                Navigator.pop(context);
-                _deleteVideo(item, index);
-              },
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item['title'] ?? 'No Title',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary, fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "${item['res'] ?? ''} | ${item['size'] ?? ''}",
+                    style: TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 13),
+                  ),
+                  const SizedBox(height: 0),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item['source'] ?? '',
+                          style: TextStyle(
+                              color: AppTheme.textTertiary,
+                              fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _toggleVideoFavorite(item),
+                        icon: Icon(
+                          _favoriteVideoIds.contains(item['id'])
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: _favoriteVideoIds.contains(item['id'])
+                              ? Colors.pinkAccent
+                              : AppTheme.iconColor,
+                          size: 18,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        onPressed: () =>
+                            _showVideoOptions(context, item, index),
+                        icon: Icon(Icons.more_vert,
+                            color: AppTheme.iconColor, size: 20),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-      );
-    },
-  );
-}
-String _formatSize(int bytes) {
-  if (bytes >= 1024 * 1024 * 1024) {
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+      ),
+    );
   }
-  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-}
 
-Future<Map<String, String>> _loadCustomNames() async {
-  final prefs = await SharedPreferences.getInstance();
-  final list = prefs.getStringList('custom_names') ?? [];
-  final map = <String, String>{};
-  for (final s in list) {
-    final i = s.indexOf('|||');
-    if (i > 0) map[s.substring(0, i)] = s.substring(i + 3);
-  }
-  return map;
-}
-
-Future<void> _saveCustomName(String id, String name) async {
-  final map = await _loadCustomNames();
-  map[id] = name;
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setStringList(
-    'custom_names',
-    map.entries.map((e) => '${e.key}|||${e.value}').toList(),
-  );
-}
-
-int _sortMode = 0;
-
-double _sizeToMb(String? s) {
-  if (s == null || s.isEmpty) return 0;
-  final p = s.split(' ');
-  final v = double.tryParse(p[0]) ?? 0;
-  return (p.length > 1 && p[1] == 'GB') ? v * 1024 : v;
-}
-
-void _sortList(List<Map<String, String>> list) {
-  int idOf(Map<String, String> m) => int.tryParse(m['id'] ?? '') ?? 0;
-  switch (_sortMode) {
-    case 1:
-      list.sort((a, b) => idOf(a).compareTo(idOf(b)));
-      break;
-    case 2:
-      list.sort((a, b) => (a['title'] ?? '')
-          .toLowerCase()
-          .compareTo((b['title'] ?? '').toLowerCase()));
-      break;
-    case 3:
-      list.sort((a, b) =>
-          _sizeToMb(b['size']).compareTo(_sizeToMb(a['size'])));
-      break;
-    default:
-      list.sort((a, b) => idOf(b).compareTo(idOf(a)));
-  }
-}
-
-void _showSortMenu() {
-  final options = [
-    'नया पहले',
-    'पुराना पहले',
-    'नाम (A से Z)',
-    'साइज़ (बड़ा पहले)'
-  ];
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: const Color(0xff1A1D24),
-    builder: (context) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(options.length, (i) {
-            return ListTile(
-              leading: Icon(
-                _sortMode == i
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_off,
-                color: _sortMode == i ? Colors.blueAccent : Colors.white54,
+  void _showVideoOptions(BuildContext context,
+      Map<String, String> item, int index) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.card,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.playlist_add,
+                    color: AppTheme.iconColor),
+                title: Text("Add to Playlist",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showAddVideoToPlaylistDialog(item);
+                },
               ),
-              title: Text(options[i],
-                  style: const TextStyle(color: Colors.white)),
-              onTap: () async {
-                Navigator.pop(context);
-                setState(() {
-                  _sortMode = i;
-                  _sortList(videoList);
-                });
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setInt('sort_mode', i);
-              },
-            );
-          }),
-        ),
-      );
-    },
-  );
-}
-void _toast(String msg) {
-  if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+              ListTile(
+                leading:
+                    Icon(Icons.info_outline, color: AppTheme.iconColor),
+                title: Text("Details",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showVideoDetails(item);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit, color: AppTheme.iconColor),
+                title: Text("Rename",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _renameVideo(item, index);
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.delete, color: Colors.redAccent),
+                title: const Text("Delete",
+                    style: TextStyle(color: Colors.redAccent)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteVideo(item, index);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
-}
 
-  
+  String _formatSize(int bytes) {
+    if (bytes >= 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+    }
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  Future<Map<String, String>> _loadCustomNames() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('custom_names') ?? [];
+    final map = <String, String>{};
+    for (final s in list) {
+      final i = s.indexOf('|||');
+      if (i > 0) map[s.substring(0, i)] = s.substring(i + 3);
+    }
+    return map;
+  }
+
+  Future<void> _saveCustomName(String id, String name) async {
+    final map = await _loadCustomNames();
+    map[id] = name;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      'custom_names',
+      map.entries.map((e) => '${e.key}|||${e.value}').toList(),
+    );
+  }
+
+  int _sortMode = 0;
+
+  double _sizeToMb(String? s) {
+    if (s == null || s.isEmpty) return 0;
+    final p = s.split(' ');
+    final v = double.tryParse(p[0]) ?? 0;
+    return (p.length > 1 && p[1] == 'GB') ? v * 1024 : v;
+  }
+
+  void _sortList(List<Map<String, String>> list) {
+    int idOf(Map<String, String> m) => int.tryParse(m['id'] ?? '') ?? 0;
+    switch (_sortMode) {
+      case 1:
+        list.sort((a, b) => idOf(a).compareTo(idOf(b)));
+        break;
+      case 2:
+        list.sort((a, b) => (a['title'] ?? '')
+            .toLowerCase()
+            .compareTo((b['title'] ?? '').toLowerCase()));
+        break;
+      case 3:
+        list.sort((a, b) =>
+            _sizeToMb(b['size']).compareTo(_sizeToMb(a['size'])));
+        break;
+      default:
+        list.sort((a, b) => idOf(b).compareTo(idOf(a)));
+    }
+  }
+
+  void _showSortMenu() {
+    final options = [
+      'नया पहले',
+      'पुराना पहले',
+      'नाम (A से Z)',
+      'साइज़ (बड़ा पहले)'
+    ];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.card,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(options.length, (i) {
+              return ListTile(
+                leading: Icon(
+                  _sortMode == i
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  color: _sortMode == i
+                      ? Colors.blueAccent
+                      : AppTheme.iconColor,
+                ),
+                title: Text(options[i],
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  setState(() {
+                    _sortMode = i;
+                    _sortList(videoList);
+                  });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setInt('sort_mode', i);
+                },
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+
+  void _toast(String msg) {
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
   Future<void> _loadMusicData() async {
     final prefs = await SharedPreferences.getInstance();
     _favoriteIds = (prefs.getStringList('favorite_songs') ?? [])
@@ -1041,53 +1416,54 @@ void _toast(String msg) {
     if (mounted) setState(() => _recentSongIds = list);
   }
 
-Future<void> _playNextSong(SongModel song) async {
-  try {
-    if (globalAudioPlayer.sequence == null ||
-        globalAudioPlayer.sequence!.isEmpty) {
-      _toast('पहले कोई गाना चलाओ');
-      return;
+  Future<void> _playNextSong(SongModel song) async {
+    try {
+      if (globalAudioPlayer.sequence == null ||
+          globalAudioPlayer.sequence!.isEmpty) {
+        _toast('पहले कोई गाना चलाओ');
+        return;
+      }
+      final source = AudioSource.uri(
+        Uri.parse('content://media/external/audio/media/${song.id}'),
+        tag: MediaItem(
+          id: song.id.toString(),
+          album: 'VeoPlay',
+          title: globalSongNames[song.id] ?? song.title,
+          artist: song.artist ?? 'Unknown',
+        ),
+      );
+      final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
+      final current = globalAudioPlayer.audioSource;
+      if (current is! ConcatenatingAudioSource) {
+        _toast('अभी लिस्ट से गाना नहीं चल रहा');
+        return;
+      }
+      await current.insert(nextIndex, source);
+      _toast('"${globalSongNames[song.id] ?? song.title}" अगला चलेगा');
+    } catch (e) {
+      debugPrint('Play next error: $e');
+      _toast('नहीं हो पाया');
     }
-    final source = AudioSource.uri(
-      Uri.parse('content://media/external/audio/media/${song.id}'),
-      tag: MediaItem(
-        id: song.id.toString(),
-        album: 'VeoPlay',
-        title: globalSongNames[song.id] ?? song.title,
-        artist: song.artist ?? 'Unknown',
-      ),
-    );
-    final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
-    final current = globalAudioPlayer.audioSource;
-    if (current is! ConcatenatingAudioSource) {
-      _toast('अभी लिस्ट से गाना नहीं चल रहा');
-      return;
-    }
-    await current.insert(nextIndex, source);
-    _toast('"${globalSongNames[song.id] ?? song.title}" अगला चलेगा');
-  } catch (e) {
-    debugPrint('Play next error: $e');
-    _toast('नहीं हो पाया');
   }
-}
 
   Future<void> _shareSong(SongModel song) async {
-  try {
-    final file = File(song.data);
-    if (!await file.exists()) {
-      _toast('फ़ाइल नहीं मिली');
-      return;
+    try {
+      final file = File(song.data);
+      if (!await file.exists()) {
+        _toast('फ़ाइल नहीं मिली');
+        return;
+      }
+      await Share.shareXFiles(
+        [XFile(song.data, mimeType: 'audio/*')],
+        subject: globalSongNames[song.id] ?? song.title,
+        text:
+            '${globalSongNames[song.id] ?? song.title}\n${song.artist ?? ''}',
+      );
+    } catch (e) {
+      debugPrint('Song share error: $e');
+      _toast('Share नहीं हो पाया');
     }
-    await Share.shareXFiles(
-      [XFile(song.data, mimeType: 'audio/*')],
-      subject: globalSongNames[song.id] ?? song.title,
-      text: '${globalSongNames[song.id] ?? song.title}\n${song.artist ?? ''}',
-    );
-  } catch (e) {
-    debugPrint('Song share error: $e');
-    _toast('Share नहीं हो पाया');
   }
-}
 
   Future<void> _toggleFavorite(SongModel song) async {
     setState(() {
@@ -1107,7 +1483,9 @@ Future<void> _playNextSong(SongModel song) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'user_playlists',
-      _playlists.entries.map((e) => '${e.key}|||${e.value.join(",")}').toList(),
+      _playlists.entries
+          .map((e) => '${e.key}|||${e.value.join(",")}')
+          .toList(),
     );
   }
 
@@ -1116,13 +1494,13 @@ Future<void> _playNextSong(SongModel song) async {
     final name = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title:
-            const Text("नई Playlist", style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.card,
+        title: Text("नई Playlist",
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppTheme.textPrimary),
           decoration: const InputDecoration(hintText: "Playlist का नाम"),
         ),
         actions: [
@@ -1162,7 +1540,7 @@ Future<void> _playNextSong(SongModel song) async {
   void _addToPlaylistDialog(SongModel song) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xff1A1D24),
+      backgroundColor: AppTheme.card,
       builder: (context) {
         return SafeArea(
           child: ListView(
@@ -1170,8 +1548,8 @@ Future<void> _playNextSong(SongModel song) async {
             children: [
               ListTile(
                 leading: const Icon(Icons.add, color: Colors.blueAccent),
-                title: const Text("नई Playlist बनाएँ",
-                    style: TextStyle(color: Colors.white)),
+                title: Text("नई Playlist बनाएँ",
+                    style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context);
                   final name = await _askPlaylistName();
@@ -1183,10 +1561,11 @@ Future<void> _playNextSong(SongModel song) async {
                 },
               ),
               ..._playlists.keys.map((name) => ListTile(
-                    leading:
-                        const Icon(Icons.queue_music, color: Colors.white),
+                    leading: Icon(Icons.queue_music,
+                        color: AppTheme.iconColor),
                     title: Text(name,
-                        style: const TextStyle(color: Colors.white)),
+                        style: TextStyle(
+                            color: AppTheme.textPrimary)),
                     onTap: () {
                       Navigator.pop(context);
                       _addSongToPlaylist(name, song);
@@ -1199,16 +1578,15 @@ Future<void> _playNextSong(SongModel song) async {
     );
   }
 
-  
   Future<void> _deletePlaylist(String name) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
+        backgroundColor: AppTheme.card,
         title: Text("'$name' हटाएँ?",
-            style: const TextStyle(color: Colors.white)),
-        content: const Text("सिर्फ़ Playlist हटेगी, गाने फोन में रहेंगे।",
-            style: TextStyle(color: Colors.white70)),
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text("सिर्फ़ Playlist हटेगी, गाने फोन में रहेंगे।",
+            style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -1224,59 +1602,57 @@ Future<void> _playNextSong(SongModel song) async {
     setState(() => _playlists.remove(name));
     await _savePlaylists();
   }
- 
-// 👇 Playlist rename
-Future<void> _renamePlaylist(String oldName) async {
-  final controller = TextEditingController(text: oldName);
-  final newName = await showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xff1A1D24),
-      title: const Text("Playlist का नाम बदलें",
-          style: TextStyle(color: Colors.white)),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        style: const TextStyle(color: Colors.white),
-        decoration: const InputDecoration(hintText: "नया नाम"),
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel")),
-        TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text("Save")),
-      ],
-    ),
-  );
-  if (newName == null || newName.isEmpty) return;
-  final clean = newName.replaceAll('|', '').replaceAll(',', '').trim();
-  if (clean.isEmpty || clean == oldName) return;
-  if (_playlists.containsKey(clean)) {
-    _toast("इस नाम की Playlist पहले से है");
-    return;
-  }
-  setState(() {
-    final list = _playlists.remove(oldName) ?? [];
-    _playlists[clean] = list;
-  });
-  await _savePlaylists();
-  _toast("नाम बदल दिया");
-}
 
-// 👇 Playlist से गाना हटाओ
-Future<void> _removeSongFromPlaylist(
-    String playlistName, SongModel song) async {
-  final list = _playlists[playlistName] ?? [];
-  if (!list.contains(song.id)) return;
-  setState(() {
-    list.remove(song.id);
-    _playlists[playlistName] = list;
-  });
-  await _savePlaylists();
-  _toast("'$playlistName' से हटा दिया");
-}
+  Future<void> _renamePlaylist(String oldName) async {
+    final controller = TextEditingController(text: oldName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text("Playlist का नाम बदलें",
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(hintText: "नया नाम"),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text("Save")),
+        ],
+      ),
+    );
+    if (newName == null || newName.isEmpty) return;
+    final clean = newName.replaceAll('|', '').replaceAll(',', '').trim();
+    if (clean.isEmpty || clean == oldName) return;
+    if (_playlists.containsKey(clean)) {
+      _toast("इस नाम की Playlist पहले से है");
+      return;
+    }
+    setState(() {
+      final list = _playlists.remove(oldName) ?? [];
+      _playlists[clean] = list;
+    });
+    await _savePlaylists();
+    _toast("नाम बदल दिया");
+  }
+
+  Future<void> _removeSongFromPlaylist(
+      String playlistName, SongModel song) async {
+    final list = _playlists[playlistName] ?? [];
+    if (!list.contains(song.id)) return;
+    setState(() {
+      list.remove(song.id);
+      _playlists[playlistName] = list;
+    });
+    await _savePlaylists();
+    _toast("'$playlistName' से हटा दिया");
+  }
 
   List<SongModel> _songsByIds(List<int> ids) {
     final byId = {for (final s in _songs) s.id: s};
@@ -1289,38 +1665,39 @@ Future<void> _removeSongFromPlaylist(
   }
 
   void _openSongList(String title, List<SongModel> songs,
-{String? playlistName}) {
-  final isFavScreen = title == "Favorite";
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-        builder: (_) => SongListScreen(
-              title: title,
-              songs: songs,
-              onMenu: _showSongOptions,
-              keep: (s) =>
-                  _songs.any((x) => x.id == s.id) &&
-                  (title != "Favorite" || _favoriteIds.contains(s.id)),
-              playlistName: playlistName,
-              onRemoveFromPlaylist: playlistName == null
-                  ? null
-                  : (s) => _removeSongFromPlaylist(playlistName, s),
-              favoriteIds: isFavScreen ? _favoriteIds : null,
-              onToggleFavorite: isFavScreen
-                  ? (s) async {
-                      await _toggleFavorite(s);
-                      if (mounted) setState(() {});
-                    }
-                  : null,
-            )),
-  );
+      {String? playlistName}) {
+    final isFavScreen = title == "Favorite";
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => SongListScreen(
+                title: title,
+                songs: songs,
+                onMenu: _showSongOptions,
+                keep: (s) =>
+                    _songs.any((x) => x.id == s.id) &&
+                    (title != "Favorite" ||
+                        _favoriteIds.contains(s.id)),
+                playlistName: playlistName,
+                onRemoveFromPlaylist: playlistName == null
+                    ? null
+                    : (s) => _removeSongFromPlaylist(playlistName, s),
+                favoriteIds: isFavScreen ? _favoriteIds : null,
+                onToggleFavorite: isFavScreen
+                    ? (s) async {
+                        await _toggleFavorite(s);
+                        if (mounted) setState(() {});
+                      }
+                    : null,
+              )),
+    );
   }
 
-  
   Widget _songTile(int index) {
     final song = _songs[index];
     final nowTag = globalAudioPlayer.sequenceState?.currentSource?.tag;
-    final isPlaying = nowTag is MediaItem && nowTag.id == song.id.toString();
+    final isPlaying =
+        nowTag is MediaItem && nowTag.id == song.id.toString();
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -1337,30 +1714,27 @@ Future<void> _removeSongFromPlaylist(
         child: Row(
           children: [
             Stack(
-  children: [
-    AlbumArtWidget(
-      songId: song.id,
-      size: 50,
-      radius: 8,
-      fallbackIcon:
-          isPlaying ? Icons.graphic_eq : Icons.music_note,
-    ),
-    if (isPlaying)
-      Positioned.fill(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.35),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.graphic_eq,
-            color: Color(0xff2D8CFF),
-            size: 24,
-          ),
-        ),
-      ),
-  ],
-),
+              children: [
+                AlbumArtWidget(
+                  songId: song.id,
+                  size: 50,
+                  radius: 8,
+                  fallbackIcon:
+                      isPlaying ? Icons.graphic_eq : Icons.music_note,
+                ),
+                if (isPlaying)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.35),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.graphic_eq,
+                          color: Color(0xff2D8CFF), size: 24),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1369,23 +1743,25 @@ Future<void> _removeSongFromPlaylist(
                   Text(globalSongNames[song.id] ?? song.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 14)),
+                      style: TextStyle(
+                          color: AppTheme.textPrimary, fontSize: 14)),
                   const SizedBox(height: 2),
                   Text(song.artist ?? "Unknown",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 12)),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12)),
                 ],
               ),
             ),
             if (_favoriteIds.contains(song.id))
-              const Icon(Icons.favorite, color: Colors.pinkAccent, size: 16),
+              const Icon(Icons.favorite,
+                  color: Colors.pinkAccent, size: 16),
             IconButton(
               onPressed: () => _showSongOptions(song),
-              icon: const Icon(Icons.more_vert,
-                  color: Colors.white60, size: 20),
+              icon: Icon(Icons.more_vert,
+                  color: AppTheme.iconColor, size: 20),
               padding: const EdgeInsets.only(left: 8),
               constraints: const BoxConstraints(),
             ),
@@ -1395,7 +1771,8 @@ Future<void> _removeSongFromPlaylist(
     );
   }
 
-  Widget _groupTile(IconData icon, String name, int count, VoidCallback onTap,
+  Widget _groupTile(IconData icon, String name, int count,
+      VoidCallback onTap,
       {Widget? trailing}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1405,8 +1782,10 @@ Future<void> _removeSongFromPlaylist(
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white10,
+            color: AppTheme.card,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+                color: AppTheme.cardBorder, width: 1),
           ),
           child: Row(
             children: [
@@ -1419,29 +1798,32 @@ Future<void> _removeSongFromPlaylist(
                     Text(name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            color: Colors.white,
+                        style: TextStyle(
+                            color: AppTheme.textPrimary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text("$count songs",
-                        style: const TextStyle(
-                            color: Colors.white54, fontSize: 13)),
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 13)),
                   ],
                 ),
               ),
               if (trailing != null)
                 trailing
               else
-                Icon(Icons.chevron_right, color: AppTheme.textTertiary),
+                Icon(Icons.chevron_right,
+                    color: AppTheme.textTertiary),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _musicBox(String title, IconData icon, Color color, int count,
-      VoidCallback onTap) {
+  Widget _musicBox(String title, IconData icon, Color color,
+      int count, VoidCallback onTap) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -1449,8 +1831,10 @@ Future<void> _removeSongFromPlaylist(
         height: 80,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: Colors.white10,
+          color: AppTheme.card,
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+              color: AppTheme.cardBorder, width: 1),
         ),
         child: Row(
           children: [
@@ -1464,14 +1848,15 @@ Future<void> _removeSongFromPlaylist(
                   Text(title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: Colors.white,
+                      style: TextStyle(
+                          color: AppTheme.textPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.bold)),
                   const SizedBox(height: 2),
                   Text("$count songs",
-                      style: const TextStyle(
-                          color: Colors.white54, fontSize: 12)),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12)),
                 ],
               ),
             ),
@@ -1480,14 +1865,10 @@ Future<void> _removeSongFromPlaylist(
       ),
     );
   }
-  void _onMusicDataChanged() async {
-    await _loadMusicData();
-    if (mounted) setState(() {});
-  }
 
   void _openNowPlaying() {
-    final seq =
-        globalAudioPlayer.sequenceState?.sequence ?? <IndexedAudioSource>[];
+    final seq = globalAudioPlayer.sequenceState?.sequence ??
+        <IndexedAudioSource>[];
     final byId = {for (final s in _songs) s.id: s};
     final list = <SongModel>[];
     for (final src in seq) {
@@ -1507,240 +1888,258 @@ Future<void> _removeSongFromPlaylist(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AudioPlayerScreen(songs: list, initialIndex: idx),
+        builder: (_) =>
+            AudioPlayerScreen(songs: list, initialIndex: idx),
       ),
     );
   }
 
   Widget _miniPlayer() {
-  return ValueListenableBuilder<int>(
-    valueListenable: musicDataNotifier,
-    builder: (context, _, __) {
-      return StreamBuilder<SequenceState?>(
-        stream: globalAudioPlayer.sequenceStateStream,
-        builder: (context, snapshot) {
-          final tag = snapshot.data?.currentSource?.tag;
-          if (tag is! MediaItem) return const SizedBox.shrink();
-          return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _openNowPlaying,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xff1A1D24),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: const Color(0xff2D8CFF).withOpacity(0.4)),
-            ),
-            child: Row(
-              children: [
-                Builder(builder: (_) {
-  final id = int.tryParse(tag.id);
-  if (id == null) {
-    return const Icon(Icons.graphic_eq,
-        color: Color(0xff2D8CFF));
-  }
-  return AlbumArtWidget(
-    songId: id,
-    size: 42,
-    radius: 10,
-  );
-}),
-const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-  Builder(builder: (_) {
-    final id = int.tryParse(tag.id);
-    final displayTitle = (id != null &&
-            globalSongNames.containsKey(id))
-        ? globalSongNames[id]!
-        : tag.title;
-    return Text(displayTitle,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold));
-  }),
-  Text(tag.artist ?? "Unknown",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white54, fontSize: 12)),
-                    ],
-                  ),
+    return ValueListenableBuilder<int>(
+      valueListenable: musicDataNotifier,
+      builder: (context, _, __) {
+        return StreamBuilder<SequenceState?>(
+          stream: globalAudioPlayer.sequenceStateStream,
+          builder: (context, snapshot) {
+            final tag = snapshot.data?.currentSource?.tag;
+            if (tag is! MediaItem) return const SizedBox.shrink();
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _openNowPlaying,
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.card,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                      color: const Color(0xff2D8CFF)
+                          .withOpacity(0.4)),
                 ),
-              IconButton(
-                  onPressed: () => globalAudioPlayer.seekToPrevious(),
-                  icon: const Icon(Icons.skip_previous,
-                      color: Colors.white, size: 28),
-                ),
-               StreamBuilder<bool>(
-                stream: globalAudioPlayer.playingStream,
-                builder: (context, snap) {
-                  final playing = snap.data ?? false;
-                  return IconButton(
-                    onPressed: () => playing
-                        ? globalAudioPlayer.pause()
-                        : globalAudioPlayer.play(),
-                    icon: Icon(
-                        playing ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 30),
-                  );
-                },
-              ),
-              IconButton(
-                  onPressed: () => globalAudioPlayer.seekToNext(),
-                  icon: const Icon(Icons.skip_next,
-                      color: Colors.white, size: 28),
-                ),
-            ],
-          ),
-        ),
-      );
-    },
-      );  // 👈 StreamBuilder का closing
-    },    // 👈 ValueListenableBuilder का builder closing
-  );      // 👈 ValueListenableBuilder का closing
-}         // 👈 method closing
-
-  
-  Widget _buildMusicTab() {
-if (_audioLoading && _songs.isEmpty) {           // 👈 नया
-  return const Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CircularProgressIndicator(color: Color(0xff2D8CFF)),
-        SizedBox(height: 16),
-        Text("गाने लोड हो रहे हैं...",
-            style: TextStyle(color: Colors.white54, fontSize: 14)),
-      ],
-    ),
-  );
-}
-if (_audioPermissionDenied) {
-  return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.music_off, color: Colors.white54, size: 60),
-            const SizedBox(height: 16),
-            const Text(
-              "Music access permission चाहिए",
-              style: TextStyle(color: Colors.white, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => PhotoManager.openSetting(),
-              child: const Text("Settings खोलें"),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _audioPermissionDenied = false;
-                  _audioLoaded = false;
-                });
-                _loadSongs();
-              },
-              child: const Text("फिर कोशिश करें"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  if (_songs.isEmpty) {
-    return const Center(
-      child: Text("कोई गाना नहीं मिला",
-          style: TextStyle(color: Colors.white54, fontSize: 16)),
-    );
-  }
-    const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
-final recent = _songsByIds(_recentSongIds);
-final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
-return Column(
-  children: [
-    Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 44,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 18),
-              children: List.generate(tabs.length, (i) {
-                final sel = _musicSubTab == i;
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _musicSubTab = i),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 22),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(tabs[i],
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight:
-                                    sel ? FontWeight.bold : FontWeight.normal,
-                                color: sel ? const Color(0xff2D8CFF) : AppTheme.textSecondary
-                        const SizedBox(height: 4),
-                        Container(
-                            height: 3,
-                            width: 28,
-                            color: sel
-                                ? const Color(0xff2D8CFF)
-                                : Colors.transparent),
-                      ],
+                child: Row(
+                  children: [
+                    Builder(builder: (_) {
+                      final id = int.tryParse(tag.id);
+                      if (id == null) {
+                        return const Icon(Icons.graphic_eq,
+                            color: Color(0xff2D8CFF));
+                      }
+                      return AlbumArtWidget(
+                        songId: id,
+                        size: 42,
+                        radius: 10,
+                      );
+                    }),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Builder(builder: (_) {
+                            final id = int.tryParse(tag.id);
+                            final displayTitle =
+                                (id != null &&
+                                        globalSongNames
+                                            .containsKey(id))
+                                    ? globalSongNames[id]!
+                                    : tag.title;
+                            return Text(displayTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold));
+                          }),
+                          Text(tag.artist ?? "Unknown",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 12)),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.search, color: Colors.white70),
-          padding: const EdgeInsets.only(right: 8),
-          constraints: const BoxConstraints(),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MusicSearchScreen(
-                  songs: _songs,
-                  onMenu: _showSongOptions,
+                    IconButton(
+                      onPressed: () =>
+                          globalAudioPlayer.seekToPrevious(),
+                      icon: Icon(Icons.skip_previous,
+                          color: AppTheme.textPrimary, size: 28),
+                    ),
+                    StreamBuilder<bool>(
+                      stream: globalAudioPlayer.playingStream,
+                      builder: (context, snap) {
+                        final playing = snap.data ?? false;
+                        return IconButton(
+                          onPressed: () => playing
+                              ? globalAudioPlayer.pause()
+                              : globalAudioPlayer.play(),
+                          icon: Icon(
+                              playing
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                              color: AppTheme.textPrimary,
+                              size: 30),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      onPressed: () => globalAudioPlayer.seekToNext(),
+                      icon: Icon(Icons.skip_next,
+                          color: AppTheme.textPrimary, size: 28),
+                    ),
+                  ],
                 ),
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildMusicTab() {
+    if (_audioLoading && _songs.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Color(0xff2D8CFF)),
+            SizedBox(height: 16),
+            Text("गाने लोड हो रहे हैं...",
+                style: TextStyle(color: Colors.white54, fontSize: 14)),
+          ],
         ),
-      ],
-    ),
+      );
+    }
+    if (_audioPermissionDenied) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.music_off,
+                  color: AppTheme.textSecondary, size: 60),
+              const SizedBox(height: 16),
+              Text("Music access permission चाहिए",
+                  style: TextStyle(
+                      color: AppTheme.textPrimary, fontSize: 16),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => PhotoManager.openSetting(),
+                child: const Text("Settings खोलें"),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _audioPermissionDenied = false;
+                    _audioLoaded = false;
+                  });
+                  _loadSongs();
+                },
+                child: const Text("फिर कोशिश करें"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_songs.isEmpty) {
+      return Center(
+        child: Text("कोई गाना नहीं मिला",
+            style:
+                TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
+      );
+    }
+    const tabs = ['All Songs', 'Playlist', 'Folder', 'Artist'];
+    final recent = _songsByIds(_recentSongIds);
+    final favs = _songsByIds(_favoriteIds.toList().reversed.toList());
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 44,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(left: 18),
+                  children: List.generate(tabs.length, (i) {
+                    final sel = _musicSubTab == i;
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _musicSubTab = i),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 22),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(tabs[i],
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: sel
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: sel
+                                        ? const Color(0xff2D8CFF)
+                                        : AppTheme.textSecondary)),
+                            const SizedBox(height: 4),
+                            Container(
+                                height: 3,
+                                width: 28,
+                                color: sel
+                                    ? const Color(0xff2D8CFF)
+                                    : Colors.transparent),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.search, color: AppTheme.iconColor),
+              padding: const EdgeInsets.only(right: 8),
+              constraints: const BoxConstraints(),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MusicSearchScreen(
+                      songs: _songs,
+                      onMenu: _showSongOptions,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
           child: Row(
             children: [
               Expanded(
-                child: _musicBox("Recently Played", Icons.history,
-                    Colors.orangeAccent, recent.length,
+                child: _musicBox(
+                    "Recently Played",
+                    Icons.history,
+                    Colors.orangeAccent,
+                    recent.length,
                     () => _openSongList("Recently Played", recent)),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _musicBox("Favorite", Icons.favorite,
-                    Colors.pinkAccent, favs.length,
+                child: _musicBox(
+                    "Favorite",
+                    Icons.favorite,
+                    Colors.pinkAccent,
+                    favs.length,
                     () => _openSongList("Favorite", favs)),
               ),
             ],
@@ -1753,21 +2152,23 @@ return Column(
   }
 
   Widget _buildMusicContent() {
-  if (_musicSubTab == 1) {
-    final names = _playlists.keys.toList();
-    return Column(
-      children: [
+    if (_musicSubTab == 1) {
+      final names = _playlists.keys.toList();
+      return Column(
+        children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
             child: Row(
               children: [
                 Text("Playlist (${names.length})",
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary)),
                 const Spacer(),
                 IconButton(
                   onPressed: _createPlaylist,
-                  icon: const Icon(Icons.add, color: Colors.white70),
+                  icon: Icon(Icons.add, color: AppTheme.iconColor),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -1776,49 +2177,58 @@ return Column(
           ),
           Expanded(
             child: names.isEmpty
-                ? const Center(
-                    child: Text("अभी कोई Playlist नहीं है, ऊपर + दबाकर बनाओ",
-                        style: TextStyle(color: Colors.white54, fontSize: 15),
+                ? Center(
+                    child: Text(
+                        "अभी कोई Playlist नहीं है, ऊपर + दबाकर बनाओ",
+                        style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 15),
                         textAlign: TextAlign.center))
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
                     itemCount: names.length,
                     itemBuilder: (context, index) {
                       final name = names[index];
-                      final list = _songsByIds(_playlists[name] ?? []);
+                      final list =
+                          _songsByIds(_playlists[name] ?? []);
                       return _groupTile(
-  Icons.queue_music,
-  name,
-  list.length,
-  () => _openSongList(name, list, playlistName: name),
-  trailing: PopupMenuButton<String>(
-    icon: const Icon(Icons.more_vert,
-        color: Colors.white60, size: 20),
-    color: const Color(0xff1A1D24),
-    onSelected: (v) {
-      if (v == 'rename') _renamePlaylist(name);
-      if (v == 'delete') _deletePlaylist(name);
-    },
-    itemBuilder: (_) => const [
-      PopupMenuItem(
-        value: 'rename',
-        child: Text('Rename',
-            style: TextStyle(color: Colors.white)),
-      ),
-      PopupMenuItem(
-        value: 'delete',
-        child: Text('Delete',
-            style: TextStyle(color: Colors.redAccent)),
-      ),
-    ],
-  ),
-);
+                        Icons.queue_music,
+                        name,
+                        list.length,
+                        () => _openSongList(name, list,
+                            playlistName: name),
+                        trailing: PopupMenuButton<String>(
+                          icon: Icon(Icons.more_vert,
+                              color: AppTheme.iconColor, size: 20),
+                          color: AppTheme.card,
+                          onSelected: (v) {
+                            if (v == 'rename')
+                              _renamePlaylist(name);
+                            if (v == 'delete')
+                              _deletePlaylist(name);
+                          },
+                          itemBuilder: (_) => [
+                            PopupMenuItem(
+                              value: 'rename',
+                              child: Text('Rename',
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimary)),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete',
+                                  style: TextStyle(
+                                      color: Colors.redAccent)),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                   ),
           ),
         ],
       );
-  }
+    }
     if (_musicSubTab == 2 || _musicSubTab == 3) {
       final groups = <String, List<SongModel>>{};
       for (final s in _songs) {
@@ -1860,65 +2270,76 @@ return Column(
           child: Row(
             children: [
               Text("All Songs (${_songs.length})",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.textPrimary)),
               const Spacer(),
               IconButton(
                 onPressed: _showSongSortMenu,
-                icon: const Icon(Icons.sort, color: Colors.white70),
+                icon: Icon(Icons.sort, color: AppTheme.iconColor),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
             ],
           ),
         ),
-              const SizedBox(height: 8),
-      Expanded(
-        child: RefreshIndicator(
-          color: const Color(0xff2D8CFF),
-          backgroundColor: const Color(0xff1A1D24),
-          onRefresh: () async {
-       try {
-             await PhotoManager.editor.android.removeAllNoExistsAsset();
-          } catch (_) {}
-            setState(() {
-              _audioLoaded = false;
-            });
-            await _loadSongs();
-          },
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: _songs.length,
-            itemBuilder: (context, index) => _songTile(index),
+        const SizedBox(height: 8),
+        Expanded(
+          child: RefreshIndicator(
+            color: const Color(0xff2D8CFF),
+            backgroundColor: AppTheme.card,
+            onRefresh: () async {
+              try {
+                await PhotoManager.editor.android
+                    .removeAllNoExistsAsset();
+              } catch (_) {}
+              setState(() {
+                _audioLoaded = false;
+              });
+              await _loadSongs();
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: _songs.length,
+              itemBuilder: (context, index) => _songTile(index),
+            ),
           ),
         ),
-      ),
-    ],
-  );
+      ],
+    );
   }
+
   int _songSortMode = 0;
 
   void _sortSongs(List<SongModel> list) {
     switch (_songSortMode) {
       case 1:
-        list.sort((a, b) => (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
+        list.sort((a, b) =>
+            (a.dateAdded ?? 0).compareTo(b.dateAdded ?? 0));
         break;
       case 2:
         list.sort((a, b) => (globalSongNames[a.id] ?? a.title)
             .toLowerCase()
-            .compareTo((globalSongNames[b.id] ?? b.title).toLowerCase()));
+            .compareTo(
+                (globalSongNames[b.id] ?? b.title).toLowerCase()));
         break;
       default:
-        list.sort((a, b) => (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
+        list.sort((a, b) =>
+            (b.dateAdded ?? 0).compareTo(a.dateAdded ?? 0));
     }
   }
 
   void _showSongSortMenu() {
-    final options = ['नया गाना पहले', 'पुराना गाना पहले', 'नाम (A से Z)'];
+    final options = [
+      'नया गाना पहले',
+      'पुराना गाना पहले',
+      'नाम (A से Z)'
+    ];
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xff1A1D24),
+      backgroundColor: AppTheme.card,
       builder: (context) {
         return SafeArea(
           child: Column(
@@ -1929,11 +2350,12 @@ return Column(
                   _songSortMode == i
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
-                  color:
-                      _songSortMode == i ? Colors.blueAccent : Colors.white54,
+                  color: _songSortMode == i
+                      ? Colors.blueAccent
+                      : AppTheme.iconColor,
                 ),
                 title: Text(options[i],
-                    style: const TextStyle(color: Colors.white)),
+                    style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context);
                   setState(() {
@@ -1968,24 +2390,26 @@ return Column(
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
       'custom_song_names',
-      globalSongNames.entries.map((e) => '${e.key}|||${e.value}').toList(),
+      globalSongNames.entries
+          .map((e) => '${e.key}|||${e.value}')
+          .toList(),
     );
   }
 
-  
   void _showSongOptions(SongModel song) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xff1A1D24),
+      backgroundColor: AppTheme.card,
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.info_outline, color: Colors.white),
-                title: const Text("Details",
-                    style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.info_outline,
+                    color: AppTheme.iconColor),
+                title: Text("Details",
+                    style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(context);
                   _showSongDetails(song);
@@ -2002,51 +2426,53 @@ return Column(
                     _favoriteIds.contains(song.id)
                         ? "Favorite से हटाएँ"
                         : "Favorite में जोड़ें",
-                    style: const TextStyle(color: Colors.white)),
+                    style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(context);
                   _toggleFavorite(song);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.playlist_add, color: Colors.white),
-                title: const Text("Playlist में जोड़ें",
-                    style: TextStyle(color: Colors.white)),
+                leading: Icon(Icons.playlist_add,
+                    color: AppTheme.iconColor),
+                title: Text("Playlist में जोड़ें",
+                    style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(context);
                   _addToPlaylistDialog(song);
                 },
               ),
               ListTile(
-  leading: const Icon(Icons.edit, color: Colors.white),
-  title: const Text("Rename",
-      style: TextStyle(color: Colors.white)),
-  onTap: () {
-    Navigator.pop(context);
-    _renameSong(song);
-  },
-),
-ListTile(
-  leading: const Icon(Icons.playlist_play,
-      color: Colors.white),
-  title: const Text("Play next",
-      style: TextStyle(color: Colors.white)),
-  onTap: () {
-    Navigator.pop(context);
-    _playNextSong(song);
-  },
-),
-ListTile(
-  leading: const Icon(Icons.share, color: Colors.white),
-  title: const Text("Share",
-      style: TextStyle(color: Colors.white)),
-  onTap: () {
-    Navigator.pop(context);
-    _shareSong(song);
-  },
-),
-ListTile(
-  leading: const Icon(Icons.delete, color: Colors.redAccent),
+                leading: Icon(Icons.edit, color: AppTheme.iconColor),
+                title: Text("Rename",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _renameSong(song);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.playlist_play,
+                    color: AppTheme.iconColor),
+                title: Text("Play next",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _playNextSong(song);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.share, color: AppTheme.iconColor),
+                title: Text("Share",
+                    style: TextStyle(color: AppTheme.textPrimary)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareSong(song);
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.delete, color: Colors.redAccent),
                 title: const Text("Delete",
                     style: TextStyle(color: Colors.redAccent)),
                 onTap: () {
@@ -2068,21 +2494,21 @@ ListTile(
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
+        backgroundColor: AppTheme.card,
         title: Text(globalSongNames[song.id] ?? song.title,
-            style: const TextStyle(color: Colors.white)),
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Artist: ${song.artist ?? 'Unknown'}",
-                style: const TextStyle(color: Colors.white70)),
+                style: TextStyle(color: AppTheme.textSecondary)),
             Text("Duration: $dur",
-                style: const TextStyle(color: Colors.white70)),
+                style: TextStyle(color: AppTheme.textSecondary)),
             Text("Size: ${_formatSize(song.size)}",
-                style: const TextStyle(color: Colors.white70)),
+                style: TextStyle(color: AppTheme.textSecondary)),
             Text("Path: ${song.data}",
-                style: const TextStyle(color: Colors.white70),
+                style: TextStyle(color: AppTheme.textSecondary),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis),
           ],
@@ -2102,12 +2528,12 @@ ListTile(
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text("Rename Song",
-            style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.card,
+        title: Text("Rename Song",
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppTheme.textPrimary),
           decoration: const InputDecoration(hintText: "नया नाम डालें"),
         ),
         actions: [
@@ -2128,112 +2554,116 @@ ListTile(
     await _saveSongNames();
     if (!mounted) return;
     setState(() {
-     _sortSongs(_songs);
-  musicDataNotifier.value++; // 👈 Mini Player को refresh करने के लिए
-});
+      _sortSongs(_songs);
+      musicDataNotifier.value++;
+    });
   }
 
   Future<void> _deleteSong(SongModel song) async {
-  final confirm = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      backgroundColor: const Color(0xff1A1D24),
-      title: const Text("गाना डिलीट करें?",
-          style: TextStyle(color: Colors.white)),
-      content: const Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
-          style: TextStyle(color: Colors.white70)),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel")),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text("Delete",
-              style: TextStyle(color: Colors.redAccent)),
-        ),
-      ],
-    ),
-  );
-  if (confirm != true) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text("गाना डिलीट करें?",
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
+            style: TextStyle(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete",
+                style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
 
-  // 👇 वीडियो जैसा तरीका: पहले सिस्टम से delete
-  bool removed = false;
-  try {
-    final result =
-        await PhotoManager.editor.deleteWithIds([song.id.toString()]);
-    removed = result.isNotEmpty;
-  } catch (e) {
-    debugPrint("Song delete (system) error: $e");
-  }
-
-  // सिस्टम से नहीं हुआ तो फाइल से कोशिश; फाइल पहले ही हटी हो तो भी लिस्ट साफ़ करो
-  if (!removed) {
+    bool removed = false;
     try {
-      final file = File(song.data);
-      if (await file.exists()) {
-        await file.delete();
-      }
-      removed = true;
-    } on PathNotFoundException {
-      removed = true;
+      final result =
+          await PhotoManager.editor.deleteWithIds([song.id.toString()]);
+      removed = result.isNotEmpty;
     } catch (e) {
-      debugPrint("Song delete (file) error: $e");
+      debugPrint("Song delete (system) error: $e");
     }
-  }
 
-  if (!removed) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("गाना डिलीट नहीं हो पाया (v2)")),
-      );
+    if (!removed) {
+      try {
+        final file = File(song.data);
+        if (await file.exists()) {
+          await file.delete();
+        }
+        removed = true;
+      } on PathNotFoundException {
+        removed = true;
+      } catch (e) {
+        debugPrint("Song delete (file) error: $e");
+      }
     }
-    return;
-  }
 
-  try {
-    await PhotoManager.editor.android.removeAllNoExistsAsset();
-  } catch (_) {}
+    if (!removed) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("गाना डिलीट नहीं हो पाया (v2)")),
+        );
+      }
+      return;
+    }
 
-  globalSongNames.remove(song.id);
-  await _saveSongNames();
+    try {
+      await PhotoManager.editor.android.removeAllNoExistsAsset();
+    } catch (_) {}
 
-  // 👇 favorites/recent से भी निकालो
-  final prefs = await SharedPreferences.getInstance();
-  _favoriteIds.remove(song.id);
-  _recentSongIds.remove(song.id);
-  await prefs.setStringList(
-      'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
-  await prefs.setStringList(
-      'recent_songs', _recentSongIds.map((e) => e.toString()).toList());
+    globalSongNames.remove(song.id);
+    await _saveSongNames();
 
-  if (!mounted) return;
-  setState(() => _songs.removeWhere((s) => s.id == song.id));
+    final prefs = await SharedPreferences.getInstance();
+    _favoriteIds.remove(song.id);
+    _recentSongIds.remove(song.id);
+    await prefs.setStringList(
+        'favorite_songs', _favoriteIds.map((e) => e.toString()).toList());
+    await prefs.setStringList(
+        'recent_songs', _recentSongIds.map((e) => e.toString()).toList());
+
+    if (!mounted) return;
+    setState(() => _songs.removeWhere((s) => s.id == song.id));
     musicDataNotifier.value++;
   }
 
-  
   void _showVideoDetails(Map<String, String> item) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
+        backgroundColor: AppTheme.card,
         title: Text(item['title'] ?? 'Details',
-            style: const TextStyle(color: Colors.white)),
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Resolution: ${item['res']}", style: const TextStyle(color: Colors.white70)),
-            Text("Duration: ${item['duration']}", style: const TextStyle(color: Colors.white70)),
-            Text("Size: ${item['size']}", style: const TextStyle(color: Colors.white70)),
-            Text("Folder: ${item['folder']}", style: const TextStyle(color: Colors.white70)),
+            Text("Resolution: ${item['res']}",
+                style: TextStyle(color: AppTheme.textSecondary)),
+            Text("Duration: ${item['duration']}",
+                style: TextStyle(color: AppTheme.textSecondary)),
+            Text("Size: ${item['size']}",
+                style: TextStyle(color: AppTheme.textSecondary)),
+            Text("Folder: ${item['folder']}",
+                style: TextStyle(color: AppTheme.textSecondary)),
             Text("Path: ${item['url']}",
-                style: const TextStyle(color: Colors.white70),
-                maxLines: 3, overflow: TextOverflow.ellipsis),
+                style: TextStyle(color: AppTheme.textSecondary),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close")),
         ],
       ),
     );
@@ -2244,15 +2674,18 @@ ListTile(
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text("Rename Video", style: TextStyle(color: Colors.white)),
+        backgroundColor: AppTheme.card,
+        title: Text("Rename Video",
+            style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: AppTheme.textPrimary),
           decoration: const InputDecoration(hintText: "नया नाम डालें"),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text.trim()),
             child: const Text("Save"),
@@ -2283,15 +2716,19 @@ ListTile(
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xff1A1D24),
-        title: const Text("वीडियो डिलीट करें?", style: TextStyle(color: Colors.white)),
-        content: const Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएगी।",
-            style: TextStyle(color: Colors.white70)),
+        backgroundColor: AppTheme.card,
+        title: Text("वीडियो डिलीट करें?",
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएगी।",
+            style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete", style: TextStyle(color: Colors.redAccent)),
+            child: const Text("Delete",
+                style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -2326,7 +2763,7 @@ ListTile(
         });
       }
     }
-    
+
     final prefs = await SharedPreferences.getInstance();
     final toSave = videoList
         .map((m) =>
