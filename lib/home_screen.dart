@@ -1694,9 +1694,7 @@ return Column(
                                 fontSize: 16,
                                 fontWeight:
                                     sel ? FontWeight.bold : FontWeight.normal,
-                                color: sel
-                                    ? const Color(0xff2D8CFF)
-                                    : Colors.white54)),
+                                color: sel ? const Color(0xff2D8CFF) : AppTheme.textSecondary
                         const SizedBox(height: 4),
                         Container(
                             height: 3,
