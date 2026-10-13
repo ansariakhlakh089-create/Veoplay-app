@@ -89,6 +89,36 @@ bool _audioLoading = false; // 👈 नया
     }
   }
 
+ 
+Future<void> _loadFavoriteVideos() async {
+  final prefs = await SharedPreferences.getInstance();
+  final ids = (prefs.getStringList('favorite_videos') ?? []).toSet();
+  if (mounted) setState(() => _favoriteVideoIds = ids);
+}
+
+Future<void> _toggleVideoFavorite(Map<String, String> item) async {
+  final id = item['id'];
+  if (id == null || id.isEmpty) return;
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    if (_favoriteVideoIds.contains(id)) {
+      _favoriteVideoIds.remove(id);
+    } else {
+      _favoriteVideoIds.add(id);
+    }
+  });
+  await prefs.setStringList('favorite_videos', _favoriteVideoIds.toList());
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_favoriteVideoIds.contains(id)
+            ? '❤️ Favorite में जोड़ा'
+            : 'Favorite से हटाया'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+}
   
   Future<void> _loadSongs() async {
 if (_audioLoaded) {
