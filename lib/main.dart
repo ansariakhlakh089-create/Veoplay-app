@@ -49,9 +49,9 @@ void main() async {
   } catch (e) {
     debugPrint('Audio background init true: $e');
   }
+  await AppTheme.load();   // 👈 यह नई line
   runApp(const VeoPlay());
 }
-
 // ---------- Main App ----------
 class VeoPlay extends StatelessWidget {
   const VeoPlay({super.key});
