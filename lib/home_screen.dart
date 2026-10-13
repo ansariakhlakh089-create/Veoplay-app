@@ -471,7 +471,7 @@ if (mounted) {
                             Text("Recent",
                                 style: TextStyle(
                                     fontSize: 22,
-                                    fontWeight: FontWeight.bold)),
+                                    fontWeight: FontWeight.bold, color: AppTheme.textPrimary)),
                             const SizedBox(height: 8),
                             GestureDetector(
                               onTap: () async {
