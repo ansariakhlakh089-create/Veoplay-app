@@ -468,7 +468,7 @@ if (mounted) {
                           ),
                           const SizedBox(height: 12),
                           if (_recentTitle != null) ...[
-                            const Text("Recent",
+                            Text("Recent",
                                 style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold)),
