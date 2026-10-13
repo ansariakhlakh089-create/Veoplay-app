@@ -28,6 +28,8 @@ part 'video_player_screen.dart';
 part 'dual_video_screen.dart';
 part 'media_widgets.dart';
 part 'audio_player_screen.dart';
+part 'video_search_screen.dart';   // 👈 नई line
+part 'profile_screen.dart';        // 👈 नई line
 part 'music_screens.dart';
 
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
