@@ -426,7 +426,7 @@ if (mounted) {
                         const Text(
                           "Video access permission चाहिए",
                           style: TextStyle(
-                              color: Colors.white, fontSize: 16),
+                              color: AppTheme.textPrimary, fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
