@@ -31,6 +31,7 @@ part 'audio_player_screen.dart';
 part 'video_search_screen.dart';   // 👈 नई line
 part 'profile_screen.dart';        // 👈 नई line
 part 'music_screens.dart';
+part 'theme_helper.dart';
 
 final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
 final AudioPlayer globalAudioPlayer = AudioPlayer();
