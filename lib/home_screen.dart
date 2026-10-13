@@ -332,7 +332,7 @@ if (mounted) {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
