@@ -1419,7 +1419,7 @@ const SizedBox(width: 6),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
-                                              _controller.value.isPlaying
+                                              playing 
                                                   ? Icons.pause
                                                   : Icons.play_arrow,
                                               color: Colors.white,
