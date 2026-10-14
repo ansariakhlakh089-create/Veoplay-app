@@ -1218,43 +1218,11 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                   );
                                 },
                               ),
-                                  PopupMenuButton<int>(
-                                color: AppTheme.card,
-                                icon: const Icon(Icons.more_vert,
-                                    color: Colors.white),
-                                onSelected: (value) {
-                                  switch (value) {
-                                    case 1:
-                                      _shareVideo();
-                                      break;
-                                    case 2:
-                                      _showSleepTimerDialog();
-                                      break;
-                                    case 3:
-                                      break;
-                                  }
-                                },
-                                itemBuilder: (_) => [
-                                  PopupMenuItem(
-                                      value: 1,
-                                      child: Text('Share',
-                                          style: TextStyle(
-                                              color: AppTheme.textPrimary))),
-                                  PopupMenuItem(
-                                      value: 2,
-                                      child: Text('Sleep timer',
-                                          style: TextStyle(
-                                              color: AppTheme.textPrimary))),
-                                  PopupMenuItem(
-                                      value: 3,
-                                      child: Text('Play as audio',
-                                          style: TextStyle(
-                                              color: AppTheme.textPrimary))),
-                                ],
+                              IconButton(
+                               icon: const Icon(Icons.more_vert,
+                                 color: Colors.white),
+                              onPressed: _showMoreOptionsMenu,
                               ),
-                            ],
-                          ),
-                        ),
 
                       if (_showControls)
                         Positioned(
