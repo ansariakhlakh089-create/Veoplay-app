@@ -134,8 +134,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
           val.duration > Duration.zero &&
           val.position >= val.duration - const Duration(milliseconds: 800)) {
         _autoNextTriggered = true;
-        if (_hasNext) {
-          _playNext();
+                if (_hasNext) {
+          if (_autoPlayNext) _playNext();   // 👈 सिर्फ़ यह लाइन बदली
         } else if (_loopMode == 2) {
           if (widget.playlist != null && widget.playlist!.length > 1) {
             _playFirst();
