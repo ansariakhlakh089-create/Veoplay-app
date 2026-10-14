@@ -619,6 +619,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel")),
                         TextButton(
                         onPressed: () =>
                             Navigator.pop(context, controller.text.trim()),
