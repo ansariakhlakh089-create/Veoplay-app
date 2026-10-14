@@ -1,15 +1,16 @@
 part of 'main.dart';
 
-      
-  class SongListScreen extends StatefulWidget {
+// ==================== Song List Screen ====================
+class SongListScreen extends StatefulWidget {
   final String title;
   final List<SongModel> songs;
   final void Function(SongModel song)? onMenu;
   final bool Function(SongModel song)? keep;
   final String? playlistName;
   final void Function(SongModel song)? onRemoveFromPlaylist;
-  final Set<int>? favoriteIds;                              // 👈 नया
-  final void Function(SongModel song)? onToggleFavorite;    // 👈 नया
+  final Set<int>? favoriteIds;
+  final void Function(SongModel song)? onToggleFavorite;
+
   const SongListScreen({
     super.key,
     required this.title,
@@ -18,13 +19,13 @@ part of 'main.dart';
     this.keep,
     this.playlistName,
     this.onRemoveFromPlaylist,
-    this.favoriteIds,                                       // 👈 नया
-    this.onToggleFavorite,                                  // 👈 नया
+    this.favoriteIds,
+    this.onToggleFavorite,
   });
 
   @override
   State<SongListScreen> createState() => _SongListScreenState();
-  }
+}
 
 class _SongListScreenState extends State<SongListScreen> {
   @override
@@ -45,15 +46,21 @@ class _SongListScreenState extends State<SongListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final songs =
-        widget.keep == null ? widget.songs : widget.songs.where(widget.keep!).toList();
+    final songs = widget.keep == null
+        ? widget.songs
+        : widget.songs.where(widget.keep!).toList();
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
-      appBar: AppBar(backgroundColor: Colors.transparent, title: Text(widget.title)),
+      backgroundColor: AppTheme.bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(widget.title,
+            style: TextStyle(color: AppTheme.textPrimary)),
+      ),
       body: songs.isEmpty
-          ? const Center(
+          ? Center(
               child: Text("यहाँ अभी कोई गाना नहीं है",
-                  style: TextStyle(color: Colors.white54, fontSize: 16)))
+                  style: TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 16)))
           : ListView.builder(
               padding: const EdgeInsets.all(18),
               itemCount: songs.length,
@@ -75,10 +82,10 @@ class _SongListScreenState extends State<SongListScreen> {
                     child: Row(
                       children: [
                         AlbumArtWidget(
-  songId: song.id,
-  size: 50,
-  radius: 8,
-),
+                          songId: song.id,
+                          size: 50,
+                          radius: 8,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -87,58 +94,59 @@ class _SongListScreenState extends State<SongListScreen> {
                               Text(globalSongNames[song.id] ?? song.title,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 14)),
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 14)),
                               const SizedBox(height: 2),
                               Text(song.artist ?? "Unknown",
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      color: Colors.white54, fontSize: 12)),
+                                  style: TextStyle(
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 12)),
                             ],
                           ),
                         ),
-                          // 👇 Remove from playlist button (सिर्फ playlist में दिखेगा)
-    // 👇 Remove from playlist (सिर्फ playlist में)
-  if (widget.playlistName != null &&
-      widget.onRemoveFromPlaylist != null)
-    IconButton(
-      onPressed: () {
-        widget.onRemoveFromPlaylist!(song);
-        setState(() {});
-      },
-      icon: const Icon(Icons.remove_circle_outline,
-          color: Colors.redAccent, size: 20),
-      padding: const EdgeInsets.only(left: 8),
-      constraints: const BoxConstraints(),
-    ),
-  // 👇 Favorite से हटाओ (सिर्फ Favorite list में)
-  if (widget.onToggleFavorite != null &&
-      widget.favoriteIds != null &&
-      widget.favoriteIds!.contains(song.id))
-    IconButton(
-      onPressed: () {
-        widget.onToggleFavorite!(song);
-        setState(() {});
-      },
-      icon: const Icon(
-        Icons.remove_circle_outline,
-        color: Colors.pinkAccent,
-        size: 20,
-      ),
-      padding: const EdgeInsets.only(left: 4),
-      constraints: const BoxConstraints(),
-    ),
-  // 👇 Menu (3-dot)
-  if (widget.onMenu != null)
-    IconButton(
-      onPressed: () => widget.onMenu!(song),
-      icon: const Icon(Icons.more_vert,
-          color: Colors.white60, size: 20),
-      padding: const EdgeInsets.only(left: 8),
-      constraints: const BoxConstraints(),
-    ),
-],
+                        // 👇 Remove from playlist (सिर्फ playlist में)
+                        if (widget.playlistName != null &&
+                            widget.onRemoveFromPlaylist != null)
+                          IconButton(
+                            onPressed: () {
+                              widget.onRemoveFromPlaylist!(song);
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.remove_circle_outline,
+                                color: Colors.redAccent, size: 20),
+                            padding: const EdgeInsets.only(left: 8),
+                            constraints: const BoxConstraints(),
+                          ),
+                        // 👇 Favorite से हटाओ (सिर्फ Favorite list में)
+                        if (widget.onToggleFavorite != null &&
+                            widget.favoriteIds != null &&
+                            widget.favoriteIds!.contains(song.id))
+                          IconButton(
+                            onPressed: () {
+                              widget.onToggleFavorite!(song);
+                              setState(() {});
+                            },
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: Colors.pinkAccent,
+                              size: 20,
+                            ),
+                            padding: const EdgeInsets.only(left: 4),
+                            constraints: const BoxConstraints(),
+                          ),
+                        // 👇 Menu (3-dot)
+                        if (widget.onMenu != null)
+                          IconButton(
+                            onPressed: () => widget.onMenu!(song),
+                            icon: Icon(Icons.more_vert,
+                                color: AppTheme.iconColor, size: 20),
+                            padding: const EdgeInsets.only(left: 8),
+                            constraints: const BoxConstraints(),
+                          ),
+                      ],
                     ),
                   ),
                 );
@@ -155,10 +163,10 @@ class QueueScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Queue'),
+        title: Text('Queue', style: TextStyle(color: AppTheme.textPrimary)),
       ),
       body: StreamBuilder<SequenceState?>(
         stream: globalAudioPlayer.sequenceStateStream,
@@ -167,9 +175,10 @@ class QueueScreen extends StatelessWidget {
           final currentIndex = snapshot.data?.currentIndex ?? 0;
 
           if (sequence.isEmpty) {
-            return const Center(
+            return Center(
               child: Text('Queue खाली है',
-                  style: TextStyle(color: Colors.white54, fontSize: 16)),
+                  style: TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 16)),
             );
           }
 
@@ -190,8 +199,8 @@ class QueueScreen extends StatelessWidget {
                   height: 45,
                   decoration: BoxDecoration(
                     color: isCurrent
-                        ? const Color(0xff2D8CFF)
-                        : Colors.white10,
+                        ? AppTheme.primaryBlue
+                        : AppTheme.card,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -199,8 +208,8 @@ class QueueScreen extends StatelessWidget {
                         ? const Icon(Icons.graphic_eq,
                             color: Colors.white, size: 22)
                         : Text('${i + 1}',
-                            style: const TextStyle(
-                                color: Colors.white60,
+                            style: TextStyle(
+                                color: AppTheme.textTertiary,
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold)),
                   ),
@@ -211,8 +220,8 @@ class QueueScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       color: isCurrent
-                          ? const Color(0xff2D8CFF)
-                          : Colors.white,
+                          ? AppTheme.primaryBlue
+                          : AppTheme.textPrimary,
                       fontSize: 14,
                       fontWeight:
                           isCurrent ? FontWeight.bold : FontWeight.normal),
@@ -221,13 +230,13 @@ class QueueScreen extends StatelessWidget {
                   artist,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: Colors.white54, fontSize: 12),
+                  style: TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 12),
                 ),
                 trailing: isCurrent
-                    ? const Text('चल रहा',
+                    ? Text('चल रहा',
                         style: TextStyle(
-                            color: Color(0xff2D8CFF),
+                            color: AppTheme.primaryBlue,
                             fontSize: 11,
                             fontWeight: FontWeight.bold))
                     : null,
@@ -276,46 +285,46 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
     final results = q.isEmpty
         ? <SongModel>[]
         : widget.songs.where((s) {
-            final title =
-                (globalSongNames[s.id] ?? s.title).toLowerCase();
+            final title = (globalSongNames[s.id] ?? s.title).toLowerCase();
             final artist = (s.artist ?? '').toLowerCase();
             return title.contains(q) || artist.contains(q);
           }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: TextField(
           controller: _controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppTheme.textPrimary),
+          decoration: InputDecoration(
             hintText: 'गाना या कलाकार खोजें...',
-            hintStyle: TextStyle(color: Colors.white38),
+            hintStyle: TextStyle(color: AppTheme.textTertiary),
             border: InputBorder.none,
           ),
           onChanged: (v) => setState(() => _query = v),
         ),
       ),
       body: q.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search, color: Colors.white24, size: 60),
-                  SizedBox(height: 12),
+                  Icon(Icons.search,
+                      color: AppTheme.textTertiary, size: 60),
+                  const SizedBox(height: 12),
                   Text('गाना या कलाकार का नाम लिखें',
                       style: TextStyle(
-                          color: Colors.white54, fontSize: 14)),
+                          color: AppTheme.textSecondary, fontSize: 14)),
                 ],
               ),
             )
           : results.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('कुछ नहीं मिला',
                       style: TextStyle(
-                          color: Colors.white54, fontSize: 16)),
+                          color: AppTheme.textSecondary, fontSize: 16)),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(18),
@@ -345,23 +354,23 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     globalSongNames[song.id] ?? song.title,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14),
+                                    style: TextStyle(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 14),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     song.artist ?? 'Unknown',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.white54,
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary,
                                         fontSize: 12),
                                   ),
                                 ],
@@ -370,8 +379,8 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                             if (widget.onMenu != null)
                               IconButton(
                                 onPressed: () => widget.onMenu!(song),
-                                icon: const Icon(Icons.more_vert,
-                                    color: Colors.white60, size: 20),
+                                icon: Icon(Icons.more_vert,
+                                    color: AppTheme.iconColor, size: 20),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints(),
                               ),
