@@ -697,7 +697,7 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: 20,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(8, 14, 8, 6),
                 decoration: BoxDecoration(
