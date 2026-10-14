@@ -80,7 +80,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     WakelockPlus.enable();
 
     SharedPreferences.getInstance().then((p) {
-      final mode = p.getInt('video_loop_mode') ?? 0;
+            final mode = p.getInt('video_loop_mode') ?? 0;
+      _autoPlayNext = p.getBool('auto_play_next') ?? true;   // 👈 जोड़ो
       if (mounted) {
         setState(() {
           _loopMode = mode;
