@@ -584,7 +584,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: CircleAvatar(
                 radius: 18,
                 backgroundColor:
-                    const Color(0xff2D8CFF).withOpacity(0.2),
+                    AppTheme.primaryBlue.withOpacity(0.2),
                 child: const Icon(Icons.person,
                     color: Color(0xff2D8CFF), size: 20),
               ),
@@ -855,7 +855,7 @@ class _HomeScreenState extends State<HomeScreen>
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppTheme.card,
         indicatorColor:
-            const Color(0xff2D8CFF).withOpacity(0.2),
+            AppTheme.primaryBlue.withOpacity(0.2),
         selectedIndex: _currentTab,
         onDestinationSelected: (index) {
           if (index == 1) {
@@ -1789,7 +1789,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xff2D8CFF), size: 30),
+              Icon(icon, color: AppTheme.primaryBlue size: 30),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -1914,7 +1914,7 @@ class _HomeScreenState extends State<HomeScreen>
                   color: AppTheme.card,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                      color: const Color(0xff2D8CFF)
+                      color: AppTheme.primaryBlue
                           .withOpacity(0.4)),
                 ),
                 child: Row(
@@ -2086,14 +2086,14 @@ class _HomeScreenState extends State<HomeScreen>
                                         ? FontWeight.bold
                                         : FontWeight.normal,
                                     color: sel
-                                        ? const Color(0xff2D8CFF)
+                                        ? AppTheme.primaryBlue
                                         : AppTheme.textSecondary)),
                             const SizedBox(height: 4),
                             Container(
                                 height: 3,
                                 width: 28,
                                 color: sel
-                                    ? const Color(0xff2D8CFF)
+                                    ? AppTheme.primaryBlue
                                     : Colors.transparent),
                           ],
                         ),
@@ -2287,7 +2287,7 @@ class _HomeScreenState extends State<HomeScreen>
         const SizedBox(height: 8),
         Expanded(
           child: RefreshIndicator(
-            color: const Color(0xff2D8CFF),
+            color: AppTheme.primaryBlue
             backgroundColor: AppTheme.card,
             onRefresh: () async {
               try {
