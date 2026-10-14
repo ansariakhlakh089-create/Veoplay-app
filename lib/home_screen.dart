@@ -586,7 +586,7 @@ class _HomeScreenState extends State<HomeScreen>
                 backgroundColor:
                     AppTheme.primaryBlue.withOpacity(0.2),
                 child: const Icon(Icons.person,
-                    color: Color(0xff2D8CFF), size: 20),
+                    color: AppTheme.primaryBlue, size: 20),
               ),
             ),
           ),
@@ -936,7 +936,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Row(
                 children: [
                   const Icon(Icons.folder,
-                      color: Color(0xff2D8CFF), size: 32),
+                      color: AppTheme.primaryBlue, size: 32),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -1018,7 +1018,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Row(
                 children: [
                   const Icon(Icons.queue_music,
-                      color: Color(0xff2D8CFF), size: 32),
+                      color: AppTheme.primaryBlue, size: 32),
                   const SizedBox(width: 14),
                   Expanded(
                     child: Column(
@@ -1730,7 +1730,7 @@ class _HomeScreenState extends State<HomeScreen>
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(Icons.graphic_eq,
-                          color: Color(0xff2D8CFF), size: 24),
+                          color: AppTheme.primaryBlue, size: 24),
                     ),
                   ),
               ],
@@ -1923,7 +1923,7 @@ class _HomeScreenState extends State<HomeScreen>
                       final id = int.tryParse(tag.id);
                       if (id == null) {
                         return const Icon(Icons.graphic_eq,
-                            color: Color(0xff2D8CFF));
+                            color: AppTheme.primaryBlue
                       }
                       return AlbumArtWidget(
                         songId: id,
@@ -2006,7 +2006,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xff2D8CFF)),
+            CircularProgressIndicator(color: AppTheme.primaryBlue,
             SizedBox(height: 16),
             Text("गाने लोड हो रहे हैं...",
                 style: TextStyle(color: Colors.white54, fontSize: 14)),
