@@ -570,11 +570,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color:
                                           AppTheme.textSecondary,
                              fontSize: 12)),
-                            ],
+                           ],
                           ),
+                        ],
                         ],
                       ),
                     ),
+                  ),
                   ),
                   GestureDetector(
                     onTap: () {
