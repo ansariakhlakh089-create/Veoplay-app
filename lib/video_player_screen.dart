@@ -107,8 +107,9 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
         _controller.seekTo(Duration(seconds: widget.startPosition));
       } else {
         final p = await SharedPreferences.getInstance();
-        final saved = p.getInt('resume_${widget.videoUrl}') ?? 0;
-        if (saved > 0 && mounted) {
+                final saved = p.getInt('resume_${widget.videoUrl}') ?? 0;
+        final resumeOn = p.getBool('resume_playback') ?? true;   // 👈 जोड़ो
+        if (resumeOn && saved > 0 && mounted) {                  // 👈 बदली
           await _controller.seekTo(Duration(seconds: saved));
         }
       }
