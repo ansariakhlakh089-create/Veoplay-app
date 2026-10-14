@@ -423,7 +423,7 @@ void _toggleLockSlot(int slot) {
         ),
         btn(
           icon: Icons.content_cut,
-          onTap: () => _takeScreenshotSlot(slot),
+          onTap: () => _takeFullScreenshot(),
         ),
         btn(
           icon: mute ? Icons.volume_off : Icons.volume_up,
