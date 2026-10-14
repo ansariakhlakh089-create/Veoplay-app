@@ -1921,8 +1921,7 @@ class _HomeScreenState extends State<HomeScreen>
                     Builder(builder: (_) {
                       final id = int.tryParse(tag.id);
                       if (id == null) {
-                        return const Icon(Icons.graphic_eq,
-                            color: AppTheme.primaryBlue
+                        return Icon(Icons.graphic_eq, color: AppTheme.primaryBlue);
                       }
                       return AlbumArtWidget(
                         songId: id,
