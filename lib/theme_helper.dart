@@ -1,5 +1,7 @@
 part of 'main.dart';
 
+import 'package:flutter/material.dart';
+
 // ==================== THEME HELPER ====================
 final ValueNotifier<bool> isDarkMode = ValueNotifier<bool>(true);
 
@@ -26,9 +28,13 @@ class AppTheme {
   static Color get textTertiary =>
       isDark ? Colors.white38 : const Color(0xff9CA3AF);
 
-  // Accent stays same
+  // Accent (यहीं से हम primaryBlue और primaryPurple निकाल लेंगे)
   static const Color accent = Color(0xff2D8CFF);
   static const Color accentSecondary = Color(0xff6B4DFF);
+  
+  // 👇 ये दो लाइन्स ऐड कर दो ताकि home_screen.dart में एरर न आए
+  static const Color primaryBlue = accent;
+  static const Color primaryPurple = accentSecondary;
 
   // Misc
   static Color get divider => isDark ? Colors.white12 : Colors.black12;
