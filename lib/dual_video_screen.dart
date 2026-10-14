@@ -567,18 +567,33 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
     ? null
     : () {
         setState(() {
-          // 👇 पैनल टैप करने पर उसका ऑडियो ऑन और दूसरे का म्यूट
+          if (_isSyncMode) {
+            // 👇 Sync ON: दोनों चलेंगे, सिर्फ ऑडियो स्विच होगा
+            if (slot == 0) {
+              _mute1 = false;
+              _mute2 = true;
+              _c1?.setVolume(1.0);
+              _c2?.setVolume(0.0);
+            } else {
+              _mute2 = false;
+              _mute1 = true;
+              _c1?.setVolume(0.0);
+              _c2?.setVolume(1.0);
+            }
+          } else {
+            // 👇 Sync OFF: बारी-बारी से चलेंगे (एक चलेगा, दूसरा रुकेगा)
+            if (slot == 0) {
+              _c1?.play();
+              _c2?.pause();
+            } else {
+              _c2?.play();
+              _c1?.pause();
+            }
+          }
+          // कंट्रोल्स को दिखाओ/छुपाओ
           if (slot == 0) {
-            _mute1 = false;
-            _mute2 = true;
-            _c1?.setVolume(1.0);
-            _c2?.setVolume(0.0);
             _showCtrl1 = !_showCtrl1;
           } else {
-            _mute2 = false;
-            _mute1 = true;
-            _c1?.setVolume(0.0);
-            _c2?.setVolume(1.0);
             _showCtrl2 = !_showCtrl2;
           }
         });
