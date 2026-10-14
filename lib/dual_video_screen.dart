@@ -806,6 +806,24 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
                     color: _showList ? AppTheme.primaryBlue : Colors.white),
                 onPressed: () => setState(() => _showList = !_showList),
               ),
+              // 👇👇👇 Sync System बटन 👇👇👇
+IconButton(
+  icon: Icon(
+    _isSyncMode ? Icons.sync : Icons.sync_disabled,
+    color: _isSyncMode ? Colors.amber : Colors.white,
+  ),
+  tooltip: _isSyncMode ? 'Sync ON' : 'Sync OFF',
+  onPressed: () {
+    setState(() {
+      _isSyncMode = !_isSyncMode;
+    });
+    _snack(_isSyncMode
+        ? 'Sync ON: एक साथ चलेंगे, ऑडियो स्विच होगा'
+        : 'Sync OFF: बारी-बारी से चलेंगे');
+  },
+),
+const SizedBox(width: 4),
+// 👆👆👆 यहाँ तक 👆👆👆
               TextButton.icon(
                 onPressed: _exitToSingle,
                 icon: const Icon(Icons.crop_square,
