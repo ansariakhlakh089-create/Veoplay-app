@@ -574,39 +574,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                            ],
                           ),
                         ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  ),
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const SettingsScreen()),
-                      );
-                    },
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: AppTheme.card,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppTheme.primaryBlue
-                              .withOpacity(0.5),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Icon(Icons.settings,
-                          color: AppTheme.primaryBlue, size: 22),
-                    ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SettingsScreen(),
                   ),
-                ],
+                );
+              },
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppTheme.card,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primaryBlue.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(Icons.settings,
+                    color: AppTheme.primaryBlue, size: 22),
               ),
-              const SizedBox(height: 16),
+            ), // 👈 GestureDetector बंद हुआ
+            const SizedBox(height: 16), // 👈 ये अगला चाइल्ड है
+          ], // 👈 1. यहाँ मेन children लिस्ट (लाइन 537) बंद होगी
+        ), // 👈 2. Column बंद होगा
+      ), // 👈 3. SingleChildScrollView बंद होगा
+    ), // 👈 4. SafeArea बंद होगा
+  ); // 👈 5. Scaffold बंद होगा
+} // 👈 6. build मेथड बंद होगा
               
               // ==================== COIN SECTION ====================
               if (false) ...[
