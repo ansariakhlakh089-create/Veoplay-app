@@ -544,8 +544,9 @@ class _HomeScreenState extends State<HomeScreen>
                       gradient: LinearGradient(
                         colors: [AppTheme.primaryBlue, AppTheme.primaryPurple]
                     ),
-                    child:
-                        const Icon(Icons.play_arrow, color: Colors.white),
+                  ),
+                 child:
+                    const Icon(Icons.play_arrow, color: Colors.white),
                   );
                 },
               ),
