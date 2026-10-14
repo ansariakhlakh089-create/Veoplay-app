@@ -309,55 +309,68 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
     });
   }
 
-// 👇 Screenshot (per-panel)
-  Future<void> _takeScreenshotSlot(int slot) async {
-    final c = _ctrl(slot);
-    if (c == null || !c.value.isInitialized) return;
-    try {
-      final idx = slot == 0 ? _i1 : _i2;
-      final url = widget.playlist[idx]['url']!;
-      final bytes = await VideoThumbnail.thumbnailData(
-        video: url,
-        imageFormat: ImageFormat.JPEG,
-        timeMs: c.value.position.inMilliseconds,
-        quality: 100,
-      );
-      if (bytes == null) {
-        _snack('Screenshot नहीं बन पाया');
-        return;
-      }
-      final perm = await PhotoManager.requestPermissionExtend();
-      if (!perm.hasAccess) {
-        _snack('Gallery की permission दो');
-        return;
-      }
-      final name = 'VeoPlay_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      await PhotoManager.editor.saveImage(
-        bytes,
-        filename: name,
-        title: name,
-      );
-      _snack('Video ${slot + 1} का screenshot सेव हो गया');
-    } catch (e) {
-      debugPrint('Screenshot error: $e');
-      _snack('Screenshot में दिक्कत आई');
-    }
-  }
-
-// 👇 Lock toggle (per-panel)
-  void _toggleLockSlot(int slot) {
+Future<void> _takeFullScreenshot() async {
+  try {
+    // कंट्रोल्स को थोड़ी देर के लिए छुपा दो ताकि साफ़ स्क्रीनशॉट आए
     setState(() {
-      if (slot == 0) {
-        _lock1 = !_lock1;
-      } else {
-        _lock2 = !_lock2;
-      }
+      _showCtrl1 = false;
+      _showCtrl2 = false;
     });
-    final locked = slot == 0 ? _lock1 : _lock2;
-    _snack(locked
-        ? 'Video ${slot + 1}: 🔒 Locked'
-        : 'Video ${slot + 1}: 🔓 Unlocked');
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    RenderRepaintBoundary boundary = _screenKey.currentContext!
+        .findRenderObject() as RenderRepaintBoundary;
+    ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+    ByteData? byteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
+
+    // कंट्रोल्स को वापस दिखा दो
+    if (mounted) {
+      setState(() {
+        _showCtrl1 = true;
+        _showCtrl2 = true;
+      });
+    }
+
+    if (byteData == null) {
+      _snack('Screenshot नहीं बन पाया');
+      return;
+    }
+    final bytes = byteData.buffer.asUint8List();
+
+    final perm = await PhotoManager.requestPermissionExtend();
+    if (!perm.hasAccess) {
+      _snack('Gallery की permission दो');
+      return;
+    }
+    final name = 'VeoPlay_Dual_${DateTime.now().millisecondsSinceEpoch}.png';
+    await PhotoManager.editor.saveImage(
+      bytes,
+      filename: name,
+      title: name,
+    );
+    _snack('Dual Video का screenshot सेव हो गया');
+  } catch (e) {
+    debugPrint('Screenshot error: $e');
+    _snack('Screenshot में दिक्कत आई');
   }
+}
+
+void _toggleLockSlot(int slot) {
+  setState(() {
+    // 👇 दोनों को एक साथ लॉक/अनलॉक करो
+    _lock1 = !_lock1;
+    _lock2 = _lock1; 
+    
+    if (_lock1) {
+      _showCtrl1 = false;
+      _showCtrl2 = false;
+    } else {
+      _startHideTimer();
+    }
+  });
+  _snack(_lock1 ? '🔒 Locked' : '🔓 Unlocked');
+}
 
 // 👇 Function buttons row (per-panel)
   Widget _buildSlotButtons(int slot) {
