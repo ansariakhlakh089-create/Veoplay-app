@@ -494,7 +494,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bg,
@@ -503,8 +503,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Column(
             children: [
-              ],
-
               // ==================== TOP BAR ====================
               Row(
                 children: [
@@ -557,162 +555,162 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   size: 14),
                             ],
                           ),
-                          if (false) ...[          // 👈 यह जोड़ो
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(
-                                  Icons.monetization_on,
-                                  color: Color(0xffFFD700),
-                                  size: 14),
-                              const SizedBox(width: 4),
-                              Text('$_userCoins coins',
-                                  style: TextStyle(
-                                      color:
-                                          AppTheme.textSecondary,
-                             fontSize: 12)),
-                           ],
-                          ),
+                          if (false) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                const Icon(
+                                    Icons.monetization_on,
+                                    color: Color(0xffFFD700),
+                                    size: 14),
+                                const SizedBox(width: 4),
+                                Text('$_userCoins coins',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 12)),
+                              ],
+                            ),
+                          ],
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: AppTheme.card,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.primaryBlue.withOpacity(0.5),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(Icons.settings,
-                    color: AppTheme.primaryBlue, size: 22),
-              ),
-            ), // 👈 GestureDetector बंद हुआ
-            const SizedBox(height: 16), // 👈 ये अगला चाइल्ड है
-          ], // 👈 1. यहाँ मेन children लिस्ट (लाइन 537) बंद होगी
-        ), // 👈 2. Column बंद होगा
-      ), // 👈 3. SingleChildScrollView बंद होगा
-    ), // 👈 4. SafeArea बंद होगा
-  ); // 👈 5. Scaffold बंद होगा
-} // 👈 6. build मेथड बंद होगा
-              
-              // ==================== COIN SECTION ====================
-              if (false) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: _coinBox(
-                      icon: Icons.monetization_on,
-                      label: 'My Coin',
-                      badgeText: '$_userCoins',
-                      badgeColor: Colors.transparent,
-                      onTap: () {},
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _coinBox(
-                      icon: Icons.shopping_cart,
-                      label: 'Get Coin',
-                      badgeText: 'FREE',
-                      badgeColor: AppTheme.primaryBlue,
-                      onTap: _showGetCoinDialog,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _coinBox(
-                      icon: Icons.card_giftcard,
-                      label: 'Redeem Gift',
-                      badgeText: 'GIFT',
-                      badgeColor: AppTheme.primaryPurple,
-                      onTap: _showRedeemDialog,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: AppTheme.card,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppTheme.primaryBlue.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Icon(Icons.settings,
+                          color: AppTheme.primaryBlue, size: 22),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // ==================== VIP BANNER ====================
-              GestureDetector(
-                onTap: _showVipDialog,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xff1E3A8A),
-                        Color(0xff6B4DFF)
+              // ==================== COIN SECTION ====================
+              if (false) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _coinBox(
+                        icon: Icons.monetization_on,
+                        label: 'My Coin',
+                        badgeText: '$_userCoins',
+                        badgeColor: Colors.transparent,
+                        onTap: () {},
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _coinBox(
+                        icon: Icons.shopping_cart,
+                        label: 'Get Coin',
+                        badgeText: 'FREE',
+                        badgeColor: AppTheme.primaryBlue,
+                        onTap: _showGetCoinDialog,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _coinBox(
+                        icon: Icons.card_giftcard,
+                        label: 'Redeem Gift',
+                        badgeText: 'GIFT',
+                        badgeColor: AppTheme.primaryPurple,
+                        onTap: _showRedeemDialog,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // ==================== VIP BANNER ====================
+                GestureDetector(
+                  onTap: _showVipDialog,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xff1E3A8A),
+                          Color(0xff6B4DFF)
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppTheme.primaryBlue,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.workspace_premium,
+                                  color: Color(0xff1E3A8A),
+                                  size: 14),
+                              SizedBox(width: 3),
+                              Text('VIP',
+                                  style: TextStyle(
+                                      color: Color(0xff1E3A8A),
+                                      fontSize: 13,
+                                      fontWeight:
+                                          FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text('7 Day Free Trial',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight:
+                                          FontWeight.bold)),
+                              SizedBox(height: 2),
+                              Text(
+                                  'no ads • unlimited HD • unlimited download',
+                                  style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios,
+                            color: Colors.white, size: 14),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primaryBlue,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.workspace_premium,
-                                color: Color(0xff1E3A8A),
-                                size: 14),
-                            SizedBox(width: 3),
-                            Text('VIP',
-                                style: TextStyle(
-                                    color: Color(0xff1E3A8A),
-                                    fontSize: 13,
-                                    fontWeight:
-                                        FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text('7 Day Free Trial',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight:
-                                        FontWeight.bold)),
-                            SizedBox(height: 2),
-                            Text(
-                                'no ads • unlimited HD • unlimited download',
-                                style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 10)),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios,
-                          color: Colors.white, size: 14),
-                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
               ],
 
               // ==================== PRIVACY / THEME / HISTORY ====================
@@ -865,7 +863,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
+                
   Widget _coinBox({
     required IconData icon,
     required String label,
