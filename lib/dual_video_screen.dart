@@ -30,6 +30,7 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   bool _showCtrl1 = true; // C-1: हर panel के controls
   bool _showCtrl2 = true;
   bool _leaving = false;
+  bool _isSyncMode = true; // 👈 यहाँ तक
   // 👇 skip indicators (per-panel)
   String _skip1 = '';
   String _skip2 = '';
