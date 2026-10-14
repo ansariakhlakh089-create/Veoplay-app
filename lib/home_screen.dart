@@ -1788,7 +1788,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
           child: Row(
             children: [
-              Icon(icon, color: AppTheme.primaryBlue size: 30),
+              Icon(icon, color: AppTheme.primaryBlue, size: 30),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
