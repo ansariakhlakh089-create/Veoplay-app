@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen>
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [Color(0xff2D8CFF), Color(0xff6B4DFF)],
+                        colors: [AppTheme.primaryBlue, AppTheme.primaryBlue]
                       ),
                     ),
                     child:
