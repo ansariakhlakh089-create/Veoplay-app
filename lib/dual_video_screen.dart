@@ -31,6 +31,7 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   bool _showCtrl2 = true;
   bool _leaving = false;
   bool _isSyncMode = true; // 👈 यहाँ तक
+  final GlobalKey _screenKey = GlobalKey();
   // 👇 skip indicators (per-panel)
   String _skip1 = '';
   String _skip2 = '';
