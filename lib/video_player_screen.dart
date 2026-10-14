@@ -1233,7 +1233,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
 
                       if (_showControls)
                         Positioned(
-                          bottom: 0,
+                          bottom: 20,
                           left: 0,
                           right: 0,
                           child: Container(
