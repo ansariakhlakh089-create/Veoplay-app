@@ -1,7 +1,5 @@
 part of 'main.dart';
 
-import 'package:flutter/material.dart';
-
 // ==================== THEME HELPER ====================
 final ValueNotifier<bool> isDarkMode = ValueNotifier<bool>(true);
 
