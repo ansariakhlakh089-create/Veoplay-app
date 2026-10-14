@@ -279,7 +279,7 @@ class _HomeScreenState extends State<HomeScreen>
                         fontWeight: FontWeight.bold)),
               ),
               ListTile(
-                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                leading: const Icon(Icons.add, color: AppTheme.primaryBlue),
                 title: Text("नई Playlist बनाएँ",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
@@ -1347,7 +1347,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
                   color: _sortMode == i
-                      ? Colors.blueAccent
+                      ? AppTheme.primaryBlue
                       : AppTheme.iconColor,
                 ),
                 title: Text(options[i],
@@ -1547,7 +1547,7 @@ class _HomeScreenState extends State<HomeScreen>
             shrinkWrap: true,
             children: [
               ListTile(
-                leading: const Icon(Icons.add, color: Colors.blueAccent),
+                leading: const Icon(Icons.add, color: AppTheme.primaryBlue),
                 title: Text("नई Playlist बनाएँ",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
@@ -2351,7 +2351,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ? Icons.radio_button_checked
                       : Icons.radio_button_off,
                   color: _songSortMode == i
-                      ? Colors.blueAccent
+                      ? AppTheme.primaryBlue
                       : AppTheme.iconColor,
                 ),
                 title: Text(options[i],
