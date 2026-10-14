@@ -1013,20 +1013,23 @@ const SizedBox(width: 4),
       _syncSlot(1);
     });
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          Row(
-            children: [
-              Expanded(child: _panel(0)),
-              Container(width: 2, color: Colors.white24),
-              Expanded(child: _panel(1)),
-            ],
-          ),
-          if (_showCtrl1 || _showCtrl2) _buildTopBar(),
-          if (_showList) _buildListPanel(),
+  backgroundColor: Colors.black,
+  body: RepaintBoundary( // 👈 यहाँ से शुरू
+    key: _screenKey,
+    child: Stack(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _panel(0)),
+            Container(width: 2, color: Colors.white24),
+            Expanded(child: _panel(1)),
+          ],
+        ),
+        if (_showCtrl1 || _showCtrl2) _buildTopBar(),
+        if (_showList) _buildListPanel(),
         ],
       ),
-    );
+    ),
+  );
   }
 }
