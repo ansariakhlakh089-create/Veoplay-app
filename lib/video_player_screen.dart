@@ -1254,6 +1254,14 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                       _toggleLock,
                                     ),
                                     const Spacer(),
+                                    // 👇👇👇 Dual Video बटन 👇👇👇
+_sideBtn(
+  Icons.vertical_split,
+  Colors.white,
+  _openDual,
+),
+const SizedBox(width: 6),
+// 👆👆👆 यहाँ तक 👆👆👆
                                     _sideBtn(
                                       Icons.playlist_play,
                                       _showVideoList
