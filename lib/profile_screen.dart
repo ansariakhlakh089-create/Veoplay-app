@@ -556,6 +556,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   size: 14),
                             ],
                           ),
+                          if (false) ...[          // 👈 यह जोड़ो
                           const SizedBox(height: 2),
                           Row(
                             children: [
@@ -568,7 +569,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   style: TextStyle(
                                       color:
                                           AppTheme.textSecondary,
-                                      fontSize: 12)),
+                             fontSize: 12)),
                             ],
                           ),
                         ],
