@@ -2006,7 +2006,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildMusicTab() {
     if (_audioLoading && _songs.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
