@@ -144,8 +144,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: TextStyle(
                 color: AppTheme.textPrimary, fontSize: 15)),
         trailing: Text(reward,
-            style: const TextStyle(
-                color: Color(0xff2D8CFF),
+            style: TextStyle(
+                color: AppTheme.primaryBlue,
                 fontWeight: FontWeight.bold,
                 fontSize: 14)),
       ),
@@ -213,11 +213,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('$cost ',
-                style: const TextStyle(
-                    color: Color(0xff2D8CFF),
+                style: TextStyle(
+                    color: AppTheme.primaryBlue,
                     fontWeight: FontWeight.bold)),
-            const Icon(Icons.monetization_on,
-                color: Color(0xff2D8CFF), size: 16),
+            Icon(Icons.monetization_on,
+                color: AppTheme.primaryBlue, size: 16),
           ],
         ),
         enabled: canAfford,
@@ -283,9 +283,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
             },
-            child: const Text('Start Trial',
+            child: Text('Start Trial',
                 style: TextStyle(
-                    color: Color(0xff2D8CFF),
+                    color: AppTheme.primaryBlue,
                     fontWeight: FontWeight.bold)),
           ),
         ],
@@ -389,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          const Icon(icon, color: Color(0xff2D8CFF), size: 20),
+          Icon(icon, color: AppTheme.primaryBlue, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
@@ -449,12 +449,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               shape: BoxShape.circle,
               color: AppTheme.card,
               border: Border.all(
-                color: const Color(0xff2D8CFF).withOpacity(0.5),
+                color: AppTheme.primaryBlue.withOpacity(0.5),
                 width: 2,
               ),
             ),
             child: Icon(icon,
-                color: const Color(0xff2D8CFF), size: size * 0.4),
+                color: AppTheme.primaryBlue, size: size * 0.4),
           ),
           const SizedBox(height: 4),
           Text(label,
@@ -503,6 +503,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Column(
             children: [
+
               // ==================== TOP BAR ====================
               Row(
                 children: [
@@ -513,10 +514,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 50,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xff2D8CFF),
-                            Color(0xff6B4DFF)
+                            AppTheme.primaryBlue,
+                            AppTheme.primaryPurple
                           ],
                         ),
                         border: Border.all(
@@ -590,13 +591,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: AppTheme.card,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xff2D8CFF)
+                          color: AppTheme.primaryBlue
                               .withOpacity(0.5),
                           width: 1.5,
                         ),
                       ),
-                      child: const Icon(Icons.settings,
-                          color: Color(0xff2D8CFF), size: 22),
+                      child: Icon(Icons.settings,
+                          color: AppTheme.primaryBlue, size: 22),
                     ),
                   ),
                 ],
@@ -621,7 +622,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.shopping_cart,
                       label: 'Get Coin',
                       badgeText: 'FREE',
-                      badgeColor: const Color(0xff2D8CFF),
+                      badgeColor: AppTheme.primaryBlue,
                       onTap: _showGetCoinDialog,
                     ),
                   ),
@@ -631,7 +632,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.card_giftcard,
                       label: 'Redeem Gift',
                       badgeText: 'GIFT',
-                      badgeColor: const Color(0xff6B4DFF),
+                      badgeColor: AppTheme.primaryPurple,
                       onTap: _showRedeemDialog,
                     ),
                   ),
@@ -653,7 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xff2D8CFF),
+                      color: AppTheme.primaryBlue,
                       width: 1.5,
                     ),
                   ),
@@ -739,13 +740,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-
+              
               // ==================== STATS ====================
               Row(
                 children: [
                   _statBox('Videos', _totalVideos,
                       Icons.video_library,
-                      const Color(0xff2D8CFF)),
+                      AppTheme.primaryBlue),
                   const SizedBox(width: 6),
                   _statBox('Songs', _totalSongs, Icons.music_note,
                       Colors.greenAccent),
@@ -773,43 +774,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
 
-            // ==================== DARK MODE TOGGLE ====================
-ValueListenableBuilder<bool>(
-  valueListenable: isDarkMode,
-  builder: (context, isDark, child) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: AppTheme.cardBorder, width: 1),
-      ),
-      child: ListTile(
-        leading: Icon(
-          isDark ? Icons.dark_mode : Icons.light_mode,
-          color: AppTheme.iconColor,
-          size: 22,
-        ),
-        title: Text(
-          isDark ? "Dark Mode" : "Light Mode",
-          style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w500),
-        ),
-        trailing: Switch(
-          value: isDark,
-          activeColor: AppTheme.primaryBlue,
-          onChanged: (val) async {
-            await AppTheme.toggle(val);
-          },
-        ),
-      ),
-    );
-  },
-),
-// 👆👆👆 यहाँ तक का कोड पेस्ट करना है 👆👆👆
+              // ==================== DARK MODE TOGGLE ====================
+              ValueListenableBuilder<bool>(
+                valueListenable: isDarkMode,
+                builder: (context, isDark, child) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.card,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppTheme.cardBorder, width: 1),
+                    ),
+                    child: ListTile(
+                      leading: Icon(
+                        isDark ? Icons.dark_mode : Icons.light_mode,
+                        color: AppTheme.iconColor,
+                        size: 22,
+                      ),
+                      title: Text(
+                        isDark ? "Dark Mode" : "Light Mode",
+                        style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500),
+                      ),
+                      trailing: Switch(
+                        value: isDark,
+                        activeColor: AppTheme.primaryBlue,
+                        onChanged: (val) async {
+                          await AppTheme.toggle(val);
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
 
               _listItem(
                 icon: Icons.help_outline,
@@ -879,13 +879,13 @@ ValueListenableBuilder<bool>(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xff2D8CFF).withOpacity(0.5),
+            color: AppTheme.primaryBlue.withOpacity(0.5),
             width: 1.2,
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xff2D8CFF), size: 26),
+            Icon(icon, color: AppTheme.primaryBlue, size: 26),
             const SizedBox(height: 6),
             Text(label,
                 style: TextStyle(
