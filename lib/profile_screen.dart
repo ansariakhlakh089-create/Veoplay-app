@@ -606,6 +606,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 16),
               
               // ==================== COIN SECTION ====================
+              if (false) ...[
               Row(
                 children: [
                   Expanded(
@@ -711,6 +712,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              ],
 
               // ==================== PRIVACY / THEME / HISTORY ====================
               Row(
