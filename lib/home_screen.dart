@@ -585,7 +585,7 @@ class _HomeScreenState extends State<HomeScreen>
                 radius: 18,
                 backgroundColor:
                     AppTheme.primaryBlue.withOpacity(0.2),
-                child: const Icon(Icons.person,
+                child: Icon(Icons.person,
                     color: AppTheme.primaryBlue, size: 20),
               ),
             ),
