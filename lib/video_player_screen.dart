@@ -747,6 +747,65 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     ),
   );
   }
+
+  void _showMoreOptionsMenu() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppTheme.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ड्रैग हैंडल (ऊपर वाली छोटी लाइन)
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppTheme.textTertiary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.share, color: AppTheme.iconColor),
+            title: Text('Share',
+                style: TextStyle(color: AppTheme.textPrimary)),
+            onTap: () {
+              Navigator.pop(context);
+              _shareVideo();
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.timer, color: AppTheme.iconColor),
+            title: Text('Sleep Timer',
+                style: TextStyle(color: AppTheme.textPrimary)),
+            onTap: () {
+              Navigator.pop(context);
+              _showSleepTimerDialog();
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.music_note, color: AppTheme.iconColor),
+            title: Text('Play as audio',
+                style: TextStyle(color: AppTheme.textPrimary)),
+            onTap: () {
+              Navigator.pop(context);
+              // यहाँ Play as audio का लॉजिक बाद में लगाएंगे
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('Play as audio जल्द आएगा')),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  }
   
   void _startSleepTimer(int minutes) {
     _sleepTimer?.cancel();
