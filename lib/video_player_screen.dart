@@ -652,7 +652,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
       ),
     );
   }
-         void _toggleLock() {
+   void _toggleLock() {
     setState(() {
       _locked = !_locked;
       if (_locked) {
@@ -670,86 +670,84 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   }
 
   void _showSleepTimerDialog() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
       backgroundColor: AppTheme.card,
-      builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Sleep Timer",
-                  style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  alignment: WrapAlignment.center,
-                  children: [5, 10, 15, 30, 60].map((min) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        _startSleepTimer(min);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.bg,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.timer,
-                                color: AppTheme.textSecondary, size: 16),
-                            const SizedBox(width: 6),
-                            Text('$min मिनट',
-                                style: TextStyle(
-                                    color: AppTheme.textPrimary)),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 14),
-                GestureDetector(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Sleep Timer",
+              style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: [5, 10, 15, 30, 60].map((min) {
+                return GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
-                    _sleepTimer?.cancel();
-                    _sleepTimer = null;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Sleep timer हटाया')),
-                    );
+                    _startSleepTimer(min);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent.withOpacity(0.2),
+                      color: AppTheme.bg,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('Sleep Timer हटाओ',
-                        style: TextStyle(color: Colors.redAccent)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.timer,
+                            color: AppTheme.textSecondary, size: 16),
+                        const SizedBox(width: 6),
+                        Text('$min मिनट',
+                            style: TextStyle(color: AppTheme.textPrimary)),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
-          ),
-        );
-      },
-    );
+            const SizedBox(height: 14),
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+                _sleepTimer?.cancel();
+                _sleepTimer = null;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Sleep timer हटाया')),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text('Sleep Timer हटाओ',
+                    style: TextStyle(color: Colors.redAccent)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
   }
-
+  
   void _startSleepTimer(int minutes) {
     _sleepTimer?.cancel();
     _sleepTimer = Timer(Duration(minutes: minutes), () {
