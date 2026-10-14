@@ -2285,8 +2285,7 @@ class _HomeScreenState extends State<HomeScreen>
         const SizedBox(height: 8),
         Expanded(
           child: RefreshIndicator(
-            color: AppTheme.primaryBlue
-            backgroundColor: AppTheme.card,
+            color: AppTheme.primaryBlue, backgroundColor: AppTheme.card,
             onRefresh: () async {
               try {
                 await PhotoManager.editor.android
