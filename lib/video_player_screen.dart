@@ -642,6 +642,13 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                     ),
                   );
                 }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
          void _toggleLock() {
     setState(() {
       _locked = !_locked;
