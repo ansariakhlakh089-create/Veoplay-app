@@ -2005,7 +2005,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: AppTheme.primaryBlue,
+            CircularProgressIndicator(color: AppTheme.primaryBlue),
             SizedBox(height: 16),
             Text("गाने लोड हो रहे हैं...",
                 style: TextStyle(color: Colors.white54, fontSize: 14)),
