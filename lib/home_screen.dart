@@ -539,7 +539,7 @@ class _HomeScreenState extends State<HomeScreen>
                   return Container(
                     height: 42,
                     width: 42,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [AppTheme.primaryBlue, AppTheme.primaryBlue]
