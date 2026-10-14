@@ -425,6 +425,8 @@ class _HomeScreenState extends State<HomeScreen>
       }
       final sorted = List<SongModel>.of(fresh);
       _sortSongs(sorted);
+      await prefs.setStringList(
+        'cached_songs', sorted.map((s) => s.id.toString()).toList());
       if (!mounted) return;
       setState(() => _songs = sorted);
     } catch (e) {
