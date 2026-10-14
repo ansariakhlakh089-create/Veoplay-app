@@ -772,6 +772,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
               ),
+
+            // ==================== DARK MODE TOGGLE ====================
+ValueListenableBuilder<bool>(
+  valueListenable: isDarkMode,
+  builder: (context, isDark, child) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: AppTheme.cardBorder, width: 1),
+      ),
+      child: ListTile(
+        leading: Icon(
+          isDark ? Icons.dark_mode : Icons.light_mode,
+          color: AppTheme.iconColor,
+          size: 22,
+        ),
+        title: Text(
+          isDark ? "Dark Mode" : "Light Mode",
+          style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w500),
+        ),
+        trailing: Switch(
+          value: isDark,
+          activeColor: AppTheme.primaryBlue,
+          onChanged: (val) async {
+            await AppTheme.toggle(val);
+          },
+        ),
+      ),
+    );
+  },
+),
+// 👆👆👆 यहाँ तक का कोड पेस्ट करना है 👆👆👆
+
               _listItem(
                 icon: Icons.help_outline,
                 title: 'Help & Feedback',
