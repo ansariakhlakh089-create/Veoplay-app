@@ -95,8 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Color(0xff2D8CFF),
+        style: TextStyle(
+          color: AppTheme.primaryBlue,
           fontSize: 13,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
@@ -168,10 +168,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: _isDarkTheme
                   ? 'Dark mode चालू है'
                   : 'Light mode चालू है',
-              iconColor: const Color(0xff2D8CFF),
+              iconColor: AppTheme.primaryBlue,
               trailing: Switch(
                 value: !_isDarkTheme,
-                activeColor: const Color(0xff2D8CFF),
+                activeColor: AppTheme.primaryBlue,
                 onChanged: (v) async {
                   setState(() => _isDarkTheme = !v);
                   await AppTheme.toggle(!v);
@@ -190,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'वीडियो खत्म होते ही अगला चलाएं',
               trailing: Switch(
                 value: _autoPlayNext,
-                activeColor: const Color(0xff2D8CFF),
+                activeColor: AppTheme.primaryBlue,
                 onChanged: (v) {
                   setState(() => _autoPlayNext = v);
                   _saveBool('auto_play_next', v);
@@ -204,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'जहाँ छोड़ा था वहीं से चलाएं',
               trailing: Switch(
                 value: _resumePlayback,
-                activeColor: const Color(0xff2D8CFF),
+                activeColor: AppTheme.primaryBlue,
                 onChanged: (v) {
                   setState(() => _resumePlayback = v);
                   _saveBool('resume_playback', v);
@@ -239,7 +239,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: 'छुपी हुई फाइलें भी दिखाएं',
               trailing: Switch(
                 value: _showHiddenFiles,
-                activeColor: const Color(0xff2D8CFF),
+                activeColor: AppTheme.primaryBlue,
                 onChanged: (v) {
                   setState(() => _showHiddenFiles = v);
                   _saveBool('show_hidden_files', v);
@@ -369,7 +369,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xff2D8CFF)
+                            ? AppTheme.primaryBlue
                             : AppTheme.card,
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -426,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected
-                            ? const Color(0xff2D8CFF)
+                            ? AppTheme.primaryBlue
                             : AppTheme.card,
                         borderRadius: BorderRadius.circular(20),
                       ),
