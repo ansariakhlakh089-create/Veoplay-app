@@ -31,37 +31,39 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
           }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: TextField(
           controller: _controller,
           autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          style: TextStyle(color: AppTheme.textPrimary),
+          decoration: InputDecoration(
             hintText: 'वीडियो का नाम खोजें...',
-            hintStyle: TextStyle(color: Colors.white38),
+            hintStyle: TextStyle(color: AppTheme.textTertiary),
             border: InputBorder.none,
           ),
           onChanged: (v) => setState(() => _query = v),
         ),
       ),
       body: q.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search, color: Colors.white24, size: 60),
-                  SizedBox(height: 12),
+                  Icon(Icons.search, color: AppTheme.textTertiary, size: 60),
+                  const SizedBox(height: 12),
                   Text('वीडियो या फोल्डर का नाम लिखें',
-                      style: TextStyle(color: Colors.white54, fontSize: 14)),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 14)),
                 ],
               ),
             )
           : results.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text('कुछ नहीं मिला',
-                      style: TextStyle(color: Colors.white54, fontSize: 16)),
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 16)),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -102,16 +104,18 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
                                     item['title'] ?? '',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14),
+                                    style: TextStyle(
+                                        color: AppTheme.textPrimary,
+                                        fontSize: 14),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     "${item['duration']} • ${item['folder']}",
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                        color: Colors.white54, fontSize: 12),
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 12),
                                   ),
                                 ],
                               ),
