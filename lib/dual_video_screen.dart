@@ -749,9 +749,11 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          playing ? Icons.pause : Icons.play_arrow,
+                          playing 
+                             ? Icons.pause 
+                             : Icons.play_arrow,
                           color: Colors.white,
-                          size: 20,
+                          size: 26,
                         ),
                       ),
                     ),
