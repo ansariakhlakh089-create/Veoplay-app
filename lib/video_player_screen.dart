@@ -1000,21 +1000,23 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             _showGestureFor(
                                 'Brightness ${(newBrightness * 100).toInt()}%');
                           } else {
-                            double newVol =
-                                (_volume + delta).clamp(0.0, 2.0);
-                            if (newVol <= 1.0) {
-                              VolumeController().setVolume(newVol);
-                              _controller.setVolume(1.0);
-                            } else {
-                              VolumeController().setVolume(1.0);
-                              _controller.setVolume(newVol);
-                            }
-                            setState(() {
-                              _volume = newVol;
-                              _muted = false;
-                              _showGestureFor(
-                                  'Volume ${(newVol * 100).toInt()}%');
-                            });
+  double newVol =
+      (_volume + delta).clamp(0.0, 2.0);
+  if (newVol <= 1.0) {
+    VolumeController()
+        .setVolume(newVol, showSystemUI: false); // 👈 यहाँ बदला
+    _controller.setVolume(1.0);
+  } else {
+    VolumeController()
+        .setVolume(1.0, showSystemUI: false); // 👈 यहाँ बदला
+    _controller.setVolume(newVol);
+  }
+  setState(() {
+    _volume = newVol;
+    _muted = false;
+    _showGestureFor(
+        'Volume ${(newVol * 100).toInt()}%');
+  });
                           }
                         },
                   onHorizontalDragUpdate: _locked
