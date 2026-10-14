@@ -503,6 +503,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Column(
             children: [
+              ],
 
               // ==================== TOP BAR ====================
               Row(
