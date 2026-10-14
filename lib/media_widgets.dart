@@ -104,7 +104,7 @@ class _AlbumArtWidgetState extends State<AlbumArtWidget> {
                     shape: widget.circle ? BoxShape.circle : BoxShape.rectangle,
                     borderRadius: widget.circle ? null : rad,
                     border: Border.all(
-                      color: const Color(0xff2D8CFF).withOpacity(0.10),
+                      color: AppTheme.primaryBlue.withOpacity(0.10),
                       width: 1,
                     ),
                   ),
@@ -112,7 +112,7 @@ class _AlbumArtWidgetState extends State<AlbumArtWidget> {
               // Center में बड़ा note
               Icon(
                 widget.fallbackIcon,
-                color: const Color(0xff2D8CFF).withOpacity(0.85),
+                color: AppTheme.primaryBlue.withOpacity(0.85),
                 size: widget.size * 0.42,
               ),
               // छोटे decorative notes
@@ -272,7 +272,7 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
       width: 130,
       height: 75,
       decoration: BoxDecoration(
-        color: const Color(0xff2D8CFF).withOpacity(0.2),
+        color: AppTheme.primaryBlue.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Center(
@@ -281,6 +281,8 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
     );
   }
 }
+
+// ==================== फोल्डर वीडियो स्क्रीन ====================
 class FolderVideosScreen extends StatelessWidget {
   final String folderName;
   final List<Map<String, String>> videos;
@@ -290,10 +292,10 @@ class FolderVideosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff0B0D12),
+      backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text(folderName),
+        title: Text(folderName, style: TextStyle(color: AppTheme.textPrimary)),
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(18),
@@ -328,14 +330,14 @@ class FolderVideosScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item['title'] ?? '',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 14),
+                            style: TextStyle(
+                                color: AppTheme.textPrimary, fontSize: 14),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 4),
                         Text(item['duration'] ?? '',
-                            style: const TextStyle(
-                                color: Colors.white60, fontSize: 13)),
+                            style: TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 13)),
                       ],
                     ),
                   ),
