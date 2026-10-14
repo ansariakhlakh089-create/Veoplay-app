@@ -598,7 +598,7 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(color: Colors.blue),
+                      CircularProgressIndicator(color: AppTheme.primaryBlue),
                       SizedBox(height: 20),
                       Text("Discovering videos...",
                           style: TextStyle(
