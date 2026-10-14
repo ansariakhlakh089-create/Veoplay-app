@@ -1154,6 +1154,10 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                                       content: Text(
                                           'Subtitles (CC) जल्द आएँगे'),
                                       duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                              ),
                                   PopupMenuButton<int>(
                                 color: AppTheme.card,
                                 icon: const Icon(Icons.more_vert,
