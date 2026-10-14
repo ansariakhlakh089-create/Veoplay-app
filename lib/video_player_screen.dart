@@ -51,6 +51,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   bool _showVideoList = false;
   int _loopMode = 0;
   int _fitMode = 0;
+  bool _autoPlayNext = true;   // 👈 यह जोड़ो
 
   @override
   void initState() {
