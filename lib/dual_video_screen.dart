@@ -563,14 +563,25 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: locked
-          ? null
-          : () => setState(() {
-                if (slot == 0) {
-                  _showCtrl1 = !_showCtrl1;
-                } else {
-                  _showCtrl2 = !_showCtrl2;
-                }
-              }),
+    ? null
+    : () {
+        setState(() {
+          // 👇 पैनल टैप करने पर उसका ऑडियो ऑन और दूसरे का म्यूट
+          if (slot == 0) {
+            _mute1 = false;
+            _mute2 = true;
+            _c1?.setVolume(1.0);
+            _c2?.setVolume(0.0);
+            _showCtrl1 = !_showCtrl1;
+          } else {
+            _mute2 = false;
+            _mute1 = true;
+            _c1?.setVolume(0.0);
+            _c2?.setVolume(1.0);
+            _showCtrl2 = !_showCtrl2;
+          }
+        });
+      },
       onDoubleTapDown: locked
           ? null
           : (details) {
