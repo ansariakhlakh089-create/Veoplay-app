@@ -347,6 +347,8 @@ class _HomeScreenState extends State<HomeScreen>
     _songSortMode = prefs.getInt('song_sort_mode') ?? 0;
     final sorted = List<SongModel>.of(songs);
     _sortSongs(sorted);
+    await prefs.setStringList(
+      'cached_songs', sorted.map((s) => s.id.toString()).toList());
     if (!mounted) return;
     setState(() {
       _songs = sorted;
