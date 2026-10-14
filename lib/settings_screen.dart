@@ -362,6 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   return GestureDetector(
                     onTap: () async {
                       await prefs.setDouble('default_video_speed', s);
+                      await prefs.setDouble('video_speed', s);   // 👈 जोड़ो
                       if (context.mounted) Navigator.pop(context);
                     },
                     child: Container(
