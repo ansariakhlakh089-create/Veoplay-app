@@ -60,7 +60,7 @@ void main() async {
       navigatorKey.currentState?.push(
         MaterialPageRoute(
           builder: (_) => RealVideoPlayer(
-            videoUrl: uri.toString().replaceFirst('file://', ''),
+            videoUrl: uri.toString(),
             title: uri.toString().split('/').last,
           ),
         ),
