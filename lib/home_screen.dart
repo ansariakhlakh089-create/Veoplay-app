@@ -54,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen>
     _loadFavoriteVideos();
     _loadVideoPlaylists();
     _loadWatchProgress(); // 👈 यहाँ नई लाइन ऐड करो
+    _loadHiddenFolders(); // 👈 यहाँ नई लाइन ऐड करो
   }
 
   void _onRecentChanged() {
