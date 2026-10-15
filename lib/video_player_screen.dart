@@ -53,6 +53,12 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
   int _fitMode = 0;
   bool _autoPlayNext = true;
 
+  // 👇👇👇 Subtitle के लिए नए वेरिएबल्स 👇👇👇
+List<SubtitleLine> _subtitles = [];
+bool _subtitlesEnabled = true;
+String? _subtitleFileName;
+// 👆👆👆 यहाँ तक 👆👆👆
+  
   @override
   void initState() {
     super.initState();
