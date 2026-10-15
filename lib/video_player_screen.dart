@@ -1187,6 +1187,35 @@ Widget _buildPlayer(BuildContext context) {
             : GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: _locked ? null : _toggleControls,
+
+// 👇👇👇 Long-Press पर 2x Speed 👇👇👇
+onLongPressStart: _locked
+    ? null
+    : (details) {
+        setState(() {
+          _speedBeforeLongPress = _speed;
+          _isLongPressSpeed = true;
+        });
+        _controller.setPlaybackSpeed(2.0);
+      },
+onLongPressEnd: _locked
+    ? null
+    : (details) {
+        setState(() {
+          _isLongPressSpeed = false;
+        });
+        _controller.setPlaybackSpeed(_speedBeforeLongPress);
+      },
+onLongPressCancel: _locked
+    ? null
+    : () {
+        setState(() {
+          _isLongPressSpeed = false;
+        });
+        _controller.setPlaybackSpeed(_speedBeforeLongPress);
+      },
+// 👆👆👆 यहाँ तक 👆👆👆
+
                 onDoubleTapDown: _locked
                     ? null
                     : (details) {
