@@ -92,10 +92,15 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
     });
 
     if (widget.videoUrl.startsWith('http')) {
-      _controller =
-          VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-    } else {
-      _controller = VideoPlayerController.file(File(widget.videoUrl));
+  _controller =
+      VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+} else if (widget.videoUrl.startsWith('content://')) {
+  // 👈 WhatsApp/File Manager के लिए
+  _controller =
+      VideoPlayerController.contentUri(Uri.parse(widget.videoUrl));
+} else {
+  _controller = VideoPlayerController.file(
+      File(widget.videoUrl.replaceFirst('file://', '')));
     }
 
     _controller.initialize().then((_) async {
