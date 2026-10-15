@@ -819,7 +819,10 @@ void _showAddMultipleToPlaylistDialog() {
           ),
         ],
       ),
-      body: _currentTab == 2
+      body: Column(
+  children: [
+    Expanded(
+      child: _currentTab == 2
           ? _buildMusicTab()
           : _isLoading
               ? const Center(
