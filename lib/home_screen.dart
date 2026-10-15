@@ -1335,8 +1335,8 @@ class _HomeScreenState extends State<HomeScreen>
     final options = [
       'नया पहले',
       'पुराना पहले',
-      'नाम (A से Z)',
-      'साइज़ (बड़ा पहले)'
+      'साइज़ (बड़ा पहले)',
+      'Favorite पहले ❤️'
     ];
     showModalBottomSheet(
       context: context,
