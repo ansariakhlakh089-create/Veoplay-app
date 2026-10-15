@@ -39,6 +39,7 @@ final ValueNotifier<int> recentChangedNotifier = ValueNotifier<int>(0);
 final AudioPlayer globalAudioPlayer = AudioPlayer();
 final Map<int, String> globalSongNames = {};
 final ValueNotifier<int> musicDataNotifier = ValueNotifier<int>(0);
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
