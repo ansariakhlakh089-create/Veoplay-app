@@ -1456,26 +1456,27 @@ if (_subtitlesEnabled && _subtitles.isNotEmpty)
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.closed_caption,
-                      color: Colors.white),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'Subtitles (CC) जल्द आएँगे'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert,
-                      color: Colors.white),
-                  onPressed: _showMoreOptionsMenu,
-                ),
-              ],
-            ),
-          ),
+  icon: Icon(
+    _subtitlesEnabled && _subtitles.isNotEmpty
+        ? Icons.closed_caption
+        : Icons.closed_caption_off,
+    color: _subtitlesEnabled && _subtitles.isNotEmpty
+        ? Colors.amber
+        : Colors.white,
+  ),
+  onPressed: () {
+    if (_subtitles.isEmpty) {
+      _loadSubtitle();
+    } else {
+      setState(() {
+        _subtitlesEnabled = !_subtitlesEnabled;
+      });
+      _snack(_subtitlesEnabled
+          ? 'Subtitles ON'
+          : 'Subtitles OFF');
+    }
+  },
+),
 
         // ----- नीचे कंट्रोल बार -----
         if (_showControls)
