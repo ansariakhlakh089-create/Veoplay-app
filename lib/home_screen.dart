@@ -679,11 +679,40 @@ class _HomeScreenState extends State<HomeScreen>
                                 ),
                                 const SizedBox(height: 12),
                                 if (_recentTitle != null) ...[
-                                  Text("Recent",
-                                      style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppTheme.textPrimary)),
+                                   Row(
+                                    children: [
+                                      Text("Recent",
+                                          style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.textPrimary)),
+                                      const Spacer(),
+                                      GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  VideoHistoryScreen(
+                                                      allVideos: videoList),
+                                            ),
+                                          );
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.history,
+                                                color: AppTheme.iconColor,
+                                                size: 22),
+                                            const SizedBox(width: 2),
+                                            Icon(Icons.chevron_right,
+                                                color: AppTheme.iconColor,
+                                                size: 22),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 8),
                                   GestureDetector(
                                     onTap: () async {
