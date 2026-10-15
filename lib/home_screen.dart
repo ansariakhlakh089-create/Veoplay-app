@@ -31,6 +31,9 @@ class _HomeScreenState extends State<HomeScreen>
   Set<String> _favoriteVideoIds = {};
   Map<String, List<String>> _videoPlaylists = {};
   int _videoTab = 0;
+  // 👇👇👇 ये नई लाइन्स ऐड करो 👇👇👇
+  bool _isVideoSelectionMode = false;
+  Set<String> _selectedVideoIds = {};
 
   @override
   void initState() {
