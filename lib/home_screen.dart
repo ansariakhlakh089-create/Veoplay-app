@@ -79,6 +79,16 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+    Future<void> _addToHistory(
+      String url, String title, int position, int duration) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('watch_history') ?? [];
+    list.removeWhere((s) => s.startsWith('$url|||'));
+    list.insert(0, '$url|||$title|||$position|||$duration');
+    if (list.length > 100) list.removeRange(100, list.length);
+    await prefs.setStringList('watch_history', list);
+    }
+
   Future<void> _loadRecent() async {
     final prefs = await SharedPreferences.getInstance();
     final title = prefs.getString('recent_title');
@@ -92,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen>
         _recentPosition = position;
         _recentDuration = duration;
       });
+     await _addToHistory(url, title, position, duration);
     }
   }
 
@@ -2830,5 +2841,193 @@ class _HomeScreenState extends State<HomeScreen>
             "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id'] ?? ''}")
         .toList();
     await prefs.setStringList('cached_videos', toSave);
+  }
+}
+
+  // ==================== Video Watch History Screen ====================
+class VideoHistoryScreen extends StatefulWidget {
+  final List<Map<String, String>> allVideos;
+  const VideoHistoryScreen({super.key, required this.allVideos});
+
+  @override
+  State<VideoHistoryScreen> createState() => _VideoHistoryScreenState();
+}
+
+class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
+  List<List<String>> _items = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('watch_history') ?? [];
+    final urls = widget.allVideos.map((v) => v['url']).toSet();
+    final out = <List<String>>[];
+    for (final s in raw) {
+      final p = s.split('|||');
+      if (p.length < 4) continue;
+      if (!urls.contains(p[0])) continue;
+      out.add(p);
+    }
+    if (mounted) {
+      setState(() {
+        _items = out;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _removeOne(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('watch_history') ?? [];
+    raw.removeWhere((s) => s.startsWith('$url|||'));
+    await prefs.setStringList('watch_history', raw);
+    await _load();
+  }
+
+  Future<void> _clearAll() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text('सारी History हटाएँ?',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: Text('वीडियो फोन में रहेंगे, सिर्फ़ History हटेगी।',
+            style: TextStyle(color: AppTheme.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Clear',
+                  style: TextStyle(color: Colors.redAccent))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('watch_history');
+    await _load();
+  }
+
+  String _fmt(int sec) {
+    final h = sec ~/ 3600;
+    final m = ((sec % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (sec % 60).toString().padLeft(2, '0');
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: AppTheme.textPrimary),
+        title: Text('Watch History',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        actions: [
+          if (_items.isNotEmpty)
+            IconButton(
+              icon: Icon(Icons.delete_sweep, color: AppTheme.iconColor),
+              onPressed: _clearAll,
+            ),
+        ],
+      ),
+      body: _loading
+          ? Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryBlue))
+          : _items.isEmpty
+              ? Center(
+                  child: Text('अभी कोई History नहीं है',
+                      style: TextStyle(
+                          color: AppTheme.textSecondary, fontSize: 16)),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _items.length,
+                  itemBuilder: (context, i) {
+                    final p = _items[i];
+                    final url = p[0];
+                    final index =
+                        widget.allVideos.indexWhere((v) => v['url'] == url);
+                    if (index < 0) return const SizedBox.shrink();
+                    final title = widget.allVideos[index]['title'] ?? p[1];
+                    final pos = int.tryParse(p[2]) ?? 0;
+                    final dur = int.tryParse(p[3]) ?? 0;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RealVideoPlayer(
+                                videoUrl: url,
+                                title: title,
+                                playlist: widget.allVideos,
+                                currentIndex: index,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: VideoThumbnailWidget(videoPath: url),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          color: AppTheme.textPrimary,
+                                          fontSize: 14)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                      dur > 0
+                                          ? 'देखा: ${_fmt(pos)} / ${_fmt(dur)}'
+                                          : 'देखा: ${_fmt(pos)}',
+                                      style: TextStyle(
+                                          color: AppTheme.textSecondary,
+                                          fontSize: 12)),
+                                  if (dur > 0) ...[
+                                    const SizedBox(height: 6),
+                                    LinearProgressIndicator(
+                                      value: (pos / dur).clamp(0.0, 1.0),
+                                      minHeight: 3,
+                                      color: AppTheme.primaryBlue,
+                                      backgroundColor: AppTheme.divider,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => _removeOne(url),
+                              icon: Icon(Icons.close,
+                                  color: AppTheme.iconColor, size: 18),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
   }
 }
