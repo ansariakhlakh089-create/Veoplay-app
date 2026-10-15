@@ -71,6 +71,12 @@ String? _subtitleFileName;
 bool _isLongPressSpeed = false;
 double _speedBeforeLongPress = 1.0;
 // 👆👆👆 यहाँ तक 👆👆👆
+// 👇👇👇 Seek Thumbnail Preview के लिए नए वेरिएबल्स 👇👇👇
+Uint8List? _previewThumbnail;
+double? _previewSeekPosition;
+bool _isSeeking = false;
+Timer? _thumbnailDebounce;
+// 👆👆👆 यहाँ तक 👆👆👆
   
   @override
   void initState() {
