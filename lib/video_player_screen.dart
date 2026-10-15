@@ -795,6 +795,113 @@ Future<void> _shareVideo() async {
   }
 }
 
+// 👇👇👇 Subtitle Load Function 👇👇👇
+Future<void> _loadSubtitle() async {
+  try {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['srt', 'vtt'],
+    );
+
+    if (result == null || result.files.single.path == null) return;
+
+    final filePath = result.files.single.path!;
+    final content = await File(filePath).readAsString();
+
+    final parsed = _parseSrt(content);
+    if (parsed.isEmpty) {
+      _snack('Subtitle फाइल खाली है या पढ़ी नहीं जा सकी');
+      return;
+    }
+
+    setState(() {
+      _subtitles = parsed;
+      _subtitleFileName = result.files.single.name;
+      _subtitlesEnabled = true;
+    });
+
+    _snack('✅ ${parsed.length} subtitles लोड हो गए');
+  } catch (e) {
+    debugPrint('Subtitle load error: $e');
+    _snack('Subtitle लोड नहीं हो पाया');
+  }
+}
+
+// 👇👇👇 SRT/VTT Parser 👇👇👇
+List<SubtitleLine> _parseSrt(String content) {
+  final result = <SubtitleLine>[];
+  final lines = content.replaceAll('\r\n', '\n').split('\n');
+  int i = 0;
+
+  Duration? parseTime(String s) {
+    // Format: 00:00:01,000 या 00:00:01.000
+    final clean = s.trim().replaceAll(',', '.');
+    final parts = clean.split(':');
+    if (parts.length != 3) return null;
+    final h = int.tryParse(parts[0]) ?? 0;
+    final m = int.tryParse(parts[1]) ?? 0;
+    final secParts = parts[2].split('.');
+    final s = int.tryParse(secParts[0]) ?? 0;
+    final ms = secParts.length > 1
+        ? int.tryParse(secParts[1].padRight(3, '0').substring(0, 3)) ?? 0
+        : 0;
+    return Duration(hours: h, minutes: m, seconds: s, milliseconds: ms);
+  }
+
+  while (i < lines.length) {
+    // खाली लाइन्स स्किप करो
+    while (i < lines.length && lines[i].trim().isEmpty) {
+      i++;
+    }
+    if (i >= lines.length) break;
+
+    // इंडेक्स नंबर स्किप करो (सिर्फ SRT में)
+    if (int.tryParse(lines[i].trim()) != null) {
+      i++;
+    }
+    if (i >= lines.length) break;
+
+    // टाइम लाइन पार्स करो
+    final timeLine = lines[i].trim();
+    if (!timeLine.contains('-->')) {
+      i++;
+      continue;
+    }
+    final timeParts = timeLine.split('-->');
+    final start = parseTime(timeParts[0]);
+    final end = parseTime(timeParts[1]);
+    i++;
+
+    // टेक्स्ट लाइन्स इकट्ठा करो
+    final textLines = <String>[];
+    while (i < lines.length && lines[i].trim().isNotEmpty) {
+      textLines.add(lines[i].trim());
+      i++;
+    }
+
+    if (start != null && end != null && textLines.isNotEmpty) {
+      result.add(SubtitleLine(
+        start: start,
+        end: end,
+        text: textLines.join('\n'),
+      ));
+    }
+  }
+  return result;
+}
+
+// 👇👇👇 Current Subtitle ढूंढो 👇👇👇
+String? _getCurrentSubtitle() {
+  if (!_subtitlesEnabled || _subtitles.isEmpty) return null;
+  final pos = _controller.value.position;
+  for (final s in _subtitles) {
+    if (pos >= s.start && pos <= s.end) {
+      return s.text;
+    }
+  }
+  return null;
+}
+  
 // 👇 Play as audio का असली लॉजिक
 Future<void> _playAsAudio() async {
   if (!_isInitialized) return;
