@@ -98,8 +98,12 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadFavoriteVideos() async {
     final prefs = await SharedPreferences.getInstance();
     final ids = (prefs.getStringList('favorite_videos') ?? []).toSet();
-    if (mounted) setState(() => _favoriteVideoIds = ids);
-  }
+        if (mounted) {
+      setState(() {
+        _favoriteVideoIds = ids;
+        if (_sortMode == 4) _sortList(videoList);
+      });
+    }
 
   Future<void> _toggleVideoFavorite(Map<String, String> item) async {
     final id = item['id'];
@@ -113,6 +117,9 @@ class _HomeScreenState extends State<HomeScreen>
       }
     });
     await prefs.setStringList('favorite_videos', _favoriteVideoIds.toList());
+    if (_sortMode == 4 && mounted) {
+      setState(() => _sortList(videoList));
+        }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -783,7 +790,7 @@ class _HomeScreenState extends State<HomeScreen>
                                           () => _videoTab = 0),
                                       child: Text("Videos",
                                           style: TextStyle(
-                                              fontSize: 22,
+                                              fontSize: 19,
                                               fontWeight: FontWeight.bold,
                                               color: _videoTab == 0
                                                   ? AppTheme.textPrimary
@@ -796,7 +803,7 @@ class _HomeScreenState extends State<HomeScreen>
                                           () => _videoTab = 1),
                                       child: Text("Folders",
                                           style: TextStyle(
-                                              fontSize: 22,
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: _videoTab == 1
                                                   ? AppTheme.textPrimary
@@ -809,7 +816,7 @@ class _HomeScreenState extends State<HomeScreen>
                                           () => _videoTab = 2),
                                       child: Text("My List",
                                           style: TextStyle(
-                                              fontSize: 22,
+                                              fontSize: 16,
                                               fontWeight: FontWeight.bold,
                                               color: _videoTab == 2
                                                   ? AppTheme.textPrimary
@@ -1325,6 +1332,14 @@ class _HomeScreenState extends State<HomeScreen>
       case 3:
         list.sort((a, b) =>
             _sizeToMb(b['size']).compareTo(_sizeToMb(a['size'])));
+        break;
+              case 4:
+        list.sort((a, b) {
+          final fa = _favoriteVideoIds.contains(a['id']) ? 0 : 1;
+          final fb = _favoriteVideoIds.contains(b['id']) ? 0 : 1;
+          if (fa != fb) return fa.compareTo(fb);
+          return idOf(b).compareTo(idOf(a));
+        });
         break;
       default:
         list.sort((a, b) => idOf(b).compareTo(idOf(a)));
