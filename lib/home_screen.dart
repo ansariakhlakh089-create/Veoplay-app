@@ -1297,72 +1297,196 @@ bottomNavigationBar: NavigationBar(
   }
 
   Widget _buildFoldersList() {
-    final grouped = <String, List<Map<String, String>>>{};
-    for (final video in videoList) {
-      final folder = video['folder'] ?? 'Unknown';
+  final grouped = <String, List<Map<String, String>>>{};
+  for (final video in videoList) {
+    final folder = video['folder'] ?? 'Unknown';
+    if (!_hiddenFolders.contains(folder)) {
       grouped.putIfAbsent(folder, () => []).add(video);
     }
-    final folderNames = grouped.keys.toList();
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: folderNames.length,
-      itemBuilder: (context, index) {
-        final folderName = folderNames[index];
-        final folderVideos = grouped[folderName]!;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => FolderVideosScreen(
-                    folderName: folderName,
-                    videos: folderVideos,
+  }
+  final folderNames = grouped.keys.toList();
+  final hiddenList = _hiddenFolders.toList();
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: folderNames.length,
+        itemBuilder: (context, index) {
+          final folderName = folderNames[index];
+          final folderVideos = grouped[folderName]!;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FolderVideosScreen(
+                      folderName: folderName,
+                      videos: folderVideos,
+                    ),
                   ),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppTheme.card,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: AppTheme.cardBorder, width: 1),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.folder,
-                      color: AppTheme.primaryBlue, size: 32),
-                  const SizedBox(width: 14),
-                  Expanded(
+                );
+              },
+              onLongPress: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: AppTheme.card,
+                  builder: (context) => SafeArea(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(folderName,
-                            style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text("${folderVideos.length} videos",
-                            style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 13)),
+                        ListTile(
+                          leading: const Icon(Icons.visibility_off,
+                              color: Colors.redAccent),
+                          title: const Text('Hide Folder',
+                              style: TextStyle(color: Colors.redAccent)),
+                          onTap: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              _hiddenFolders.add(folderName);
+                            });
+                            _saveHiddenFolders();
+                            _toast("'$folderName' हाइड कर दिया");
+                          },
+                        ),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right,
-                      color: AppTheme.textTertiary),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppTheme.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.cardBorder, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.folder,
+                        color: AppTheme.primaryBlue, size: 32),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(folderName,
+                              style: TextStyle(
+                                  color: AppTheme.textPrimary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text("${folderVideos.length} videos",
+                              style: TextStyle(
+                                  color: AppTheme.textSecondary,
+                                  fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: AppTheme.textTertiary),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      // 👇 Hidden Folders Section
+      if (hiddenList.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _showHiddenFolders = !_showHiddenFolders;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.card.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.cardBorder, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _showHiddenFolders
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: AppTheme.textSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    _showHiddenFolders
+                        ? "Hidden Folders छुपाओ"
+                        : "Hidden Folders दिखाओ (${hiddenList.length})",
+                    style: TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 14),
+                  ),
                 ],
               ),
             ),
           ),
-        );
-      },
-    );
+        ),
+      if (_showHiddenFolders)
+        ...hiddenList.map((folderName) {
+          final folderVideos = videoList
+              .where((v) => v['folder'] == folderName)
+              .toList();
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _hiddenFolders.remove(folderName);
+                });
+                _saveHiddenFolders();
+                _toast("'$folderName' दिखने लगा");
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppTheme.card.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.cardBorder, width: 1),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.folder_off,
+                        color: AppTheme.textTertiary, size: 32),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(folderName,
+                              style: TextStyle(
+                                  color: AppTheme.textTertiary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text("${folderVideos.length} videos (Hidden)",
+                              style: TextStyle(
+                                  color: AppTheme.textTertiary,
+                                  fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.visibility, color: AppTheme.primaryBlue),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+    ],
+  );
   }
 
   Widget _buildPlaylistsList() {
