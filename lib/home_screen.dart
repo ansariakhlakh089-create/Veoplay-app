@@ -1501,11 +1501,29 @@ bottomNavigationBar: NavigationBar(
             _recentPosition = result['position'];
             _recentDuration = result['duration'];
           });
-        } else {
-          await Future.delayed(const Duration(milliseconds: 300));
-          if (mounted) _loadRecent();
-        }
-      },
+          if (result != null && result is Map) {
+  setState(() {
+    _recentTitle = result['title'];
+    _recentUrl = result['url'];
+    _recentPosition = result['position'];
+    _recentDuration = result['duration'];
+  });
+
+  // 👇👇👇 Watch Progress सेव करो 👇👇👇
+  final url = result['url'] as String?;
+  final pos = result['position'] as int? ?? 0;
+  final dur = result['duration'] as int? ?? 0;
+  if (url != null && dur > 0) {
+    final progress = pos / dur;
+    await _saveWatchProgress(url, progress);
+  }
+  // 👆👆👆 यहाँ तक 👆👆👆
+
+} else {
+  await Future.delayed(const Duration(milliseconds: 300));
+  if (mounted) _loadRecent();
+          }
+        } 
       // 👇 Long Press करने पर Selection Mode ON हो
       onLongPress: () {
         if (!_isVideoSelectionMode) {
