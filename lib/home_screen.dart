@@ -2768,6 +2768,19 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     setState(() => videoList.removeAt(index));
+        final delId = item['id'] ?? '';
+    if (delId.isNotEmpty) {
+      _favoriteVideoIds.remove(delId);
+      for (final k in _videoPlaylists.keys.toList()) {
+        _videoPlaylists[k]?.remove(delId);
+      }
+      final prefsC = await SharedPreferences.getInstance();
+      await prefsC.setStringList(
+          'favorite_videos', _favoriteVideoIds.toList());
+      await prefsC.remove('resume_${item['url']}');
+      await _saveVideoPlaylists();
+      if (mounted) setState(() {});
+    }
     final prefsR = await SharedPreferences.getInstance();
     if (prefsR.getString('recent_url') == item['url']) {
       await prefsR.remove('recent_title');
