@@ -124,6 +124,21 @@ Future<void> _loadWatchProgress() async {
   }
 }
 
+Future<void> _loadHiddenFolders() async {
+  final prefs = await SharedPreferences.getInstance();
+  final list = prefs.getStringList('hidden_folders') ?? [];
+  if (mounted) {
+    setState(() {
+      _hiddenFolders = list.toSet();
+    });
+  }
+}
+
+Future<void> _saveHiddenFolders() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList('hidden_folders', _hiddenFolders.toList());
+}
+  
 Future<void> _saveWatchProgress(String url, double progress) async {
   final prefs = await SharedPreferences.getInstance();
   
