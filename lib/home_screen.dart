@@ -95,9 +95,12 @@ class _HomeScreenState extends State<HomeScreen>
 
    // ==================== WATCH PROGRESS FUNCTIONS ====================
 
-Map<String, double> _watchProgress = {}; // {videoUrl: 0.0 to 1.0}
-Set<String> _watchedVideos = {}; // जो वीडियो पूरे देख लिए
+  Map<String, double> _watchProgress = {};
+Set<String> _watchedVideos = {};
 
+// 👇👇👇 ये नई लाइन्स ऐड करो 👇👇👇
+Set<String> _hiddenFolders = {};
+bool _showHiddenFolders = false;
 Future<void> _loadWatchProgress() async {
   final prefs = await SharedPreferences.getInstance();
   final progressList = prefs.getStringList('watch_progress') ?? [];
