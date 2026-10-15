@@ -979,6 +979,37 @@ void _showMoreOptionsMenu() {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+          // 👇👇👇 Load Subtitle वाला नया ListTile 👇👇👇
+ListTile(
+  leading: Icon(
+    _subtitles.isNotEmpty
+        ? Icons.subtitles
+        : Icons.subtitles_off,
+    color: AppTheme.iconColor,
+  ),
+  title: Text(
+    _subtitles.isEmpty
+        ? 'Load Subtitle (.srt)'
+        : (_subtitlesEnabled
+            ? 'Subtitles ON'
+            : 'Subtitles OFF'),
+    style: TextStyle(color: AppTheme.textPrimary),
+  ),
+  onTap: () {
+    Navigator.pop(context);
+    if (_subtitles.isEmpty) {
+      _loadSubtitle();
+    } else {
+      setState(() {
+        _subtitlesEnabled = !_subtitlesEnabled;
+      });
+      _snack(_subtitlesEnabled
+          ? 'Subtitles ON'
+          : 'Subtitles OFF');
+    }
+  },
+),
+// 👆👆👆 यहाँ तक 👆👆👆
           ListTile(
             leading: Icon(Icons.share, color: AppTheme.iconColor),
             title: Text('Share',
