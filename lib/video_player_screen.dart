@@ -1376,6 +1376,48 @@ Widget _buildPlayer(BuildContext context) {
                          ),
                       ),
 
+        // 👇👇👇 Subtitle Display Overlay 👇👇👇
+if (_subtitlesEnabled && _subtitles.isNotEmpty)
+  Positioned(
+    left: 20,
+    right: 20,
+    bottom: _showControls ? 130 : 40,
+    child: IgnorePointer(
+      child: Builder(builder: (context) {
+        final text = _getCurrentSubtitle();
+        if (text == null || text.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.75),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                shadows: [
+                  Shadow(
+                    color: Colors.black,
+                    blurRadius: 4,
+                    offset: Offset(1, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    ),
+  ),
+// 👆👆👆 यहाँ तक 👆👆👆           
         // ----- टॉप बार -----
         if (_showControls && !_locked)
           Positioned(
