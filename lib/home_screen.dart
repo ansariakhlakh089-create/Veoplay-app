@@ -715,10 +715,23 @@ void _showAddMultipleToPlaylistDialog() {
     return Scaffold(
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleSpacing: 18,
-        title: Row(
+  backgroundColor: Colors.transparent,
+  elevation: 0,
+  titleSpacing: 18,
+  leading: _isVideoSelectionMode
+      ? IconButton(
+          icon: Icon(Icons.close, color: AppTheme.textPrimary),
+          onPressed: _toggleVideoSelectionMode,
+        )
+      : null,
+  title: _isVideoSelectionMode
+      ? Text(
+          "${_selectedVideoIds.length} चुने गए",
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary))
+      : Row(
           children: [
             ClipOval(
               child: Image.asset(
@@ -733,11 +746,14 @@ void _showAddMultipleToPlaylistDialog() {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [AppTheme.primaryBlue, AppTheme.primaryPurple]
+                        colors: [
+                          AppTheme.primaryBlue,
+                          AppTheme.primaryPurple
+                        ],
+                      ),
                     ),
-                  ),
-                 child:
-                    const Icon(Icons.play_arrow, color: Colors.white),
+                    child: const Icon(Icons.play_arrow,
+                        color: Colors.white),
                   );
                 },
               ),
@@ -750,13 +766,27 @@ void _showAddMultipleToPlaylistDialog() {
                     color: AppTheme.textPrimary)),
           ],
         ),
-        actions: [
+  actions: _isVideoSelectionMode
+      ? [
+          IconButton(
+            icon: Icon(
+              _selectedVideoIds.length == videoList.length
+                  ? Icons.deselect
+                  : Icons.select_all,
+              color: AppTheme.textPrimary,
+            ),
+            tooltip: "Select All",
+            onPressed: _selectAllVideos,
+          ),
+        ]
+      : [
           IconButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => VideoSearchScreen(videos: videoList),
+                  builder: (_) =>
+                      VideoSearchScreen(videos: videoList),
                 ),
               );
             },
@@ -780,6 +810,12 @@ void _showAddMultipleToPlaylistDialog() {
                     color: AppTheme.primaryBlue, size: 20),
               ),
             ),
+          ),
+          IconButton(
+            icon: Icon(Icons.checklist,
+                color: AppTheme.textPrimary),
+            tooltip: "Select Videos",
+            onPressed: _toggleVideoSelectionMode,
           ),
         ],
       ),
