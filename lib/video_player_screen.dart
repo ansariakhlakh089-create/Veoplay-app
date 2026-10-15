@@ -1409,6 +1409,44 @@ onLongPressCancel: _locked
                          ),
                       ),
 
+        // 👇👇👇 2x Speed Indicator (Long Press) 👇👇👇
+if (_isLongPressSpeed)
+  Positioned(
+    top: MediaQuery.of(context).padding.top + 60,
+    left: 0,
+    right: 0,
+    child: Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.fast_forward,
+                color: AppTheme.primaryBlue, size: 20),
+            const SizedBox(width: 6),
+            const Text(
+              '2x Speed',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+// 👆👆👆 यहाँ तक 👆👆👆
+
+// 👇👇👇 Subtitle Display Overlay 👇👇👇
+if (_subtitlesEnabled && _subtitles.isNotEmpty)
+                    
         // 👇👇👇 Subtitle Display Overlay 👇👇👇
 if (_subtitlesEnabled && _subtitles.isNotEmpty)
   Positioned(
