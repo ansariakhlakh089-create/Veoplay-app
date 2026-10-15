@@ -1345,96 +1345,127 @@ void _showAddMultipleToPlaylistDialog() {
   }
 
   Widget _buildVideoTile(
-      BuildContext context, Map<String, String> item) {
-    final index = videoList.indexOf(item);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
-      child: GestureDetector(
-        onTap: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => RealVideoPlayer(
-                videoUrl: item['url']!,
-                title: item['title']!,
-                playlist: videoList,
-                currentIndex: index,
+    BuildContext context, Map<String, String> item) {
+  final index = videoList.indexOf(item);
+  final isSelected = _selectedVideoIds.contains(item['id']);
+
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 0),
+    child: GestureDetector(
+      onTap: () async {
+        // 👇 Selection Mode में टैप करने पर Select/Deselect हो
+        if (_isVideoSelectionMode) {
+          _toggleVideoSelection(item['id'] ?? '');
+          return;
+        }
+        // Normal Mode में टैप करने पर वीडियो चले
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RealVideoPlayer(
+              videoUrl: item['url']!,
+              title: item['title']!,
+              playlist: videoList,
+              currentIndex: index,
+            ),
+          ),
+        );
+        if (result != null && result is Map) {
+          setState(() {
+            _recentTitle = result['title'];
+            _recentUrl = result['url'];
+            _recentPosition = result['position'];
+            _recentDuration = result['duration'];
+          });
+        } else {
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) _loadRecent();
+        }
+      },
+      // 👇 Long Press करने पर Selection Mode ON हो
+      onLongPress: () {
+        if (!_isVideoSelectionMode) {
+          _toggleVideoSelectionMode();
+          _toggleVideoSelection(item['id'] ?? '');
+        }
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 👇 Selection Mode में Checkbox दिखाओ
+          if (_isVideoSelectionMode)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, top: 25),
+              child: Icon(
+                isSelected
+                    ? Icons.check_circle
+                    : Icons.radio_button_unchecked,
+                color: isSelected
+                    ? AppTheme.primaryBlue
+                    : AppTheme.textTertiary,
+                size: 24,
               ),
             ),
-          );
-          if (result != null && result is Map) {
-            setState(() {
-              _recentTitle = result['title'];
-              _recentUrl = result['url'];
-              _recentPosition = result['position'];
-              _recentDuration = result['duration'];
-            });
-          } else {
-            await Future.delayed(const Duration(milliseconds: 300));
-            if (mounted) _loadRecent();
-          }
-        },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: VideoThumbnailWidget(videoPath: item['url']!),
+              ),
+              Positioned(
+                bottom: 4,
+                right: 6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    item['duration']!,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: VideoThumbnailWidget(videoPath: item['url']!),
+                Text(
+                  item['title'] ?? 'No Title',
+                  style: TextStyle(
+                      color: AppTheme.textPrimary, fontSize: 14),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Positioned(
-                  bottom: 4,
-                  right: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      item['duration']!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
+                const SizedBox(height: 2),
+                Text(
+                  "${item['res'] ?? ''} | ${item['size'] ?? ''}",
+                  style: TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 13),
+                ),
+                const SizedBox(height: 0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['source'] ?? '',
+                        style: TextStyle(
+                            color: AppTheme.textTertiary,
+                            fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['title'] ?? 'No Title',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary, fontSize: 14),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    "${item['res'] ?? ''} | ${item['size'] ?? ''}",
-                    style: TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 13),
-                  ),
-                  const SizedBox(height: 0),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item['source'] ?? '',
-                          style: TextStyle(
-                              color: AppTheme.textTertiary,
-                              fontSize: 12),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                    // 👇 Selection Mode में Favorite और Menu छुपाओ
+                    if (!_isVideoSelectionMode) ...[
                       IconButton(
                         onPressed: () => _toggleVideoFavorite(item),
                         icon: Icon(
@@ -1459,16 +1490,17 @@ void _showAddMultipleToPlaylistDialog() {
                         constraints: const BoxConstraints(),
                       ),
                     ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
   }
-
+    
   void _showVideoOptions(BuildContext context,
       Map<String, String> item, int index) {
     showModalBottomSheet(
