@@ -69,12 +69,17 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   VideoPlayerController? _ctrl(int slot) => slot == 0 ? _c1 : _c2;
 
   VideoPlayerController _make(String url) {
-    if (url.startsWith('http')) {
-      return VideoPlayerController.networkUrl(Uri.parse(url));
-    }
-    return VideoPlayerController.file(File(url));
+  if (url.startsWith('http')) {
+    return VideoPlayerController.networkUrl(Uri.parse(url));
   }
-
+  if (url.startsWith('content://')) {
+    return VideoPlayerController.contentUri(Uri.parse(url));
+  }
+  if (url.startsWith('file://')) {
+    return VideoPlayerController.file(File(url.replaceFirst('file://', '')));
+  }
+  return VideoPlayerController.file(File(url));
+  }
   void _onTick() {
     if (mounted) setState(() {});
   }
