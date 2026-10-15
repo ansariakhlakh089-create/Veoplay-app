@@ -1556,6 +1556,54 @@ bottomNavigationBar: NavigationBar(
                   ),
                 ),
               ),
+              // 👇👇👇 Progress Bar (देखा हुआ) 👇👇👇
+if (_getVideoProgress(item['url']!) > 0 &&
+    !_watchedVideos.contains(item['url']))
+  Positioned(
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(12),
+        bottomRight: Radius.circular(12),
+      ),
+      child: LinearProgressIndicator(
+        value: _getVideoProgress(item['url']!),
+        minHeight: 4,
+        backgroundColor: Colors.black45,
+        valueColor: AlwaysStoppedAnimation<Color>(
+          _getVideoProgress(item['url']!) > 0.5
+              ? Colors.greenAccent
+              : Colors.amber,
+        ),
+      ),
+    ),
+  ),
+
+// 👇👇👇 NEW Badge (नया वीडियो) 👇👇👇
+if (_isVideoNew(item['url']!))
+  Positioned(
+    top: 4,
+    left: 4,
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.redAccent,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'NEW',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ),
+// 👆👆👆 यहाँ तक 👆👆👆
             ],
           ),
           const SizedBox(width: 12),
