@@ -52,6 +52,22 @@ void main() async {
   } catch (e) {
     debugPrint('Audio background init true: $e');
   }
+  ReceiveIntent.setIntentCallback((intent) {
+  // जब ऐप चालू हो और यूज़र फाइल टैप करे
+  if (intent.action == 'android.intent.action.VIEW') {
+    final uri = intent.data;
+    if (uri != null && uri.toString().isNotEmpty) {
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => RealVideoPlayer(
+            videoUrl: uri.toString().replaceFirst('file://', ''),
+            title: uri.toString().split('/').last,
+          ),
+        ),
+      );
+    }
+  }
+});
   await AppTheme.load();   // 👈 यह नई line
   runApp(const VeoPlay());
 }
