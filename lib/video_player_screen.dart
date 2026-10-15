@@ -412,6 +412,13 @@ class _RealVideoPlayerState extends State<RealVideoPlayer> {
                             });
                           }
                         },
+                  onHorizontalDragStart: _locked
+    ? null
+    : (details) {
+        setState(() {
+          _isDraggingSeek = true; // 👈 इंडिकेटर चालू करने के लिए
+        });
+      },
                   onHorizontalDragUpdate: _locked
                       ? null
                       : (details) {
