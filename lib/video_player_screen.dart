@@ -1217,9 +1217,11 @@ Widget _buildPlayer(BuildContext context) {
                                     color: Colors.white,
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold),
-                              ),
-                                      ),
-        ),
+                                  ),
+                               ],
+                            ),
+                         ),
+                      ),
 
         // ----- टॉप बार -----
         if (_showControls && !_locked)
