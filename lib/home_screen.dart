@@ -146,6 +146,171 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+// ==================== MULTI-SELECT FUNCTIONS ====================
+
+void _toggleVideoSelectionMode() {
+  setState(() {
+    _isVideoSelectionMode = !_isVideoSelectionMode;
+    if (!_isVideoSelectionMode) {
+      _selectedVideoIds.clear();
+    }
+  });
+}
+
+void _toggleVideoSelection(String id) {
+  if (id.isEmpty) return;
+  setState(() {
+    if (_selectedVideoIds.contains(id)) {
+      _selectedVideoIds.remove(id);
+    } else {
+      _selectedVideoIds.add(id);
+    }
+  });
+}
+
+void _selectAllVideos() {
+  setState(() {
+    if (_selectedVideoIds.length == videoList.length) {
+      _selectedVideoIds.clear();
+    } else {
+      _selectedVideoIds = videoList
+          .map((v) => v['id'] ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
+    }
+  });
+}
+
+Future<void> _deleteSelectedVideos() async {
+  if (_selectedVideoIds.isEmpty) return;
+
+  final count = _selectedVideoIds.length;
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: AppTheme.card,
+      title: Text("$count वीडियो डिलीट करें?",
+          style: TextStyle(color: AppTheme.textPrimary)),
+      content: Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएंगे।",
+          style: TextStyle(color: AppTheme.textSecondary)),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel")),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text("Delete",
+              style: TextStyle(color: Colors.redAccent)),
+        ),
+      ],
+    ),
+  );
+  if (confirm != true) return;
+
+  final idsToDelete = _selectedVideoIds.toList();
+  for (final id in idsToDelete) {
+    try {
+      await PhotoManager.editor.deleteWithIds([id]);
+    } catch (e) {
+      debugPrint("Delete error: $e");
+    }
+  }
+
+  try {
+    await PhotoManager.editor.android.removeAllNoExistsAsset();
+  } catch (_) {}
+
+  setState(() {
+    videoList.removeWhere((v) => _selectedVideoIds.contains(v['id']));
+    _isVideoSelectionMode = false;
+    _selectedVideoIds.clear();
+  });
+
+  final prefs = await SharedPreferences.getInstance();
+  final toSave = videoList
+      .map((m) =>
+          "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id'] ?? ''}")
+      .toList();
+  await prefs.setStringList('cached_videos', toSave);
+
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('✅ $count वीडियो डिलीट हो गए')),
+    );
+  }
+}
+
+void _showAddMultipleToPlaylistDialog() {
+  final count = _selectedVideoIds.length;
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppTheme.card,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text("$count videos को Playlist में जोड़ें",
+                  style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: Icon(Icons.add, color: AppTheme.primaryBlue),
+              title: Text("नई Playlist बनाएँ",
+                  style: TextStyle(color: AppTheme.textPrimary)),
+              onTap: () async {
+                Navigator.pop(context);
+                final name = await _askVideoPlaylistName();
+                if (name == null) return;
+                if (!_videoPlaylists.containsKey(name)) {
+                  setState(() => _videoPlaylists[name] = []);
+                }
+                for (final id in _selectedVideoIds) {
+                  await _addVideoToPlaylist(name, id);
+                }
+                setState(() {
+                  _isVideoSelectionMode = false;
+                  _selectedVideoIds.clear();
+                });
+                _toast("'$name' में $count videos जोड़ दिए");
+              },
+            ),
+            ..._videoPlaylists.keys.map((name) => ListTile(
+                  leading: Icon(Icons.queue_music,
+                      color: AppTheme.iconColor),
+                  title: Text(name,
+                      style: TextStyle(color: AppTheme.textPrimary)),
+                  subtitle: Text(
+                    "${_videoPlaylists[name]!.length} videos",
+                    style: TextStyle(
+                        color: AppTheme.textSecondary, fontSize: 12),
+                  ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    for (final id in _selectedVideoIds) {
+                      await _addVideoToPlaylist(name, id);
+                    }
+                    setState(() {
+                      _isVideoSelectionMode = false;
+                      _selectedVideoIds.clear();
+                    });
+                    _toast("'$name' में $count videos जोड़ दिए");
+                  },
+                )),
+          ],
+        ),
+      );
+    },
+  );
+}
+
   Future<void> _loadVideoPlaylists() async {
     final prefs = await SharedPreferences.getInstance();
     final list = prefs.getStringList('video_playlists') ?? [];
