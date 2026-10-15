@@ -1111,6 +1111,61 @@ void _showAddMultipleToPlaylistDialog() {
                             ),
                           ),
                         ),
+    // 👇👇👇 Selection Mode वाला Bottom Action Bar 👇👇👇
+    if (_isVideoSelectionMode && _videoTab == 0)
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          border: Border(
+              top: BorderSide(color: AppTheme.cardBorder, width: 1)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _selectedVideoIds.isEmpty
+                      ? null
+                      : _deleteSelectedVideos,
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  label: Text(
+                    "Delete (${_selectedVideoIds.length})",
+                    style: const TextStyle(color: Colors.redAccent),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.redAccent),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _selectedVideoIds.isEmpty
+                      ? null
+                      : _showAddMultipleToPlaylistDialog,
+                  icon: const Icon(Icons.playlist_add,
+                      color: Colors.white),
+                  label: Text(
+                    "Playlist (${_selectedVideoIds.length})",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBlue,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+  ],
+),
+bottomNavigationBar: NavigationBar(
+      
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppTheme.card,
         indicatorColor:
