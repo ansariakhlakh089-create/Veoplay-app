@@ -92,6 +92,71 @@ class _HomeScreenState extends State<HomeScreen>
     await prefs.setStringList('watch_history', list);
     }
 
+   // ==================== WATCH PROGRESS FUNCTIONS ====================
+
+Map<String, double> _watchProgress = {}; // {videoUrl: 0.0 to 1.0}
+Set<String> _watchedVideos = {}; // जो वीडियो पूरे देख लिए
+
+Future<void> _loadWatchProgress() async {
+  final prefs = await SharedPreferences.getInstance();
+  final progressList = prefs.getStringList('watch_progress') ?? [];
+  final watchedList = prefs.getStringList('watched_videos') ?? [];
+  
+  final progressMap = <String, double>{};
+  for (final s in progressList) {
+    final i = s.indexOf('|||');
+    if (i > 0) {
+      final url = s.substring(0, i);
+      final val = double.tryParse(s.substring(i + 3)) ?? 0.0;
+      progressMap[url] = val;
+    }
+  }
+  
+  if (mounted) {
+    setState(() {
+      _watchProgress = progressMap;
+      _watchedVideos = watchedList.toSet();
+    });
+  }
+}
+
+Future<void> _saveWatchProgress(String url, double progress) async {
+  final prefs = await SharedPreferences.getInstance();
+  
+  // Progress update करो (सिर्फ तभी जब पहले से ज्यादा हो)
+  if (progress > (_watchProgress[url] ?? 0)) {
+    _watchProgress[url] = progress;
+  }
+  
+  // अगर 95% से ज्यादा देख लिया तो "Watched" मार्क करो
+  if (progress >= 0.95) {
+    _watchedVideos.add(url);
+    _watchProgress[url] = 1.0;
+  }
+  
+  // सेव करो
+  await prefs.setStringList(
+    'watch_progress',
+    _watchProgress.entries
+        .map((e) => '${e.key}|||${e.value}')
+        .toList(),
+  );
+  await prefs.setStringList(
+    'watched_videos',
+    _watchedVideos.toList(),
+  );
+  
+  if (mounted) setState(() {});
+}
+
+bool _isVideoNew(String url) {
+  return !_watchedVideos.contains(url) && (_watchProgress[url] ?? 0) == 0;
+}
+
+double _getVideoProgress(String url) {
+  return _watchProgress[url] ?? 0.0;
+}
+  
   Future<void> _loadRecent() async {
     final prefs = await SharedPreferences.getInstance();
     final title = prefs.getString('recent_title');
