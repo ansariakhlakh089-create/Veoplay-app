@@ -81,6 +81,7 @@ class VeoPlay extends StatelessWidget {
       valueListenable: isDarkMode,
       builder: (context, isDark, _) {
         return MaterialApp(
+          navigatorKey: navigatorKey, // 👈 ये नई लाइन है
           debugShowCheckedModeBanner: false,
           title: "VeoPlay",
           theme: ThemeData(
