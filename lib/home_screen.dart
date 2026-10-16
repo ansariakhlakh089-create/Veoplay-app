@@ -3429,7 +3429,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _loadvideos();
   }
 
   Future<void> _load() async {
@@ -3456,7 +3456,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
     final raw = prefs.getStringList('watch_history') ?? [];
     raw.removeWhere((s) => s.startsWith('$url|||'));
     await prefs.setStringList('watch_history', raw);
-    await _load();
+    await _loadvideos();
   }
 
   Future<void> _clearAll() async {
@@ -3482,7 +3482,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
     if (ok != true) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('watch_history');
-    await _load();
+    await _loadvideos();
   }
 
   String _fmt(int sec) {
