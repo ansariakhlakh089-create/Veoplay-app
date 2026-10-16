@@ -96,12 +96,23 @@ Timer? _thumbnailDebounce;
       if (mounted) setState(() => _volume = v);
     }).catchError((_) {});
 
+    // 👇 Default Brightness लोड करो (Settings से)
+SharedPreferences.getInstance().then((p) {
+  final savedBrightness = p.getDouble('default_brightness');
+  if (savedBrightness != null && mounted) {
+    setState(() => _brightness = savedBrightness);
+    try {
+      ScreenBrightness().setScreenBrightness(savedBrightness);
+    } catch (_) {}
+  } else {
+    // अगर सेटिंग नहीं है तो सिस्टम ब्राइटनेस लो
     try {
       ScreenBrightness().current.then((b) {
         if (mounted) setState(() => _brightness = b);
       }).catchError((_) {});
     } catch (_) {}
-
+  }
+});
     WakelockPlus.enable();
 
     SharedPreferences.getInstance().then((p) {
