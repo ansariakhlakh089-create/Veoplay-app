@@ -887,7 +887,7 @@ List<SubtitleLine> _parseSrt(String content) {
     final h = int.tryParse(parts[0]) ?? 0;
     final m = int.tryParse(parts[1]) ?? 0;
     final secParts = parts[2].split('.');
-    final s = int.tryParse(secParts[0]) ?? 0;
+    final sec = int.tryParse(secParts[0]) ?? 0;
     final ms = secParts.length > 1
         ? int.tryParse(secParts[1].padRight(3, '0').substring(0, 3)) ?? 0
         : 0;
