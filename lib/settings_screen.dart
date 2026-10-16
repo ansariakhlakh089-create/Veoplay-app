@@ -13,6 +13,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _resumePlayback = true;
   bool _showHiddenFiles = false;
   bool _isDarkTheme = true;
+  double _defaultBrightness = 0.8; // 👈 ये नई लाइन
 
   @override
   void initState() {
