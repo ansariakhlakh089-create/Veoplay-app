@@ -56,7 +56,7 @@ void main() async {
   } catch (e) {
     debugPrint('Audio background init true: $e');
   }
-  ReceiveIntent.intentsStream.listen((intent) {
+    ReceiveIntent.receivedIntentStream.listen((intent) {
   if (intent.action == 'android.intent.action.VIEW') {
     final uri = intent.data;
     if (uri != null && uri.toString().isNotEmpty) {
