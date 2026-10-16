@@ -1109,6 +1109,7 @@ void dispose() {
   _sleepTimer?.cancel();
   _skipIndicatorTimer?.cancel();
   _gestureTimer?.cancel();
+  _thumbnailDebounce?.cancel(); // 👈 ये नई लाइन
   _controller.dispose();
   if (!_replacing) {
     WakelockPlus.disable();
