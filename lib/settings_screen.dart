@@ -186,9 +186,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ============ PLAYBACK ============
             _sectionTitle('PLAYBACK'),
 
-            _settingTile(
-              icon: Icons.play_circle_outline,
-              title: 'Auto-play Next',
+// 👇👇👇 Default Brightness Slider 👇👇👇
+_settingTile(
+  icon: Icons.brightness_6,
+  title: 'Default Brightness',
+  subtitle: 'वीडियो चलाते समय ब्राइटनेस',
+  trailing: SizedBox(
+    width: 120,
+    child: Slider(
+      value: _defaultBrightness,
+      min: 0.1,
+      max: 1.0,
+      activeColor: AppTheme.primaryBlue,
+      inactiveColor: AppTheme.cardBorder,
+      onChanged: (v) {
+        setState(() => _defaultBrightness = v);
+      },
+      onChangeEnd: (v) async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setDouble('default_brightness', v);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Default brightness: ${(v * 100).toInt()}%'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
+    ),
+  ),
+),
+// 👆👆👆 यहाँ तक 👆👆👆
+
               subtitle: 'वीडियो खत्म होते ही अगला चलाएं',
               trailing: Switch(
                 value: _autoPlayNext,
