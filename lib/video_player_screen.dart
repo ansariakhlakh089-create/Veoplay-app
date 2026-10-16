@@ -891,7 +891,7 @@ List<SubtitleLine> _parseSrt(String content) {
     final ms = secParts.length > 1
         ? int.tryParse(secParts[1].padRight(3, '0').substring(0, 3)) ?? 0
         : 0;
-    return Duration(hours: h, minutes: m, seconds: s, milliseconds: ms);
+    return Duration(hours: h, minutes: m, seconds: sec, milliseconds: ms);
   }
 
   while (i < lines.length) {
