@@ -805,7 +805,32 @@ Future<void> _shareVideo() async {
   }
 }
 
-// 👇👇👇 Subtitle Load Function 👇👇👇
+// 👇👇👇 Seek के दौरान Thumbnail Generate करो 👇👇👇
+Future<void> _generatePreviewThumbnail(double seconds) async {
+  // पुराना debounce cancel करो
+  _thumbnailDebounce?.cancel();
+  
+  // 200ms का debounce लगाओ ताकि बार-बार generate न हो
+  _thumbnailDebounce = Timer(const Duration(milliseconds: 200), () async {
+    try {
+      final bytes = await VideoThumbnail.thumbnailData(
+        video: widget.videoUrl,
+        imageFormat: ImageFormat.JPEG,
+        timeMs: (seconds * 1000).toInt(),
+        maxWidth: 160,
+        quality: 50,
+      );
+      if (mounted && _isSeeking) {
+        setState(() {
+          _previewThumbnail = bytes;
+        });
+      }
+    } catch (e) {
+      debugPrint('Preview thumbnail error: $e');
+    }
+  });
+}
+  
 Future<void> _loadSubtitle() async {
   try {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
