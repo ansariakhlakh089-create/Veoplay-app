@@ -1676,20 +1676,40 @@ if (_subtitlesEnabled && _subtitles.isNotEmpty)
                             thumbColor: AppTheme.primaryBlue,
                           ),
                           child: Slider(
-                            value: _controller
-                                .value.position.inSeconds
-                                .toDouble()
-                                .clamp(
-                                    0,
-                                    _controller.value.duration
-                                        .inSeconds
-                                        .toDouble()),
-                            min: 0,
-                            max: _controller
-                                .value.duration.inSeconds
-                                .toDouble(),
-                            onChanged: _seekTo,
-                          ),
+  value: _controller
+      .value.position.inSeconds
+      .toDouble()
+      .clamp(
+          0,
+          _controller.value.duration
+              .inSeconds
+              .toDouble()),
+  min: 0,
+  max: _controller
+      .value.duration.inSeconds
+      .toDouble(),
+  onChangeStart: (value) {
+    setState(() {
+      _isSeeking = true;
+      _previewSeekPosition = value;
+    });
+    _generatePreviewThumbnail(value);
+  },
+  onChanged: (value) {
+    _seekTo(value);
+    setState(() {
+      _previewSeekPosition = value;
+    });
+    _generatePreviewThumbnail(value);
+  },
+  onChangeEnd: (value) {
+    setState(() {
+      _isSeeking = false;
+      _previewSeekPosition = null;
+      _previewThumbnail = null;
+    });
+  },
+),
                         ),
                       ),
                       Text(
