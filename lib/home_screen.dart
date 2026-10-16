@@ -3435,7 +3435,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList('watch_history') ?? [];
-    final urls = widget.allVideos.map((v) => v['url']).toSet();
+    final urls = widget.videoList.map((v) => v['url']).toSet();
     final out = <List<String>>[];
     for (final s in raw) {
       final p = s.split('|||');
@@ -3525,9 +3525,9 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
                     final p = _items[i];
                     final url = p[0];
                     final index =
-                        widget.allVideos.indexWhere((v) => v['url'] == url);
+                        widget.videoList.indexWhere((v) => v['url'] == url);
                     if (index < 0) return const SizedBox.shrink();
-                    final title = widget.allVideos[index]['title'] ?? p[1];
+                    final title = widget.videoList[index]['title'] ?? p[1];
                     final pos = int.tryParse(p[2]) ?? 0;
                     final dur = int.tryParse(p[3]) ?? 0;
                     return Padding(
@@ -3541,7 +3541,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
                               builder: (_) => RealVideoPlayer(
                                 videoUrl: url,
                                 title: title,
-                                playlist: widget.allVideos,
+                                playlist: widget.videoList,
                                 currentIndex: index,
                               ),
                             ),
