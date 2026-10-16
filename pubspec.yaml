@@ -25,7 +25,7 @@ dependencies:
   just_audio: ^0.9.36
   just_audio_background: ^0.0.1-beta.11
   receive_intent: ^0.2.8
-  file_picker:  any
+  file_picker:  ^8.0.0
  
 dev_dependencies:
   flutter_test:
