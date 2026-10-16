@@ -1475,6 +1475,56 @@ if (_isLongPressSpeed)
   ),
 // 👆👆👆 यहाँ तक 👆👆👆
 
+// 👇👇👇 Seek Thumbnail Preview (सीकबार के ऊपर) 👇👇👇
+if (_isSeeking && _previewThumbnail != null)
+  Positioned(
+    bottom: _showControls ? 140 : 20,
+    left: 0,
+    right: 0,
+    child: Center(
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: AppTheme.primaryBlue,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.memory(
+                _previewThumbnail!,
+                width: 160,
+                height: 90,
+                fit: BoxFit.cover,
+                gaplessPlayback: true,
+              ),
+            ),
+            if (_previewSeekPosition != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                _formatDuration(Duration(
+                    seconds:
+                        _previewSeekPosition!.toInt())),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ),
+  ),
+// 👆👆👆 यहाँ तक 👆👆👆
+                    
 // 👇👇👇 Subtitle Display Overlay 👇👇👇
 if (_subtitlesEnabled && _subtitles.isNotEmpty)
                     
