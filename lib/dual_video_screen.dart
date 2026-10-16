@@ -81,7 +81,13 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   return VideoPlayerController.file(File(url));
   }
   void _onTick() {
-    if (mounted) setState(() {});
+  if (!mounted) return;
+  
+  // 👇 Loop All चेक (हर tick पर, लेकिन हल्का)
+  _checkLoopAll(0);
+  _checkLoopAll(1);
+  
+  setState(() {});
   }
 
   void _snack(String msg) {
