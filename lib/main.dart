@@ -56,8 +56,7 @@ void main() async {
   } catch (e) {
     debugPrint('Audio background init true: $e');
   }
-  ReceiveIntent.setIntentCallback((intent) {
-  // जब ऐप चालू हो और यूज़र फाइल टैप करे
+  ReceiveIntent.intentsStream.listen((intent) {
   if (intent.action == 'android.intent.action.VIEW') {
     final uri = intent.data;
     if (uri != null && uri.toString().isNotEmpty) {
