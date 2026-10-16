@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _resumePlayback = prefs.getBool('resume_playback') ?? true;
       _showHiddenFiles = prefs.getBool('show_hidden_files') ?? false;
       _isDarkTheme = prefs.getBool('is_dark_mode') ?? true;
+      _defaultBrightness = prefs.getDouble('default_brightness') ?? 0.8;
     });
   }
 
