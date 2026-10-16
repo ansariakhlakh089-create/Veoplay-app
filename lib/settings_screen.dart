@@ -216,7 +216,9 @@ _settingTile(
   ),
 ),
 // 👆👆👆 यहाँ तक 👆👆👆
-
+              _settingTile(
+              icon: Icons.play_circle_outline,
+              title: 'Auto-play Next',
               subtitle: 'वीडियो खत्म होते ही अगला चलाएं',
               trailing: Switch(
                 value: _autoPlayNext,
