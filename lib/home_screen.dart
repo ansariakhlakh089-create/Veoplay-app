@@ -3429,13 +3429,13 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadvideos();
+    _loadHistory();
   }
 
-  Future<void> _load() async {
+  Future<void> _loadHistory() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList('watch_history') ?? [];
-    final urls = widget.videoList.map((v) => v['url']).toSet();
+    final urls = widget.allVideos.map((v) => v['url']).toSet();
     final out = <List<String>>[];
     for (final s in raw) {
       final p = s.split('|||');
@@ -3456,7 +3456,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
     final raw = prefs.getStringList('watch_history') ?? [];
     raw.removeWhere((s) => s.startsWith('$url|||'));
     await prefs.setStringList('watch_history', raw);
-    await _loadvideos();
+    await _loadHistory();
   }
 
   Future<void> _clearAll() async {
@@ -3466,29 +3466,35 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
         backgroundColor: AppTheme.card,
         title: Text('सारी History हटाएँ?',
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text('वीडियो फोन में रहेंगे, सिर्फ़ History हटेगी।',
+        content: Text('सारी watch history हट जाएगी',
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel')),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Clear',
-                  style: TextStyle(color: Colors.redAccent))),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear',
+                style: TextStyle(color: Colors.redAccent)),
+          ),
         ],
       ),
     );
     if (ok != true) return;
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('watch_history');
-    await _loadvideos();
+    if (mounted) {
+      setState(() {
+        _items = [];
+      });
+    }
   }
 
-  String _fmt(int sec) {
-    final h = sec ~/ 3600;
-    final m = ((sec % 3600) ~/ 60).toString().padLeft(2, '0');
-    final s = (sec % 60).toString().padLeft(2, '0');
+  String _formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
     return h > 0 ? '$h:$m:$s' : '$m:$s';
   }
 
@@ -3498,13 +3504,13 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: AppTheme.textPrimary),
+        elevation: 0,
         title: Text('Watch History',
             style: TextStyle(color: AppTheme.textPrimary)),
         actions: [
           if (_items.isNotEmpty)
             IconButton(
-              icon: Icon(Icons.delete_sweep, color: AppTheme.iconColor),
+              icon: Icon(Icons.delete_sweep, color: AppTheme.textPrimary),
               onPressed: _clearAll,
             ),
         ],
@@ -3514,85 +3520,89 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
               child: CircularProgressIndicator(color: AppTheme.primaryBlue))
           : _items.isEmpty
               ? Center(
-                  child: Text('अभी कोई History नहीं है',
-                      style: TextStyle(
-                          color: AppTheme.textSecondary, fontSize: 16)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history,
+                          color: AppTheme.textTertiary, size: 60),
+                      const SizedBox(height: 12),
+                      Text('कोई watch history नहीं है',
+                          style: TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 14)),
+                    ],
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _items.length,
-                  itemBuilder: (context, i) {
-                    final p = _items[i];
-                    final url = p[0];
-                    final index =
-                        widget.videoList.indexWhere((v) => v['url'] == url);
-                    if (index < 0) return const SizedBox.shrink();
-                    final title = widget.videoList[index]['title'] ?? p[1];
-                    final pos = int.tryParse(p[2]) ?? 0;
-                    final dur = int.tryParse(p[3]) ?? 0;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => RealVideoPlayer(
-                                videoUrl: url,
-                                title: title,
-                                playlist: widget.videoList,
-                                currentIndex: index,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: VideoThumbnailWidget(videoPath: url),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          color: AppTheme.textPrimary,
-                                          fontSize: 14)),
+                  itemBuilder: (context, index) {
+                    final item = _items[index];
+                    final url = item[0];
+                    final title = item.length > 1 ? item[1] : 'Unknown';
+                    final pos =
+                        item.length > 2 ? int.tryParse(item[2]) ?? 0 : 0;
+                    final dur =
+                        item.length > 3 ? int.tryParse(item[3]) ?? 0 : 0;
+                    final progress = dur > 0 ? pos / dur : 0.0;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.card,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: AppTheme.cardBorder, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: VideoThumbnailWidget(videoPath: url),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: AppTheme.textPrimary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                const SizedBox(height: 6),
+                                if (dur > 0) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: LinearProgressIndicator(
+                                      value: progress,
+                                      minHeight: 4,
+                                      backgroundColor: AppTheme.cardBorder,
+                                      valueColor: AlwaysStoppedAnimation(
+                                          AppTheme.primaryBlue),
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
                                   Text(
-                                      dur > 0
-                                          ? 'देखा: ${_fmt(pos)} / ${_fmt(dur)}'
-                                          : 'देखा: ${_fmt(pos)}',
-                                      style: TextStyle(
-                                          color: AppTheme.textSecondary,
-                                          fontSize: 12)),
-                                  if (dur > 0) ...[
-                                    const SizedBox(height: 6),
-                                    LinearProgressIndicator(
-                                      value: (pos / dur).clamp(0.0, 1.0),
-                                      minHeight: 3,
-                                      color: AppTheme.primaryBlue,
-                                      backgroundColor: AppTheme.divider,
-                                    ),
-                                  ],
+                                    '${_formatDuration(Duration(seconds: pos))} / ${_formatDuration(Duration(seconds: dur))}',
+                                    style: TextStyle(
+                                        color: AppTheme.textTertiary,
+                                        fontSize: 11),
+                                  ),
                                 ],
-                              ),
+                              ],
                             ),
-                            IconButton(
-                              onPressed: () => _removeOne(url),
-                              icon: Icon(Icons.close,
-                                  color: AppTheme.iconColor, size: 18),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                color: Colors.redAccent, size: 20),
+                            onPressed: () => _removeOne(url),
+                          ),
+                        ],
                       ),
                     );
                   },
