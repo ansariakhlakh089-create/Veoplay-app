@@ -522,20 +522,31 @@ void _toggleLockSlot(int slot) {
 
   // नया वीडियो लगने पर speed / mute / loop फिर से वही लगा दो,
   // और Loop All में वीडियो खत्म होते ही अगला लगा दो
-  void _syncSlot(int slot) {
-    final c = _ctrl(slot);
-    if (c == null || !c.value.isInitialized) return;
-    final speed = slot == 0 ? _speed1 : _speed2;
-    final muted = slot == 0 ? _mute1 : _mute2;
-    final loop = slot == 0 ? _loop1 : _loop2;
-    if (c.value.playbackSpeed != speed) c.setPlaybackSpeed(speed);
-    final vol = muted ? 0.0 : 1.0;
-    if (c.value.volume != vol) c.setVolume(vol);
-    final wantLoop = loop == 1;
-    if (c.value.isLooping != wantLoop) c.setLooping(wantLoop);
-    _checkLoopAll(slot);
+  // 👇 ये अब सिर्फ तब चलेगा जब ज़रूरत हो
+void _syncSlot(int slot) {
+  final c = _ctrl(slot);
+  if (c == null || !c.value.isInitialized) return;
+
+  final speed = slot == 0 ? _speed1 : _speed2;
+  final muted = slot == 0 ? _mute1 : _mute2;
+  final loop = slot == 0 ? _loop1 : _loop2;
+
+  // सिर्फ तभी सेट करो जब वैल्यू अलग हो (already checked)
+  if ((c.value.playbackSpeed - speed).abs() > 0.01) {
+    c.setPlaybackSpeed(speed);
+  }
+  final vol = muted ? 0.0 : 1.0;
+  if ((c.value.volume - vol).abs() > 0.01) {
+    c.setVolume(vol);
+  }
+  final wantLoop = loop == 1;
+  if (c.value.isLooping != wantLoop) {
+    c.setLooping(wantLoop);
   }
 
+  // Loop All चेक अलग से
+  if (loop == 2) _checkLoopAll(slot);
+}
   void _checkLoopAll(int slot) {
     final loop = slot == 0 ? _loop1 : _loop2;
     if (loop != 2) return;
