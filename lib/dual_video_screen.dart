@@ -1025,11 +1025,6 @@ const SizedBox(width: 4),
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _syncSlot(0);
-      _syncSlot(1);
-    });
     return Scaffold(
   backgroundColor: Colors.black,
   body: RepaintBoundary( // 👈 यहाँ से शुरू
