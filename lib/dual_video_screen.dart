@@ -378,7 +378,8 @@ void _toggleLockSlot(int slot) {
       _showCtrl1 = false;
       _showCtrl2 = false;
     } else {
-      _startHideTimer();
+      _showCtrl1 = true;
+      _showCtrl2 = true;
     }
   });
   _snack(_lock1 ? '🔒 Locked' : '🔓 Unlocked');
