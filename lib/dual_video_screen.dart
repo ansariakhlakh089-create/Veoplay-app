@@ -160,24 +160,10 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
         _ready2 = true;
       }
     });
-    await c.play();
-      c.addListener(_onTick);
-  setState(() {
-    if (slot == 0) {
-      _c1 = c;
-      _ready1 = true;
-    } else {
-      _c2 = c;
-      _ready2 = true;
-    }
-  });
-  await c.play();
-  
-  // 👇 नया वीडियो लोड होने पर सिंक करो (हर build पर नहीं)
+    await c.play();// 👇 नया वीडियो लोड होने पर सिंक करो (हर build पर नहीं)
   _syncSlot(slot);
   }
-  }
-
+      
 // 👇 Skip ±10s (per-panel)
   void _skipSlot(int slot, int seconds) {
     final c = _ctrl(slot);
