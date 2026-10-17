@@ -89,3 +89,28 @@ void main() async {
   }
 }
 
+// ---------- Main App ----------
+class VeoPlay extends StatelessWidget {
+  const VeoPlay({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isDarkMode,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey, 
+          debugShowCheckedModeBanner: false,
+          title: "VeoPlay",
+          theme: ThemeData(
+            brightness: isDark ? Brightness.dark : Brightness.light,
+            scaffoldBackgroundColor: AppTheme.bg,
+            useMaterial3: true,
+          ),
+          home: const SplashScreen(),
+        );
+      },
+    );
+  }
+}
+
