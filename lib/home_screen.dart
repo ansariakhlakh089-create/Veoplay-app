@@ -647,36 +647,7 @@ void _showAddMultipleToPlaylistDialog() {
   }
     }
 
-  bool _syncingSongs = false;
-  Future<void> _quickSyncSongs() async {
-    if (!_audioLoaded || _syncingSongs) return;
-    _syncingSongs = true;
-    try {
-      final fresh = await OnAudioQuery().querySongs(
-        sortType: SongSortType.TITLE,
-        orderType: OrderType.ASC_OR_SMALLER,
-        uriType: UriType.EXTERNAL,
-      );
-      final oldIds = _songs.map((s) => s.id).toSet();
-      final newIds = fresh.map((s) => s.id).toSet();
-      if (oldIds.length == newIds.length && oldIds.containsAll(newIds)) {
-        return;
-      }
-      final sorted = List<SongModel>.of(fresh);
-      _sortSongs(sorted);
-      final p = await SharedPreferences.getInstance();
-      await p.setStringList(
-          'cached_songs', sorted.map((s) => s.id.toString()).toList());
-      if (!mounted) return;
-      setState(() => _songs = sorted);
-    } catch (e) {
-      debugPrint('Quick song sync error: $e');
-    } finally {
-      _syncingSongs = false;
-    }
-  }
-
-Future<void> _scanVideos({bool silent = false}) async {
+  Future<void> _scanVideos({bool silent = false}) async {
   try {
     final PermissionState permission =
         await PhotoManager.requestPermissionExtend();
@@ -779,7 +750,36 @@ Future<void> _scanVideos({bool silent = false}) async {
       setState(() => _isLoading = false);
     }
   }
-}
+  }
+
+  bool _syncingSongs = false;
+  Future<void> _quickSyncSongs() async {
+    if (!_audioLoaded || _syncingSongs) return;
+    _syncingSongs = true;
+    try {
+      final fresh = await OnAudioQuery().querySongs(
+        sortType: SongSortType.TITLE,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+      );
+      final oldIds = _songs.map((s) => s.id).toSet();
+      final newIds = fresh.map((s) => s.id).toSet();
+      if (oldIds.length == newIds.length && oldIds.containsAll(newIds)) {
+        return;
+      }
+      final sorted = List<SongModel>.of(fresh);
+      _sortSongs(sorted);
+      final p = await SharedPreferences.getInstance();
+      await p.setStringList(
+          'cached_songs', sorted.map((s) => s.id.toString()).toList());
+      if (!mounted) return;
+      setState(() => _songs = sorted);
+    } catch (e) {
+      debugPrint('Quick song sync error: $e');
+    } finally {
+      _syncingSongs = false;
+    }
+  }
 
   bool _syncingVideos = false;
 Future<void> _quickSyncVideos() async {
