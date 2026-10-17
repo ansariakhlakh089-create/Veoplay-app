@@ -49,14 +49,18 @@ class _HomeScreenState extends State<HomeScreen>
       }
       if (mounted) setState(() {});
     });
-    _loadVideos();
-    _loadRecent();
-    _loadFavoriteVideos();
-    _loadVideoPlaylists();
-    _loadWatchProgress(); // 👈 यहाँ नई लाइन ऐड करो
-    _loadHiddenFolders(); // 👈 यहाँ नई लाइन ऐड करो
-  }
 
+    // 👈 परमिशन और वीडियो लोडिंग को स्क्रीन रेंडर होने के बाद कॉल करें ताकि ऐप फ्रीज न हो
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadVideos();
+      _loadRecent();
+      _loadFavoriteVideos();
+      _loadVideoPlaylists();
+      _loadWatchProgress();
+      _loadHiddenFolders();
+    });
+  }
+  
   void _onRecentChanged() {
     if (mounted) _loadRecent();
   }
