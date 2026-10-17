@@ -590,49 +590,57 @@ void _showAddMultipleToPlaylistDialog() {
     );
   }
 
-  Future<void> _loadSongs() async {
+    Future<void> _loadSongs() async {
     if (_audioLoaded) {
       _quickSyncSongs();
       return;
     }
     if (mounted) setState(() => _audioLoading = true);
-    final OnAudioQuery audioQuery = OnAudioQuery();
-    bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
-    if (!hasPermission) {
+    
+    try {
+      final OnAudioQuery audioQuery = OnAudioQuery();
+      bool hasPermission = await audioQuery.checkAndRequest(retryRequest: true);
+      if (!hasPermission) {
+        if (mounted) {
+          setState(() {
+            _audioPermissionDenied = true;
+            _audioLoading = false;
+          });
+        }
+        return;
+      }
       if (mounted) {
         setState(() {
-          _audioPermissionDenied = true;
-          _audioLoading = false;
+          _audioPermissionDenied = false;
         });
       }
-      return;
-    }
-    if (mounted) {
+      final songs = await audioQuery.querySongs(
+        sortType: SongSortType.TITLE,
+        orderType: OrderType.ASC_OR_SMALLER,
+        uriType: UriType.EXTERNAL,
+      );
+      await _loadSongNames();
+      await _loadMusicData();
+      final prefs = await SharedPreferences.getInstance();
+      _songSortMode = prefs.getInt('song_sort_mode') ?? 0;
+      final sorted = List<SongModel>.of(songs);
+      _sortSongs(sorted);
+      await prefs.setStringList(
+        'cached_songs', sorted.map((s) => s.id.toString()).toList());
+      if (!mounted) return;
       setState(() {
-        _audioPermissionDenied = false;
+        _songs = sorted;
+        _audioLoaded = true;
       });
+    } catch (e) {
+      debugPrint('Music scan error: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _audioLoading = false);
+      }
     }
-    final songs = await audioQuery.querySongs(
-      sortType: SongSortType.TITLE,
-      orderType: OrderType.ASC_OR_SMALLER,
-      uriType: UriType.EXTERNAL,
-    );
-    await _loadSongNames();
-    await _loadMusicData();
-    final prefs = await SharedPreferences.getInstance();
-    _songSortMode = prefs.getInt('song_sort_mode') ?? 0;
-    final sorted = List<SongModel>.of(songs);
-    _sortSongs(sorted);
-    await prefs.setStringList(
-      'cached_songs', sorted.map((s) => s.id.toString()).toList());
-    if (!mounted) return;
-    setState(() {
-      _songs = sorted;
-      _audioLoaded = true;
-      _audioLoading = false;
-    });
-  }
-
+    }
+  
   Future<void> _loadVideos() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getStringList('cached_videos');
