@@ -21,6 +21,9 @@ jobs:
 
       - run: flutter pub get
 
+      - name: Generate App Icons
+        run: dart run flutter_launcher_icons
+
       - name: Gradle memory badhao
         run: |
           printf '\norg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g\n' >> android/gradle.properties
@@ -32,3 +35,4 @@ jobs:
           name: veoplay-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 3
+          
