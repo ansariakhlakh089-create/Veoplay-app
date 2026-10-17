@@ -590,6 +590,53 @@ void _showAddMultipleToPlaylistDialog() {
     );
   }
 
+Future<void> _loadVideos() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getStringList('cached_videos');
+    _sortMode = prefs.getInt('sort_mode') ?? 0;
+
+    if (cached != null && cached.isNotEmpty) {
+      final loadedCache = <Map<String, String>>[];
+      for (final s in cached) {
+        final parts = s.split('|||');
+        if (parts.length >= 6) {
+          loadedCache.add({
+            "title": parts[0],
+            "res": parts[1],
+            "size": parts[2],
+            "source": parts[3],
+            "duration": parts[4],
+            "url": parts[5],
+            "isLocal": "true",
+            "folder": parts.length > 6 ? parts[6] : "Unknown",
+            "id": parts.length > 7 ? parts[7] : "",
+          });
+        }
+      }
+
+      if (loadedCache.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            videoList = loadedCache;
+            _sortList(videoList);
+            _isLoading = false;
+          });
+        }
+        _quickSyncVideos();
+        return;
+      }
+    }
+    
+    // अगर कैश खाली है या खराब है, तो स्कैन करो
+    await _scanVideos();
+  } catch (e) {
+    debugPrint("Error loading cached videos: $e");
+    // अगर कैश पढ़ने में एरर आए, तो डायरेक्ट स्कैन करो
+    await _scanVideos();
+  }
+}
+  
     Future<void> _loadSongs() async {
   if (_audioLoaded) {
     _quickSyncSongs();
