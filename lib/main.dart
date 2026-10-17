@@ -47,55 +47,45 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   try {
     await JustAudioBackground.init(
       androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
       androidNotificationChannelName: 'VeoPlay Audio',
       androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/launcher_icon', // 👈 यहाँ आइकॉन का सही नाम जोड़ा गया है
     );
   } catch (e) {
-    debugPrint('Audio background init true: $e');
+    debugPrint('Audio background init error: $e');
   }
-    ReceiveIntent.receivedIntentStream.listen((intent) {
-  if (intent == null) return;
-  if (intent.action == 'android.intent.action.VIEW') {
-    final uri = intent.data;
-    if (uri != null && uri.toString().isNotEmpty) {
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => RealVideoPlayer(
-            videoUrl: uri.toString(),
-            title: uri.toString().split('/').last,
-          ),
-        ),
-      );
-    }
-  }
-});
-  await AppTheme.load();   // 👈 यह नई line
-  runApp(const VeoPlay());
-}
-// ---------- Main App ----------
-class VeoPlay extends StatelessWidget {
-  const VeoPlay({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isDarkMode,
-      builder: (context, isDark, _) {
-        return MaterialApp(
-          navigatorKey: navigatorKey, // 👈 ये नई लाइन है
-          debugShowCheckedModeBanner: false,
-          title: "VeoPlay",
-          theme: ThemeData(
-            brightness: isDark ? Brightness.dark : Brightness.light,
-            scaffoldBackgroundColor: AppTheme.bg,
-            useMaterial3: true,
-          ),
-          home: const SplashScreen(),
-        );
-      },
-    );
+  try {
+    await AppTheme.load();
+  } catch (e) {
+    debugPrint('Theme load error: $e');
+  }
+  
+  runApp(const VeoPlay());
+
+  try {
+    ReceiveIntent.receivedIntentStream.listen((intent) {
+      if (intent == null) return;
+      if (intent.action == 'android.intent.action.VIEW') {
+        final uri = intent.data;
+        if (uri != null && uri.toString().isNotEmpty) {
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (_) => RealVideoPlayer(
+                videoUrl: uri.toString(),
+                title: uri.toString().split('/').last,
+              ),
+            ),
+          );
+        }
+      }
+    });
+  } catch (e) {
+    debugPrint('Intent stream error: $e');
   }
 }
+
