@@ -640,60 +640,170 @@ void _showAddMultipleToPlaylistDialog() {
       }
     }
     }
-  
   Future<void> _loadVideos() async {
+  try {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getStringList('cached_videos');
     _sortMode = prefs.getInt('sort_mode') ?? 0;
+    
     if (cached != null && cached.isNotEmpty) {
-      final loadedCache = cached.map((s) {
+      final loadedCache = <Map<String, String>>[];
+      for (final s in cached) {
         final parts = s.split('|||');
-        return {
-          "title": parts[0],
-          "res": parts[1],
-          "size": parts[2],
-          "source": parts[3],
-          "duration": parts[4],
-          "url": parts[5],
+        if (parts.length >= 6) { // 👈 चेक लगा दिया ताकि खराब कैश क्रैश न करे
+          loadedCache.add({
+            "title": parts[0],
+            "res": parts[1],
+            "size": parts[2],
+            "source": parts[3],
+            "duration": parts[4],
+            "url": parts[5],
+            "isLocal": "true",
+            "folder": parts.length > 6 ? parts[6] : "Unknown",
+            "id": parts.length > 7 ? parts[7] : "",
+          });
+        }
+      }
+      
+      if (loadedCache.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            videoList = loadedCache;
+            _sortList(videoList);
+            _isLoading = false;
+          });
+        }
+        _quickSyncVideos();
+        return;
+      }
+    }
+    // अगर कैश खाली है या खराब है, तो स्कैन करो
+    await _scanVideos();
+  } catch (e) {
+    debugPrint("Error loading cached videos: $e");
+    // अगर कैश पढ़ने में एरर आए, तो डायरेक्ट स्कैन करो
+    await _scanVideos();
+  }
+}
+
+bool _syncingVideos = false;
+Future<void> _quickSyncVideos() async {
+  if (_syncingVideos) return;
+  _syncingVideos = true;
+  try {
+    final permission = await PhotoManager.requestPermissionExtend();
+    if (!permission.isAuth && !permission.hasAccess) return;
+    PhotoManager.setIgnorePermissionCheck(true);
+    final albums = await PhotoManager.getAssetPathList(
+        type: RequestType.video, onlyAll: true);
+    if (albums.isEmpty) return;
+    final count = await albums[0].assetCountAsync;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getInt('last_video_count') != count) {
+      await _scanVideos(silent: true);
+    }
+  } catch (e) {
+    debugPrint('Quick video sync error: $e');
+  } finally {
+    _syncingVideos = false;
+  }
+}
+
+Future<void> _scanVideos({bool silent = false}) async {
+  try {
+    final PermissionState permission =
+        await PhotoManager.requestPermissionExtend();
+        
+    if (!permission.isAuth && !permission.hasAccess) {
+      if (!silent && mounted) {
+        setState(() {
+          _isLoading = false;
+          _permissionDenied = true;
+        });
+      }
+      return;
+    }
+    PhotoManager.setIgnorePermissionCheck(true);
+
+    final List<AssetPathEntity> albums =
+        await PhotoManager.getAssetPathList(
+      type: RequestType.video,
+      onlyAll: true,
+    );
+
+    if (albums.isEmpty) {
+      if (!silent && mounted) setState(() => _isLoading = false);
+      return;
+    }
+
+    int count = await albums[0].assetCountAsync;
+    final List<AssetEntity> assets =
+        await albums[0].getAssetListRange(start: 0, end: count);
+
+    final prefs = await SharedPreferences.getInstance();
+    final List<Map<String, String>> loaded = [];
+    int processed = 0;
+    final customNames = await _loadCustomNames();
+
+    List<String> toCache(List<Map<String, String>> list) => list
+        .map((m) =>
+            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
+        .toList();
+
+    for (final asset in assets) {
+      final file = await asset.file;
+      processed++;
+      if (file != null && file.existsSync()) {
+        final duration = asset.videoDuration;
+        final minutes = duration.inMinutes.toString().padLeft(2, '0');
+        final seconds =
+            (duration.inSeconds % 60).toString().padLeft(2, '0');
+        final folderName = file.parent.path.split('/').last;
+        loaded.add({
+          "title": customNames[asset.id] ?? asset.title ?? "Unknown",
+          "res": "${asset.width}x${asset.height}",
+          "size": _formatSize(file.existsSync() ? file.lengthSync() : 0),
+          "source": "Device",
+          "duration": "$minutes:$seconds",
+          "url": file.path,
           "isLocal": "true",
-          "folder": parts.length > 6 ? parts[6] : "Unknown",
-          "id": parts.length > 7 ? parts[7] : "",
-        };
-      }).toList();
+          "folder": folderName,
+          "id": asset.id,
+        });
+      }
+
+      if (!silent && processed % 15 == 0) {
+        await prefs.setStringList('cached_videos', toCache(loaded));
+        if (mounted) {
+          setState(() {
+            videoList = List.of(loaded);
+            _sortList(videoList);
+            _isLoading = false;
+          });
+        }
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    }
+
+    await prefs.setStringList('cached_videos', toCache(loaded));
+    await prefs.setInt('last_video_count', count);
+    
+    if (mounted) {
       setState(() {
-        videoList = loadedCache;
+        videoList = loaded;
         _sortList(videoList);
         _isLoading = false;
       });
-      _quickSyncVideos();
-      return;
     }
-    await _scanVideos();
-  }
-
-  bool _syncingVideos = false;
-  Future<void> _quickSyncVideos() async {
-    if (_syncingVideos) return;
-    _syncingVideos = true;
-    try {
-      final permission = await PhotoManager.requestPermissionExtend();
-      if (!permission.isAuth && !permission.hasAccess) return;
-      PhotoManager.setIgnorePermissionCheck(true);
-      final albums = await PhotoManager.getAssetPathList(
-          type: RequestType.video, onlyAll: true);
-      if (albums.isEmpty) return;
-      final count = await albums[0].assetCountAsync;
-      final prefs = await SharedPreferences.getInstance();
-      if (prefs.getInt('last_video_count') != count) {
-        await _scanVideos(silent: true);
-      }
-    } catch (e) {
-      debugPrint('Quick video sync error: $e');
-    } finally {
-      _syncingVideos = false;
+  } catch (e) {
+    debugPrint("Error scanning videos: $e");
+    // अगर स्कैनिंग में कोई एरर आए, तो भी लोडिंग बंद हो जाए
+    if (!silent && mounted) {
+      setState(() => _isLoading = false);
     }
   }
-
+}
+  
   bool _syncingSongs = false;
   Future<void> _quickSyncSongs() async {
     if (!_audioLoaded || _syncingSongs) return;
