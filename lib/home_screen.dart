@@ -874,24 +874,27 @@ Future<void> _scanVideos({bool silent = false}) async {
     }
   }
 
-  bool _syncingVideos = false;
+ bool _syncingVideos = false;
 Future<void> _quickSyncVideos() async {
   if (_syncingVideos) return;
   _syncingVideos = true;
   try {
     final permission = await PhotoManager.requestPermissionExtend();
-    if (permission != PermissionState.authorized && permission != PermissionState.limited) return;
-    
+    if (permission != PermissionState.authorized &&
+        permission != PermissionState.limited) return;
+
     PhotoManager.setIgnorePermissionCheck(true);
-    
-    // 👇 onlyAll: true हटा दिया है
+
     final albums = await PhotoManager.getAssetPathList(
-        type: RequestType.video);
-        
+      type: RequestType.video,
+      onlyAll: true,
+    );
     if (albums.isEmpty) return;
+
     final count = await albums[0].assetCountAsync;
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getInt('last_video_count') != count) {
+    if (prefs.getInt('last_video_count') != count ||
+        (videoList.isEmpty && count > 0)) {
       await _scanVideos(silent: true);
     }
   } catch (e) {
