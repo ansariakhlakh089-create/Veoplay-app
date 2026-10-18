@@ -693,9 +693,47 @@ Future<void> _loadVideos() async {
   }
     }
 
-    final permission = await PhotoManager.requestPermissionExtend();
-    if (permission != PermissionState.authorized &&
-        permission != PermissionState.limited) return;
+  Future<PermissionState> _askVideoPermission() {
+  return PhotoManager.requestPermissionExtend(
+    requestOption: const PermissionRequestOption(
+      androidPermission: AndroidPermission(
+        type: RequestType.video,
+        mediaLocation: false,
+      ),
+    ),
+  );
+}
+
+Future<Map<String, String>?> _assetToMap(
+    AssetEntity asset, Map<String, String> customNames) async {
+  try {
+    File? file;
+    try {
+      file = await asset.originFile;
+    } catch (_) {}
+    file ??= await asset.file;
+    if (file == null || !file.existsSync()) return null;
+
+    final d = asset.videoDuration;
+    final h = d.inHours;
+    final m = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return {
+      "title": customNames[asset.id] ?? asset.title ?? file.path.split('/').last,
+      "res": "${asset.width}x${asset.height}",
+      "size": _formatSize(file.lengthSync()),
+      "source": "Device",
+      "duration": h > 0 ? "$h:$m:$s" : "$m:$s",
+      "url": file.path,
+      "isLocal": "true",
+      "folder": file.parent.path.split('/').last,
+      "id": asset.id,
+    };
+  } catch (e) {
+    debugPrint("asset error ${asset.id}: $e");
+    return null;
+  }
+}
   
 Future<void> _scanVideos({bool silent = false}) async {
   try {
