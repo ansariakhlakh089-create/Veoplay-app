@@ -695,10 +695,12 @@ Future<void> _loadVideos() async {
 
 Future<void> _scanVideos({bool silent = false}) async {
   try {
-    final PermissionState permission = await PhotoManager.requestPermissionExtend();
+    final PermissionState permission =
+        await PhotoManager.requestPermissionExtend();
+    debugPrint("PERM: $permission");
 
-    // परमिशन चेक
-    if (permission != PermissionState.authorized && permission != PermissionState.limited) {
+    if (permission != PermissionState.authorized &&
+        permission != PermissionState.limited) {
       if (!silent && mounted) {
         setState(() {
           _isLoading = false;
@@ -708,21 +710,61 @@ Future<void> _scanVideos({bool silent = false}) async {
       return;
     }
 
+    if (mounted && _permissionDenied) {
+      setState(() => _permissionDenied = false);
+    }
+
     PhotoManager.setIgnorePermissionCheck(true);
 
-    // 👇 onlyAll: true वापस लगा दिया है (सबसे तेज़ तरीका)
-    final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
-      type: RequestType.video,
-      onlyAll: true,
+    // Permissive filter: koi video chhanta nahi jayega
+    final filter = FilterOptionGroup(
+      videoOption: FilterOption(
+        durationConstraint: DurationConstraint(
+          min: Duration.zero,
+          max: const Duration(days: 3650),
+          allowNullable: true,
+        ),
+        sizeConstraint: SizeConstraint(ignoreSize: true),
+      ),
     );
 
-    if (albums.isEmpty) {
-      if (!silent && mounted) setState(() => _isLoading = false);
+    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+      type: RequestType.video,
+      onlyAll: true,
+      filterOption: filter,
+    );
+    int count = albums.isEmpty ? 0 : await albums[0].assetCountAsync;
+    debugPrint("ALBUMS(onlyAll): ${albums.length}, COUNT: $count");
+
+    // Fallback: onlyAll khali aaya to sabse bada album chuno
+    if (count == 0) {
+      final all = await PhotoManager.getAssetPathList(
+        type: RequestType.video,
+        filterOption: filter,
+      );
+      AssetPathEntity? best;
+      int bestCount = 0;
+      for (final a in all) {
+        final c = await a.assetCountAsync;
+        if (c > bestCount) {
+          best = a;
+          bestCount = c;
+        }
+      }
+      debugPrint("FALLBACK ALBUMS: ${all.length}, BEST COUNT: $bestCount");
+      if (best != null) {
+        albums = [best];
+        count = bestCount;
+      }
+    }
+
+    if (count == 0) {
+      if (mounted) setState(() => _isLoading = false);
       return;
     }
 
-    int count = await albums[0].assetCountAsync;
-    final List<AssetEntity> assets = await albums[0].getAssetListRange(start: 0, end: count);
+    final List<AssetEntity> assets =
+        await albums[0].getAssetListRange(start: 0, end: count);
 
     final prefs = await SharedPreferences.getInstance();
     final List<Map<String, String>> loaded = [];
@@ -736,18 +778,24 @@ Future<void> _scanVideos({bool silent = false}) async {
 
     for (final asset in assets) {
       try {
-        final file = await asset.file;
+        File? file;
+        try {
+          file = await asset.originFile;
+        } catch (_) {}
+        file ??= await asset.file;
         processed++;
+
         if (file != null && file.existsSync()) {
           final duration = asset.videoDuration;
           final minutes = duration.inMinutes.toString().padLeft(2, '0');
-          final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+          final seconds =
+              (duration.inSeconds % 60).toString().padLeft(2, '0');
           final folderName = file.parent.path.split('/').last;
-          
+
           loaded.add({
             "title": customNames[asset.id] ?? asset.title ?? "Unknown",
             "res": "${asset.width}x${asset.height}",
-            "size": _formatSize(file.existsSync() ? file.lengthSync() : 0),
+            "size": _formatSize(file.lengthSync()),
             "source": "Device",
             "duration": "$minutes:$seconds",
             "url": file.path,
@@ -755,12 +803,13 @@ Future<void> _scanVideos({bool silent = false}) async {
             "folder": folderName,
             "id": asset.id,
           });
+        } else {
+          debugPrint("SKIP (file null): ${asset.id}");
         }
       } catch (e) {
         debugPrint("Error loading single video file: $e");
       }
 
-      // हर 20 वीडियो पर UI अपडेट करो
       if (!silent && processed % 20 == 0) {
         await prefs.setStringList('cached_videos', toCache(loaded));
         if (mounted) {
@@ -774,6 +823,12 @@ Future<void> _scanVideos({bool silent = false}) async {
       }
     }
 
+    // Purani list ko khali se overwrite mat karo
+    if (loaded.isEmpty && videoList.isNotEmpty) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
     await prefs.setStringList('cached_videos', toCache(loaded));
     await prefs.setInt('last_video_count', count);
 
@@ -784,11 +839,9 @@ Future<void> _scanVideos({bool silent = false}) async {
         _isLoading = false;
       });
     }
-  } catch (e) {
-    debugPrint("Error scanning videos (Main Catch): $e");
-    if (!silent && mounted) {
-      setState(() => _isLoading = false);
-    }
+  } catch (e, st) {
+    debugPrint("Error scanning videos (Main Catch): $e\n$st");
+    if (mounted) setState(() => _isLoading = false);
   }
 }
   
