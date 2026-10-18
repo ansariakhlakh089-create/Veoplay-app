@@ -693,13 +693,12 @@ Future<void> _loadVideos() async {
   }
     }
 
-  Future<void> _scanVideos({bool silent = false}) async {
+Future<void> _scanVideos({bool silent = false}) async {
   try {
-    final PermissionState permission =
-        await PhotoManager.requestPermissionExtend();
+    final PermissionState permission = await PhotoManager.requestPermissionExtend();
 
-    if (permission != PermissionState.authorized &&
-        permission != PermissionState.limited) {
+    // परमिशन चेक
+    if (permission != PermissionState.authorized && permission != PermissionState.limited) {
       if (!silent && mounted) {
         setState(() {
           _isLoading = false;
@@ -711,9 +710,10 @@ Future<void> _loadVideos() async {
 
     PhotoManager.setIgnorePermissionCheck(true);
 
-    // 👇 onlyAll: true हटा दिया है, ताकि सभी फोल्डर्स से वीडियो मिल सकें
+    // 👇 onlyAll: true वापस लगा दिया है (सबसे तेज़ तरीका)
     final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
       type: RequestType.video,
+      onlyAll: true,
     );
 
     if (albums.isEmpty) {
@@ -721,19 +721,8 @@ Future<void> _loadVideos() async {
       return;
     }
 
-    final List<AssetEntity> allAssets = [];
-    for (var album in albums) {
-      final count = await album.assetCountAsync;
-      final assets = await album.getAssetListRange(start: 0, end: count);
-      allAssets.addAll(assets);
-    }
-
-    // डुप्लीकेट वीडियो हटाने के लिए
-    final Map<String, AssetEntity> uniqueMap = {};
-    for (var asset in allAssets) {
-      uniqueMap[asset.id] = asset;
-    }
-    final finalAssets = uniqueMap.values.toList();
+    int count = await albums[0].assetCountAsync;
+    final List<AssetEntity> assets = await albums[0].getAssetListRange(start: 0, end: count);
 
     final prefs = await SharedPreferences.getInstance();
     final List<Map<String, String>> loaded = [];
@@ -745,29 +734,34 @@ Future<void> _loadVideos() async {
             "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
         .toList();
 
-    for (final asset in finalAssets) {
-      final file = await asset.file;
-      processed++;
-      if (file != null && file.existsSync()) {
-        final duration = asset.videoDuration;
-        final minutes = duration.inMinutes.toString().padLeft(2, '0');
-        final seconds =
-            (duration.inSeconds % 60).toString().padLeft(2, '0');
-        final folderName = file.parent.path.split('/').last;
-        loaded.add({
-          "title": customNames[asset.id] ?? asset.title ?? "Unknown",
-          "res": "${asset.width}x${asset.height}",
-          "size": _formatSize(file.existsSync() ? file.lengthSync() : 0),
-          "source": "Device",
-          "duration": "$minutes:$seconds",
-          "url": file.path,
-          "isLocal": "true",
-          "folder": folderName,
-          "id": asset.id,
-        });
+    for (final asset in assets) {
+      try {
+        final file = await asset.file;
+        processed++;
+        if (file != null && file.existsSync()) {
+          final duration = asset.videoDuration;
+          final minutes = duration.inMinutes.toString().padLeft(2, '0');
+          final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+          final folderName = file.parent.path.split('/').last;
+          
+          loaded.add({
+            "title": customNames[asset.id] ?? asset.title ?? "Unknown",
+            "res": "${asset.width}x${asset.height}",
+            "size": _formatSize(file.existsSync() ? file.lengthSync() : 0),
+            "source": "Device",
+            "duration": "$minutes:$seconds",
+            "url": file.path,
+            "isLocal": "true",
+            "folder": folderName,
+            "id": asset.id,
+          });
+        }
+      } catch (e) {
+        debugPrint("Error loading single video file: $e");
       }
 
-      if (!silent && processed % 15 == 0) {
+      // हर 20 वीडियो पर UI अपडेट करो
+      if (!silent && processed % 20 == 0) {
         await prefs.setStringList('cached_videos', toCache(loaded));
         if (mounted) {
           setState(() {
@@ -776,12 +770,12 @@ Future<void> _loadVideos() async {
             _isLoading = false;
           });
         }
-        await Future.delayed(const Duration(milliseconds: 50));
+        await Future.delayed(const Duration(milliseconds: 10));
       }
     }
 
     await prefs.setStringList('cached_videos', toCache(loaded));
-    await prefs.setInt('last_video_count', finalAssets.length);
+    await prefs.setInt('last_video_count', count);
 
     if (mounted) {
       setState(() {
@@ -791,13 +785,13 @@ Future<void> _loadVideos() async {
       });
     }
   } catch (e) {
-    debugPrint("Error scanning videos: $e");
+    debugPrint("Error scanning videos (Main Catch): $e");
     if (!silent && mounted) {
       setState(() => _isLoading = false);
     }
   }
-  }
-
+}
+  
   bool _syncingSongs = false;
   Future<void> _quickSyncSongs() async {
     if (!_audioLoaded || _syncingSongs) return;
