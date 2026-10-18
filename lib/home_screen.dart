@@ -693,6 +693,10 @@ Future<void> _loadVideos() async {
   }
     }
 
+    final permission = await PhotoManager.requestPermissionExtend();
+    if (permission != PermissionState.authorized &&
+        permission != PermissionState.limited) return;
+  
 Future<void> _scanVideos({bool silent = false}) async {
   try {
     final permission = await _askVideoPermission();
