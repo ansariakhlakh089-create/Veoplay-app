@@ -628,11 +628,10 @@ Future<void> _loadVideos() async {
       }
     }
     
-    // अगर कैश खाली है या खराब है, तो स्कैन करो
+    // अगर कैश खाली है, तो स्कैन करो
     await _scanVideos();
   } catch (e) {
     debugPrint("Error loading cached videos: $e");
-    // अगर कैश पढ़ने में एरर आए, तो डायरेक्ट स्कैन करो
     await _scanVideos();
   }
 }
