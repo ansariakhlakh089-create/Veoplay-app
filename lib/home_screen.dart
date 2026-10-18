@@ -695,12 +695,8 @@ Future<void> _loadVideos() async {
 
 Future<void> _scanVideos({bool silent = false}) async {
   try {
-    final PermissionState permission =
-        await PhotoManager.requestPermissionExtend();
-    debugPrint("PERM: $permission");
-
-    if (permission != PermissionState.authorized &&
-        permission != PermissionState.limited) {
+    final permission = await _askVideoPermission();
+    if (!permission.isAuth && !permission.hasAccess) {
       if (!silent && mounted) {
         setState(() {
           _isLoading = false;
@@ -709,127 +705,57 @@ Future<void> _scanVideos({bool silent = false}) async {
       }
       return;
     }
-
     if (mounted && _permissionDenied) {
       setState(() => _permissionDenied = false);
     }
-
     PhotoManager.setIgnorePermissionCheck(true);
 
-    // Permissive filter: koi video chhanta nahi jayega
-    final filter = FilterOptionGroup(
-      videoOption: FilterOption(
-        durationConstraint: DurationConstraint(
-          min: Duration.zero,
-          max: const Duration(days: 3650),
-          allowNullable: true,
-        ),
-        sizeConstraint: SizeConstraint(ignoreSize: true),
-      ),
-    );
-
-    List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+    final albums = await PhotoManager.getAssetPathList(
       type: RequestType.video,
       onlyAll: true,
-      filterOption: filter,
     );
-    int count = albums.isEmpty ? 0 : await albums[0].assetCountAsync;
-    debugPrint("ALBUMS(onlyAll): ${albums.length}, COUNT: $count");
-
-    // Fallback: onlyAll khali aaya to sabse bada album chuno
-    if (count == 0) {
-      final all = await PhotoManager.getAssetPathList(
-        type: RequestType.video,
-        filterOption: filter,
-      );
-      AssetPathEntity? best;
-      int bestCount = 0;
-      for (final a in all) {
-        final c = await a.assetCountAsync;
-        if (c > bestCount) {
-          best = a;
-          bestCount = c;
-        }
-      }
-      debugPrint("FALLBACK ALBUMS: ${all.length}, BEST COUNT: $bestCount");
-      if (best != null) {
-        albums = [best];
-        count = bestCount;
-      }
-    }
-
-    if (count == 0) {
+    if (albums.isEmpty) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
-    final List<AssetEntity> assets =
-        await albums[0].getAssetListRange(start: 0, end: count);
-
+    final album = albums.first;
+    final count = await album.assetCountAsync;
     final prefs = await SharedPreferences.getInstance();
-    final List<Map<String, String>> loaded = [];
-    int processed = 0;
     final customNames = await _loadCustomNames();
 
-    List<String> toCache(List<Map<String, String>> list) => list
-        .map((m) =>
-            "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}")
-        .toList();
+    String enc(Map<String, String> m) =>
+        "${m['title']}|||${m['res']}|||${m['size']}|||${m['source']}|||${m['duration']}|||${m['url']}|||${m['folder']}|||${m['id']}";
 
-    for (final asset in assets) {
-      try {
-        File? file;
-        try {
-          file = await asset.originFile;
-        } catch (_) {}
-        file ??= await asset.file;
-        processed++;
+    final loaded = <Map<String, String>>[];
+    const page = 60;
 
-        if (file != null && file.existsSync()) {
-          final duration = asset.videoDuration;
-          final minutes = duration.inMinutes.toString().padLeft(2, '0');
-          final seconds =
-              (duration.inSeconds % 60).toString().padLeft(2, '0');
-          final folderName = file.parent.path.split('/').last;
-
-          loaded.add({
-            "title": customNames[asset.id] ?? asset.title ?? "Unknown",
-            "res": "${asset.width}x${asset.height}",
-            "size": _formatSize(file.lengthSync()),
-            "source": "Device",
-            "duration": "$minutes:$seconds",
-            "url": file.path,
-            "isLocal": "true",
-            "folder": folderName,
-            "id": asset.id,
-          });
-        } else {
-          debugPrint("SKIP (file null): ${asset.id}");
-        }
-      } catch (e) {
-        debugPrint("Error loading single video file: $e");
+    for (int start = 0; start < count; start += page) {
+      final end = start + page > count ? count : start + page;
+      final assets = await album.getAssetListRange(start: start, end: end);
+      final results =
+          await Future.wait(assets.map((a) => _assetToMap(a, customNames)));
+      for (final r in results) {
+        if (r != null) loaded.add(r);
       }
 
-      if (!silent && processed % 20 == 0) {
-        await prefs.setStringList('cached_videos', toCache(loaded));
-        if (mounted) {
-          setState(() {
-            videoList = List.of(loaded);
-            _sortList(videoList);
-            _isLoading = false;
-          });
-        }
-        await Future.delayed(const Duration(milliseconds: 10));
+      // पहला batch आते ही लिस्ट दिखा दो
+      if (!silent && mounted && loaded.isNotEmpty) {
+        setState(() {
+          videoList = List.of(loaded);
+          _sortList(videoList);
+          _isLoading = false;
+        });
       }
     }
 
-    // Purani list ko khali se overwrite mat karo
+    // पुरानी अच्छी लिस्ट को खाली scan से overwrite मत करो
     if (loaded.isEmpty && videoList.isNotEmpty) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
-    await prefs.setStringList('cached_videos', toCache(loaded));
+    await prefs.setStringList('cached_videos', loaded.map(enc).toList());
     await prefs.setInt('last_video_count', count);
 
     if (mounted) {
@@ -839,9 +765,10 @@ Future<void> _scanVideos({bool silent = false}) async {
         _isLoading = false;
       });
     }
-  } catch (e, st) {
-    debugPrint("Error scanning videos (Main Catch): $e\n$st");
+  } catch (e) {
+    debugPrint("Scan error: $e");
     if (mounted) setState(() => _isLoading = false);
+    _toast("Scan error: $e");
   }
 }
   
@@ -879,10 +806,8 @@ Future<void> _quickSyncVideos() async {
   if (_syncingVideos) return;
   _syncingVideos = true;
   try {
-    final permission = await PhotoManager.requestPermissionExtend();
-    if (permission != PermissionState.authorized &&
-        permission != PermissionState.limited) return;
-
+    final permission = await _askVideoPermission();
+if (!permission.isAuth && !permission.hasAccess) return;
     PhotoManager.setIgnorePermissionCheck(true);
 
     final albums = await PhotoManager.getAssetPathList(
