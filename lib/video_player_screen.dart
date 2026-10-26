@@ -1165,7 +1165,22 @@ ListTile(
     }
   },
 ),
-// 👆👆👆 यहाँ तक 👆👆👆
+// 👇 Subtitle Settings (sirf jab subtitle loaded ho)
+if (_subtitles.isNotEmpty)
+  ListTile(
+    leading: Icon(Icons.tune, color: AppTheme.iconColor),
+    title: Text('Subtitle Settings',
+        style: TextStyle(color: AppTheme.textPrimary)),
+    subtitle: Text(
+      'Size: ${_subtitleFontSize.toInt()} • Offset: ${_subtitleOffsetMs > 0 ? "+" : ""}${(_subtitleOffsetMs / 1000).toStringAsFixed(1)}s',
+      style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+    ),
+    onTap: () {
+      Navigator.pop(context);
+      _showSubtitleSettingsDialog();
+    },
+  ),
+        
           ListTile(
             leading: Icon(Icons.audiotrack, color: AppTheme.iconColor),
             title: Text('Audio Track',
