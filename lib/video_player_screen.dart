@@ -92,10 +92,20 @@ Timer? _thumbnailDebounce;
       SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     }
 
-    VolumeController().getVolume().then((v) {
+    SharedPreferences.getInstance().then((p) async {
+  // Pehle saved volume try karo
+  final savedVol = p.getDouble('last_volume');
+  if (savedVol != null && mounted) {
+    setState(() => _volume = savedVol.clamp(0.0, 2.0));
+    _applyVolume(savedVol.clamp(0.0, 2.0));
+  } else {
+    // Warna system volume
+    try {
+      final v = await VolumeController().getVolume();
       if (mounted) setState(() => _volume = v);
-    }).catchError((_) {});
-
+    } catch (_) {}
+  }
+});
     // 👇 Default Brightness लोड करो (Settings से)
 SharedPreferences.getInstance().then((p) {
   final savedBrightness = p.getDouble('default_brightness');
