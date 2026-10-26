@@ -1237,6 +1237,10 @@ void dispose() {
   _skipIndicatorTimer?.cancel();
   _gestureTimer?.cancel();
   _thumbnailDebounce?.cancel(); // 👈 ये नई लाइन
+  // Save current volume for next video
+SharedPreferences.getInstance().then((p) {
+  p.setDouble('last_volume', _volume);
+});
   _controller.dispose();
   if (!_replacing) {
     WakelockPlus.disable();
