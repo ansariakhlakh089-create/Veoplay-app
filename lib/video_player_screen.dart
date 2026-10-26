@@ -546,6 +546,16 @@ if (_autoNextTriggered &&
     _controller.setVolume(_muted ? 0.0 : 1.0);
   }
 
+  void _applyVolume(double newVol) {
+  if (newVol <= 1.0) {
+    VolumeController().setVolume(newVol, showSystemUI: false);
+    _controller.setVolume(1.0);
+  } else {
+    VolumeController().setVolume(1.0, showSystemUI: false);
+    _controller.setVolume(newVol);
+  }
+  }
+  
   void _skipForward() {
     if (!_isInitialized) return;
     final newPos = _controller.value.position + const Duration(seconds: 10);
