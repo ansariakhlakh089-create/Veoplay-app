@@ -782,7 +782,8 @@ void _startSleepTimer(int minutes) {
   _sleepTimer = Timer(Duration(minutes: minutes), () {
     if (mounted) {
       _controller.pause();
-      Navigator.pop(context);
+      setState(() {});  // UI update for play icon
+      _snack('😴 Sleep timer: video रुक गया');
     }
   });
   ScaffoldMessenger.of(context).showSnackBar(
