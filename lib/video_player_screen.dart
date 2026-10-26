@@ -1022,6 +1022,132 @@ String? _getCurrentSubtitle() {
   }
   return null;
 }
+
+void _showSubtitleSettingsDialog() {
+  showDialog(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setDialogState) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text('Subtitle Settings',
+            style: TextStyle(color: AppTheme.textPrimary)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // --- Font Size ---
+              Text('Font Size: ${_subtitleFontSize.toInt()}',
+                  style: TextStyle(
+                      color: AppTheme.textSecondary, fontSize: 13)),
+              Row(
+                children: [
+                  Text('A',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary, fontSize: 12)),
+                  Expanded(
+                    child: Slider(
+                      value: _subtitleFontSize,
+                      min: 12,
+                      max: 28,
+                      divisions: 16,
+                      activeColor: AppTheme.primaryBlue,
+                      onChanged: (v) {
+                        setDialogState(() => _subtitleFontSize = v);
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                  Text('A',
+                      style: TextStyle(
+                          color: AppTheme.textPrimary, fontSize: 22)),
+                ],
+              ),
+              const Divider(height: 24),
+
+              // --- Timing Offset ---
+              Text(
+                'Timing Offset: ${_subtitleOffsetMs > 0 ? "+" : ""}${(_subtitleOffsetMs / 1000).toStringAsFixed(1)}s',
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _offsetBtn('-1s', () {
+                    setDialogState(() => _subtitleOffsetMs -= 1000);
+                    setState(() {});
+                  }),
+                  const SizedBox(width: 6),
+                  _offsetBtn('-0.5s', () {
+                    setDialogState(() => _subtitleOffsetMs -= 500);
+                    setState(() {});
+                  }),
+                  const SizedBox(width: 6),
+                  _offsetBtn('Reset', () {
+                    setDialogState(() => _subtitleOffsetMs = 0);
+                    setState(() {});
+                  }),
+                  const SizedBox(width: 6),
+                  _offsetBtn('+0.5s', () {
+                    setDialogState(() => _subtitleOffsetMs += 500);
+                    setState(() {});
+                  }),
+                  const SizedBox(width: 6),
+                  _offsetBtn('+1s', () {
+                    setDialogState(() => _subtitleOffsetMs += 1000);
+                    setState(() {});
+                  }),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_subtitleFileName != null)
+                Text('File: $_subtitleFileName',
+                    style: TextStyle(
+                        color: AppTheme.textTertiary, fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _loadSubtitle();
+            },
+            child: Text('Load New',
+                style: TextStyle(color: AppTheme.primaryBlue)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Done'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _offsetBtn(String label, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: AppTheme.cardBorder),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              color: AppTheme.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600)),
+    ),
+  );
+}
   
 // 👇 Play as audio का असली लॉजिक
 Future<void> _playAsAudio() async {
