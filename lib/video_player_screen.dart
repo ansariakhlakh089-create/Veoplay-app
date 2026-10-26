@@ -912,6 +912,41 @@ Future<void> _loadSubtitle() async {
   }
 }
 
+Future<void> _autoLoadSubtitle() async {
+  try {
+    final url = widget.videoUrl;
+    // Sirf file:// paths ke liye — content:// pe sibling file nahi milti
+    if (!url.startsWith('file://')) return;
+    if (!url.contains('.')) return;
+
+    final videoPath = url.replaceFirst('file://', '');
+    final dotIdx = videoPath.lastIndexOf('.');
+    if (dotIdx < 0) return;
+    final basePath = videoPath.substring(0, dotIdx);
+
+    // Same folder me same name ki .srt / .vtt dhundho
+    for (final ext in ['.srt', '.SRT', '.vtt', '.VTT']) {
+      final subtitlePath = '$basePath$ext';
+      final file = File(subtitlePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final parsed = _parseSrt(content);
+        if (parsed.isNotEmpty && mounted) {
+          setState(() {
+            _subtitles = parsed;
+            _subtitleFileName = subtitlePath.split('/').last;
+            _subtitlesEnabled = true;
+          });
+          _snack('✅ ${parsed.length} subtitles auto-loaded');
+        }
+        return; // pehla match mila, ruk jao
+      }
+    }
+  } catch (e) {
+    debugPrint('Auto subtitle error: $e');
+  }
+}
+  
 // 👇👇👇 SRT/VTT Parser 👇👇👇
 List<SubtitleLine> _parseSrt(String content) {
   final result = <SubtitleLine>[];
