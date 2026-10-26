@@ -180,6 +180,13 @@ SharedPreferences.getInstance().then((p) {
     _controller.addListener(() {
       if (!mounted) return;
       final val = _controller.value;
+      // Reset trigger jab user peeche seek kare
+if (_autoNextTriggered &&
+    val.isInitialized &&
+    val.duration > Duration.zero &&
+    val.position < val.duration - const Duration(seconds: 2)) {
+  _autoNextTriggered = false;
+}
       if (!_isLooping &&
           !_autoNextTriggered &&
           val.isInitialized &&
