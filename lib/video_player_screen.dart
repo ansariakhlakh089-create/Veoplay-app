@@ -32,7 +32,8 @@ class RealVideoPlayer extends StatefulWidget {
   State<RealVideoPlayer> createState() => _RealVideoPlayerState();
 }
 
-class _RealVideoPlayerState extends State<RealVideoPlayer> {
+class _RealVideoPlayerState extends State<RealVideoPlayer>
+    with WidgetsBindingObserver {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
   bool _showControls = true;
