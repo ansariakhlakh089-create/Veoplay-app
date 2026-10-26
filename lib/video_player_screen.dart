@@ -1387,17 +1387,8 @@ Widget build(BuildContext context) {
                             _showGestureFor(
                                 'Brightness ${(newBrightness * 100).toInt()}%');
                           } else {
-                            double newVol =
-                                (_volume + delta).clamp(0.0, 2.0);
-                            if (newVol <= 1.0) {
-                              VolumeController().setVolume(newVol,
-                                  showSystemUI: false);
-                              _controller.setVolume(1.0);
-                            } else {
-                              VolumeController().setVolume(1.0,
-                                  showSystemUI: false);
-                              _controller.setVolume(newVol);
-                            }
+                            double newVol = (_volume + delta).clamp(0.0, 2.0);
+_applyVolume(newVol);
                             setState(() {
                               _volume = newVol;
                               _muted = false;
