@@ -171,6 +171,7 @@ SharedPreferences.getInstance().then((p) {
       _controller.setPlaybackSpeed(_speed);
       _controller.setLooping(_isLooping);
       _controller.play();
+      _autoLoadSubtitle();              // 👈 NAYA
     }).catchError((error) {
       debugPrint('Video initialize error: $error');
       if (!mounted) return;
