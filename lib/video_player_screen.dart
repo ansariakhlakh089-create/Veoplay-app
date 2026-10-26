@@ -977,7 +977,8 @@ List<SubtitleLine> _parseSrt(String content) {
 // 👇👇👇 Current Subtitle ढूंढो 👇👇👇
 String? _getCurrentSubtitle() {
   if (!_subtitlesEnabled || _subtitles.isEmpty) return null;
-  final pos = _controller.value.position;
+  final pos = _controller.value.position +
+      Duration(milliseconds: _subtitleOffsetMs);   // 👈 offset apply
   for (final s in _subtitles) {
     if (pos >= s.start && pos <= s.end) {
       return s.text;
