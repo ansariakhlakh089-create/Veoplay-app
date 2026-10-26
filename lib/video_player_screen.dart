@@ -82,6 +82,7 @@ Timer? _thumbnailDebounce;
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSavedSpeed();
     if (widget.startLandscape) {
       _isFullscreen = true;
