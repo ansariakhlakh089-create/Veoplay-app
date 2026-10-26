@@ -1228,7 +1228,7 @@ void dispose() {
   super.dispose();
 }
 
-void _onPipAction(PipAction action) {
+Future<void> _onPipAction(PipAction action) async {
   switch (action) {
     case PipAction.play:
       _controller.play();
@@ -1239,10 +1239,16 @@ void _onPipAction(PipAction action) {
       setState(() {});
       break;
     case PipAction.next:
-      if (_hasNext) _playNext();
+      if (_hasNext) {
+        await SimplePip().exitPipMode();
+        if (mounted) _playNext();
+      }
       break;
     case PipAction.previous:
-      if (_hasPrevious) _playPrevious();
+      if (_hasPrevious) {
+        await SimplePip().exitPipMode();
+        if (mounted) _playPrevious();
+      }
       break;
     default:
       break;
