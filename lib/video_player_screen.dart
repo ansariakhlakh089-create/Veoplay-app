@@ -1674,17 +1674,17 @@ _applyVolume(newVol);
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    text,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      shadows: [
-                                        Shadow(
-                                          color: Colors.black,
-                                          blurRadius: 4,
-                                          offset: Offset(1, 1),
+  text,
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: _subtitleFontSize,          // 👈 variable
+    fontWeight: FontWeight.w500,
+    shadows: const [
+      Shadow(
+        color: Colors.black,
+        blurRadius: 4,
+        offset: Offset(1, 1),
                                         ),
                                       ],
                                     ),
