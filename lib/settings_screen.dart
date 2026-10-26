@@ -266,20 +266,6 @@ _settingTile(
             _sectionTitle('LIBRARY'),
 
             _settingTile(
-              icon: Icons.visibility_outlined,
-              title: 'Show Hidden Files',
-              subtitle: 'छुपी हुई फाइलें भी दिखाएं',
-              trailing: Switch(
-                value: _showHiddenFiles,
-                activeColor: AppTheme.primaryBlue,
-                onChanged: (v) {
-                  setState(() => _showHiddenFiles = v);
-                  _saveBool('show_hidden_files', v);
-                },
-              ),
-            ),
-
-            _settingTile(
               icon: Icons.refresh,
               title: 'Rescan Media',
               subtitle: 'वीडियो और गाने फिर से scan करें',
