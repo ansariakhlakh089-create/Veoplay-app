@@ -67,7 +67,8 @@ class _RealVideoPlayerState extends State<RealVideoPlayer>
 List<SubtitleLine> _subtitles = [];
 bool _subtitlesEnabled = true;
 String? _subtitleFileName;
-
+int _subtitleOffsetMs = 0;          // 👈 NAYA
+double _subtitleFontSize = 16.0;    // 👈 NAYA
 // 👇👇👇 Long-Press 2x Speed के लिए नए वेरिएबल्स 👇👇👇
 bool _isLongPressSpeed = false;
 double _speedBeforeLongPress = 1.0;
