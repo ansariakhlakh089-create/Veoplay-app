@@ -1451,13 +1451,11 @@ Future<void> _onPipAction(PipAction action) async {
       break;
     case PipAction.next:
       if (_hasNext) {
-        await SimplePip().exitPipMode();
         if (mounted) _playNext();
       }
       break;
     case PipAction.previous:
       if (_hasPrevious) {
-        await SimplePip().exitPipMode();
         if (mounted) _playPrevious();
       }
       break;
