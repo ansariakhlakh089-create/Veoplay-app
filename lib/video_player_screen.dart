@@ -834,7 +834,6 @@ Future<void> _enterPip() async {
     }
     return;
   }
-  await SimplePip().enterPipMode();
 }
 
 Future<void> _shareVideo() async {
