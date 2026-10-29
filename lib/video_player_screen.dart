@@ -160,9 +160,13 @@ bool _isLooping = false;
   Future<void> play() => player.play();
   Future<void> pause() => player.pause();
 
-  Future<void> setLooping(bool loop) => player.setPlaylistMode(
+  Future<void> setLooping(bool loop) async {
+  _isLooping = loop;
+  _notify(force: true);
+  return player.setPlaylistMode(
       loop ? mk.PlaylistMode.single : mk.PlaylistMode.none);
-
+  }
+  
   Future<void> setPlaybackSpeed(double speed) => player.setRate(speed);
 
   // v: 0.0 – 2.0  (1.0 = 100%, 2.0 = 200% असली boost)
