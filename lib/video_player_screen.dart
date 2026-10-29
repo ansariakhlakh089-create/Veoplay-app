@@ -19,13 +19,24 @@ class _MkValue {
   final bool isPlaying;
   final bool isInitialized;
   final Size size;
+  
+  // 👇 ये 3 नए वेरिएबल्स जोड़ें
+  final double playbackSpeed;
+  final double volume;
+  final bool isLooping;
+
   const _MkValue({
     required this.position,
     required this.duration,
     required this.isPlaying,
     required this.isInitialized,
     required this.size,
+    // 👇 कंस्ट्रक्टर में भी जोड़ें
+    required this.playbackSpeed,
+    required this.volume,
+    required this.isLooping,
   });
+  
   double get aspectRatio =>
       (size.width > 0 && size.height > 0) ? size.width / size.height : 16 / 9;
 }
