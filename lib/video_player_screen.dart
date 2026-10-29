@@ -73,12 +73,16 @@ bool _isLooping = false;
   }
 
   _MkValue get value => _MkValue(
-        position: _position,
-        duration: _duration,
-        isPlaying: _playing,
-        isInitialized: _initialized,
-        size: Size(_w.toDouble(), _h.toDouble()),
-      );
+      position: _position,
+      duration: _duration,
+      isPlaying: _playing,
+      isInitialized: _initialized,
+      size: Size(_w.toDouble(), _h.toDouble()),
+      // 👇 ये 3 नई लाइनें जोड़ें
+      playbackSpeed: _playbackSpeed,
+      volume: _volume,
+      isLooping: _isLooping,
+    );
 
   List<mk.AudioTrack> get realAudioTracks => player.state.tracks.audio
       .where((t) => t.id != 'auto' && t.id != 'no')
