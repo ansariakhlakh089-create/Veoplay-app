@@ -531,17 +531,14 @@ void _syncSlot(int slot) {
   final loop = slot == 0 ? _loop1 : _loop2;
 
   // सिर्फ तभी सेट करो जब वैल्यू अलग हो (already checked)
-  if ((c.value.playbackSpeed - speed).abs() > 0.01) {
-    c.setPlaybackSpeed(speed);
-  }
-  final vol = muted ? 0.0 : 1.0;
-  if ((c.value.volume - vol).abs() > 0.01) {
-    c.setVolume(vol);
-  }
-  final wantLoop = loop == 1;
-  if (c.value.isLooping != wantLoop) {
-    c.setLooping(wantLoop);
-  }
+  // सीधे सेट कर दें, क्योंकि _MkValue में ये प्रॉपर्टीज़ नहीं हैं
+c.setPlaybackSpeed(speed);
+
+final vol = muted ? 0.0 : 1.0;
+c.setVolume(vol);
+
+final wantLoop = loop == 1;
+c.setLooping(wantLoop);
 
   // Loop All चेक अलग से
   if (loop == 2) _checkLoopAll(slot);
