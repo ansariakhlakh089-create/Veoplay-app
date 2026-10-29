@@ -48,11 +48,16 @@ class _MkController extends ChangeNotifier {
   final List<StreamSubscription> _subs = [];
 
   Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
-  bool _playing = false;
-  bool _initialized = false;
-  int _w = 0;
-  int _h = 0;
+Duration _duration = Duration.zero;
+bool _playing = false;
+bool _initialized = false;
+int _w = 0;
+int _h = 0;
+
+// 👇 ये 3 नए वेरिएबल्स जोड़ें
+double _playbackSpeed = 1.0;
+double _volume = 1.0;
+bool _isLooping = false;
   Duration _lastNotified = Duration.zero;
   bool _disposed = false;
   List<mk.AudioTrack> audioTracks = [];
