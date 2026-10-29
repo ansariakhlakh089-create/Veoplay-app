@@ -25,7 +25,7 @@ jobs:
       - name: Flutter version dikhao
         run: flutter --version
 
-      - run: flutter pub get --enforce-lockfile
+      - run: flutter pub get
 
       - uses: actions/upload-artifact@v4
         with:
