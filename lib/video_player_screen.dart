@@ -166,18 +166,22 @@ bool _isLooping = false;
   return player.setPlaylistMode(
       loop ? mk.PlaylistMode.single : mk.PlaylistMode.none);
   }
-  
-  Future<void> setPlaybackSpeed(double speed) => player.setRate(speed);
-
+  Future<void> setPlaybackSpeed(double speed) async {
+  _playbackSpeed = speed;
+  _notify(force: true);
+  return player.setRate(speed);
+  }
   // v: 0.0 – 2.0  (1.0 = 100%, 2.0 = 200% असली boost)
   Future<void> setVolume(double v) async {
-    final pct = (v.clamp(0.0, 2.0) * 100).round();
-    try {
-      await (player.platform as mk.NativePlayer)
-          .setProperty('volume', pct.toString());
-    } catch (_) {
-      await player.setVolume(pct.toDouble());
-    }
+  _volume = v;
+  _notify(force: true);
+  final pct = (v.clamp(0.0, 2.0) * 100).round();
+  try {
+    await (player.platform as mk.NativePlayer)
+        .setProperty('volume', pct.toString());
+  } catch (_) {
+    await player.setVolume(pct.toDouble());
+  }
   }
 
   Future<void> setSubtitleDelay(double seconds) async {
