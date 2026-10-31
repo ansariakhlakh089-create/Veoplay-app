@@ -98,10 +98,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         );
       }).toList();
 
-      await _player.setAudioSource(
+   await _player.setAudioSource(
         ConcatenatingAudioSource(children: sources),
         initialIndex: _currentIndex,
       );
+      final prefs = await SharedPreferences.getInstance();
+      final defSpeed = prefs.getDouble('default_music_speed') ?? 1.0;
+      await _player.setSpeed(defSpeed);
       await _player.play();
     } catch (e) {
       debugPrint('Song setup error: $e');
