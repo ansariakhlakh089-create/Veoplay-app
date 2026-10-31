@@ -1824,7 +1824,7 @@ if (!permission.isAuth && !permission.hasAccess) return;
   final isSelected = _selectedVideoIds.contains(item['id']);
 
   return Padding(
-    padding: const EdgeInsets.only(bottom: 0),
+    padding: const EdgeInsets.only(bottom: 11),
     child: GestureDetector(
       onTap: () async {
         // 👇 Selection Mode में टैप करने पर Select/Deselect हो
