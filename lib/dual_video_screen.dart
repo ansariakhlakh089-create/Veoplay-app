@@ -72,16 +72,36 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
     // media_kit (mpv) engine — file:// अपने-आप path में बदल जाता है
     return _MkController(url);
   }
-  void _onTick() {
-  if (!mounted) return;
-  
-  // 👇 Loop All चेक (हर tick पर, लेकिन हल्का)
-  _checkLoopAll(0);
-  _checkLoopAll(1);
-  
-  setState(() {});
-  }
+    int _lastSec1 = -1;
+  int _lastSec2 = -1;
+  bool _lastPlay1 = false;
+  bool _lastPlay2 = false;
 
+  void _onTick() {
+    if (!mounted) return;
+
+    _checkLoopAll(0);
+    _checkLoopAll(1);
+
+    // 👇 Jab controls chhupe hon aur play/pause na badla ho, to faltu rebuild mat karo
+    final s1 = _c1?.value.position.inSeconds ?? 0;
+    final s2 = _c2?.value.position.inSeconds ?? 0;
+    final p1 = _c1?.value.isPlaying ?? false;
+    final p2 = _c2?.value.isPlaying ?? false;
+
+    final playChanged = (p1 != _lastPlay1) || (p2 != _lastPlay2);
+    final secChanged = (s1 != _lastSec1) || (s2 != _lastSec2);
+
+    _lastPlay1 = p1;
+    _lastPlay2 = p2;
+    _lastSec1 = s1;
+    _lastSec2 = s2;
+
+    if (playChanged || ((_showCtrl1 || _showCtrl2) && secChanged)) {
+      setState(() {});
+    }
+  }
+  
   void _snack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), duration: const Duration(seconds: 1)),
