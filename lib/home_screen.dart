@@ -157,6 +157,55 @@ Future<void> _saveHiddenFolders() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setStringList('hidden_folders', _hiddenFolders.toList());
 }
+
+Future<bool> _verifyOrCreateFolderPin() async {
+  final prefs = await SharedPreferences.getInstance();
+  final savedPin = prefs.getString('hidden_folder_pin');
+  final ctrl = TextEditingController();
+
+  final entered = await showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: AppTheme.card,
+      title: Text(
+        savedPin == null ? '5-Digit PIN बनाएँ' : 'PIN डालें',
+        style: TextStyle(color: AppTheme.textPrimary),
+      ),
+      content: TextField(
+        controller: ctrl,
+        autofocus: true,
+        obscureText: true,
+        maxLength: 5,
+        keyboardType: TextInputType.number,
+        style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, letterSpacing: 6),
+        decoration: InputDecoration(
+          hintText: '••••',
+          hintStyle: TextStyle(color: AppTheme.textTertiary),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+          child: Text(savedPin == null ? 'Set PIN' : 'Unlock'),
+        ),
+      ],
+    ),
+  );
+
+  if (entered == null || entered.length < 5) return false;
+  if (savedPin == null) {
+    await prefs.setString('hidden_folder_pin', entered);
+    _toast('🔒 PIN सेट हो गया');
+    return true;
+  }
+  if (entered == savedPin) return true;
+  _toast('❌ गलत PIN!');
+  return false;
+}
   
 Future<void> _saveWatchProgress(String url, double progress) async {
   final prefs = await SharedPreferences.getInstance();
