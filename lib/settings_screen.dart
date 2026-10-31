@@ -173,23 +173,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ============ APPEARANCE ============
             _sectionTitle('APPEARANCE'),
 
-            _settingTile(
+                        _settingTile(
               icon: _isDarkTheme ? Icons.dark_mode : Icons.light_mode,
-              title: 'Light Theme',
+              title: 'Dark Mode',
               subtitle: _isDarkTheme
                   ? 'Dark mode चालू है'
                   : 'Light mode चालू है',
               iconColor: AppTheme.primaryBlue,
               trailing: Switch(
-                value: !_isDarkTheme,
+                value: _isDarkTheme,
                 activeColor: AppTheme.primaryBlue,
                 onChanged: (v) async {
-                  setState(() => _isDarkTheme = !v);
-                  await AppTheme.toggle(!v);
+                  setState(() => _isDarkTheme = v);
+                  await AppTheme.toggle(v);
                 },
               ),
             ),
-
+            
             const SizedBox(height: 8),
 
             // ============ PLAYBACK ============
