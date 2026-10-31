@@ -1649,16 +1649,22 @@ if (!permission.isAuth && !permission.hasAccess) return;
           );
         },
       ),
-      // 👇 Hidden Folders Section
+            // 👇 Hidden Folders Section (With PIN Lock)
       if (hiddenList.isNotEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 10),
           child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _showHiddenFolders = !_showHiddenFolders;
-              });
+            onTap: () async {
+              if (_showHiddenFolders) {
+                setState(() => _showHiddenFolders = false);
+              } else {
+                final ok = await _verifyOrCreateFolderPin();
+                if (ok && mounted) {
+                  setState(() => _showHiddenFolders = true);
+                }
+              }
             },
+            
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
