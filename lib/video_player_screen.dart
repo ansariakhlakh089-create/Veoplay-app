@@ -1,5 +1,6 @@
 part of 'main.dart';
 
+import 'dart:convert';
 // 👇👇👇 Subtitle Line क्लास 👇👇👇
 class SubtitleLine {
   final Duration start;
