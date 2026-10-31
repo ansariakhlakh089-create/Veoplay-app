@@ -73,11 +73,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final keysToKeep = <String>['video_loop_mode', 'video_speed'];
     final allKeys = prefs.getKeys().toList();
-    for (final k in allKeys) {
+        for (final k in allKeys) {
       if (!keysToKeep.contains(k)) {
         await prefs.remove(k);
       }
     }
+    await VideoCacheDb.replaceAll([]); // 👈 Video database cache bhi clear hoga
     try {
       final cacheDir = Directory.systemTemp;
       final files = cacheDir.listSync();
