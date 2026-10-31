@@ -136,6 +136,7 @@ void openExternalVideo(String uri) {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  CrashLog.install();
   mk.MediaKit.ensureInitialized();
 
   try {
