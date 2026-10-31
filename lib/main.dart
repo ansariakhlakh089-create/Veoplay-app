@@ -29,6 +29,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:media_kit/media_kit.dart' as mk;
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'video_cache_db.dart';
+import 'crash_log.dart'; // 👈 Ye nayi line ADD karo
 
 // ---- Split files (same library, code unchanged) ----
 part 'splash_screen.dart';
