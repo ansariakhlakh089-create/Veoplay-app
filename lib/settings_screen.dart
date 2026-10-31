@@ -173,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ============ APPEARANCE ============
             _sectionTitle('APPEARANCE'),
 
-                        _settingTile(
+              _settingTile(
               icon: _isDarkTheme ? Icons.dark_mode : Icons.light_mode,
               title: 'Dark Mode',
               subtitle: _isDarkTheme
@@ -188,6 +188,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   await AppTheme.toggle(v);
                 },
               ),
+            ),
+
+              _settingTile(
+              icon: Icons.bug_report_outlined,
+              title: 'Problem Report भेजें',
+              subtitle: 'अगर ऐप में कोई दिक्कत आई हो तो लॉग फ़ाइल शेयर करें',
+              onTap: () async {
+                final logPath = await CrashLog.path();
+                if (logPath == null) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('✅ कोई error log नहीं मिला, ऐप ठीक काम कर रहा है')),
+                    );
+                  }
+                  return;
+                }
+                await Share.shareXFiles(
+                  [XFile(logPath)],
+                  subject: 'VeoPlay Crash Log ($appVersionFull)',
+                );
+              },
+              trailing: Icon(Icons.share, color: AppTheme.textTertiary, size: 20),
             ),
             
             const SizedBox(height: 8),
