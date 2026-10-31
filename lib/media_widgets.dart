@@ -21,6 +21,7 @@ class AlbumArtWidget extends StatefulWidget {
 }
 
 class _AlbumArtWidgetState extends State<AlbumArtWidget> {
+  static final Map<int, Uint8List?> _artCache = {}; // 👈 Memory cache
   Uint8List? _bytes;
   bool _loading = true;
 
@@ -39,6 +40,13 @@ class _AlbumArtWidgetState extends State<AlbumArtWidget> {
   }
 
   Future<void> _load() async {
+    if (_artCache.containsKey(widget.songId)) {
+      setState(() {
+        _bytes = _artCache[widget.songId];
+        _loading = false;
+      });
+      return;
+    }
     setState(() {
       _loading = true;
       _bytes = null;
@@ -50,6 +58,7 @@ class _AlbumArtWidgetState extends State<AlbumArtWidget> {
         size: 300,
         quality: 50,
       );
+      _artCache[widget.songId] = bytes;
       if (mounted) {
         setState(() {
           _bytes = bytes;
@@ -66,7 +75,7 @@ class _AlbumArtWidgetState extends State<AlbumArtWidget> {
       }
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     final rad = widget.circle
