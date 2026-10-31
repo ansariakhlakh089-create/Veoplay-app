@@ -221,8 +221,12 @@ class _VideoThumbnailWidgetState extends State<VideoThumbnailWidget> {
     }
   }
 
-  String _cacheFileName(String path) => 'thumb_${path.hashCode}.jpg';
-
+    String _cacheFileName(String path) {
+    final safe = path.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+    final tail = safe.length > 60 ? safe.substring(safe.length - 60) : safe;
+    return 'thumb_${path.length}_$tail.jpg';
+    }
+  
   Future<void> _loadOrGenerateThumbnail() async {
     final path = widget.videoPath;
     try {
