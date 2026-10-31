@@ -447,7 +447,7 @@ void _toggleLockSlot(int slot) {
           color: loop != 0 ? AppTheme.primaryBlue : Colors.white70,
         ),
         btn(
-          icon: Icons.content_cut,
+          icon: Icons.camera_alt_outlined,
           onTap: () => _takeFullScreenshot(),
         ),
         btn(
