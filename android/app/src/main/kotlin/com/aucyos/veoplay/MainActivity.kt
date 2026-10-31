@@ -1,6 +1,9 @@
 package com.aucyos.veoplay
 
+import android.Manifest
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -51,6 +54,30 @@ class MainActivity : AudioServiceActivity() {
                     "cutout" -> {
                         allowDrawingInCutout()
                         result.success(true)
+                    }
+                    // Android 13+ पर notification दिखाने के लिए runtime permission
+                    "requestNotifications" -> {
+                        if (Build.VERSION.SDK_INT >= 33 &&
+                            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 7001)
+                        }
+                        result.success(true)
+                    }
+                    // content:// वीडियो को mpv के लिए file-descriptor में बदलो
+                    "openFd" -> {
+                        try {
+                            val uriStr = call.argument<String>("uri")
+                            val pfd = contentResolver.openFileDescriptor(Uri.parse(uriStr), "r")
+                            if (pfd == null) {
+                                result.success(-1)
+                            } else {
+                                result.success(pfd.detachFd())
+                            }
+                        } catch (e: Exception) {
+                            result.error("openFd", e.message, null)
+                        }
                     }
                     else -> result.notImplemented()
                 }
