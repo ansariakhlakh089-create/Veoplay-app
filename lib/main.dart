@@ -6,6 +6,7 @@ import 'package:receive_intent/receive_intent.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:audio_service/audio_service.dart' hide MediaItem;
 import 'package:video_player/video_player.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';   // 👈 यहाँ जोड़ें
 import 'package:photo_manager/photo_manager.dart';
