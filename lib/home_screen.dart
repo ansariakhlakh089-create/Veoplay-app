@@ -3660,13 +3660,17 @@ if (_isVideoNew(item['url']!))
 
   // ==================== Video Watch History Screen ====================
 class VideoHistoryScreen extends StatefulWidget {
-  final List> allVideos;
-  const VideoHistoryScreen({super.key, required this.allVideos});
-  
+  final List<Map<String, String>> allVideos;
+
+  const VideoHistoryScreen({
+    super.key,
+    required this.allVideos,
+  });
+
   @override
   State<VideoHistoryScreen> createState() => _VideoHistoryScreenState();
 }
-
+  
 class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
   List<List<String>> _items = [];
   bool _loading = true;
