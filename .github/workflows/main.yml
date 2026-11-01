@@ -40,6 +40,19 @@ jobs:
         run: |
           printf '\norg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g\n' >> android/gradle.properties
 
+      # 👇👇👇 YE NAYA STEP ADD KARO 👇👇👇
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "storeFile=upload-keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Set Keystore Path Environment
+        run: echo "KEYSTORE_PATH=upload-keystore.jks" >> $GITHUB_ENV
+      # 👆👆👆 YAHAN TAK 👆👆👆
+
       - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
