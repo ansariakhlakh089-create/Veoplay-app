@@ -3660,7 +3660,7 @@ if (_isVideoNew(item['url']!))
 
   // ==================== Video Watch History Screen ====================
 class VideoHistoryScreen extends StatefulWidget {
-  final List<Map<String, String>> allVideos;
+  final List> allVideos;
   const VideoHistoryScreen({super.key, required this.allVideos});
 
   @override
@@ -3790,62 +3790,6 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
                         item.length > 3 ? int.tryParse(item[3]) ?? 0 : 0;
                     final progress = dur > 0 ? pos / dur : 0.0;
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.card,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                            color: AppTheme.cardBorder, width: 1),
-                      ),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: VideoThumbnailWidget(videoPath: url),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      color: AppTheme.textPrimary,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500),
-                                ),
-                                const SizedBox(height: 6),
-                                if (dur > 0) ...[
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      value: progress,
-                                      minHeight: 4,
-                                      backgroundColor: AppTheme.cardBorder,
-                                      valueColor: AlwaysStoppedAnimation(
-                                          AppTheme.primaryBlue),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${_formatDuration(Duration(seconds: pos))} / ${_formatDuration(Duration(seconds: dur))}',
-                                    style: TextStyle(
-                                        color: AppTheme.textTertiary,
-                                        fontSize: 11),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                         final dur =
-                        item.length > 3 ? int.tryParse(item[3]) ?? 0 : 0;
-                    final progress = dur > 0 ? pos / dur : 0.0;
-
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () async {
@@ -3928,3 +3872,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
                     );
                   },
                 ),
+    );
+  }
+}
+                          
