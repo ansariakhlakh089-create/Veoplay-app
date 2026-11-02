@@ -825,24 +825,33 @@ Widget build(BuildContext context) {
             radius: 20,
           ),
           const SizedBox(height: 40),
-          Text(
-            songTitle,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            song.artist ?? "Unknown",
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-          ),
+          // 👇 Fixed Height taaki buttons na hilein
+SizedBox(
+  height: 70, 
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text(
+        songTitle,
+        textAlign: TextAlign.center,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: AppTheme.textPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        song.artist ?? "Unknown",
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
