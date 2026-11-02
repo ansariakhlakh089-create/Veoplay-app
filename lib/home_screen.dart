@@ -37,6 +37,23 @@ class _HomeScreenState extends State<HomeScreen>
   bool _isSongSelectionMode = false;
   Set<int> _selectedSongIds = {};
 
+  // Ye list sirf wo videos dikhayegi jo hidden nahi hain
+List<Map<String, String>> get _visibleVideos {
+  return videoList.where((v) {
+    final id = v['id'] ?? '';
+    final folderKey = _folderKey(v);
+    final folderName = v['folder'] ?? 'Unknown';
+    return !_hiddenVideoIds.contains(id) && 
+           !_hiddenFolders.contains(folderKey) && 
+           !_hiddenFolders.contains(folderName);
+  }).toList();
+}
+
+// Ye list sirf wo gaane dikhayegi jo hidden nahi hain
+List<SongModel> get _visibleSongs {
+  return _songs.where((s) => !_hiddenSongIds.contains(s.id)).toList();
+}
+  
   @override
   void initState() {
     super.initState();
