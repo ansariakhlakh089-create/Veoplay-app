@@ -165,6 +165,30 @@ Future<void> _saveHiddenData() async {
   await prefs.setStringList('hidden_videos', _hiddenVideoIds.toList());
   await prefs.setStringList('hidden_songs', _hiddenSongIds.map((e) => e.toString()).toList());
 }
+
+// Video Hide karne ke liye
+Future<void> _hideVideo(Map<String, String> item) async {
+  final id = item['id'] ?? '';
+  if (id.isNotEmpty) {
+    setState(() => _hiddenVideoIds.add(id));
+    await _saveHiddenData();
+    _toast('Video छुपा दी गई');
+  }
+}
+
+// Folder Hide karne ke liye
+Future<void> _hideFolder(String folderKey) async {
+  setState(() => _hiddenFolders.add(folderKey));
+  await _saveHiddenData();
+  _toast('Folder छुपा दिया गया');
+}
+
+// Song Hide karne ke liye
+Future<void> _hideSong(SongModel song) async {
+  setState(() => _hiddenSongIds.add(song.id));
+  await _saveHiddenData();
+  _toast('गाना छुपा दिया गया');
+}
   
 Future<bool> _verifyOrCreateFolderPin() async {
   final prefs = await SharedPreferences.getInstance();
