@@ -813,19 +813,40 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+    body: Column(
+  children: [
+    Expanded(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            AlbumArtWidget(songId: song.id, size: 250, radius: 20),
+            const SizedBox(height: 30),
+            // ... (yahan wo Fixed Height wala Title/Artist aayega) ...
+            const SizedBox(height: 16),
+            // ... (Action buttons: Add, Share, EQ, Favorite) ...
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    ),
+    
+    // 👇 Ab Slider aur Play buttons screen ke bottom pe fix rahenge
+    Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 20),
-          AlbumArtWidget(
-            songId: song.id,
-            size: 250,
-            radius: 20,
-          ),
-          const SizedBox(height: 40),
-          // 👇 Fixed Height taaki buttons na hilein
+          // Yahan apna Slider StreamBuilder wala code paste karo
+          // Yahan apna Play/Pause/Next/Prev buttons wala Row paste karo
+        ],
+      ),
+    ),
+  ],
+),
+  
+    // 👇 Fixed Height taaki buttons na hilein
 SizedBox(
   height: 70, 
   child: Column(
