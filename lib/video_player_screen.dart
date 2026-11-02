@@ -1096,41 +1096,63 @@ if (_autoNextTriggered &&
   }
 
   // 👇 NAYA FIXED CODE: URL ke basis par next/prev dhundhega
-  bool get _hasNext {
-    if (widget.playlist == null || widget.videoUrl.isEmpty) return false;
-    final idx = widget.playlist!.indexWhere((v) => v['url'] == widget.videoUrl);
-    return idx != -1 && idx < widget.playlist!.length - 1;
-  }
+bool get _hasNext {
+  if (widget.playlist == null || widget.videoUrl.isEmpty) return false;
+  final idx = widget.playlist!.indexWhere((v) => v['url'] == widget.videoUrl);
+  return idx != -1 && idx < widget.playlist!.length - 1;
+}
 
-  bool get _hasPrevious {
-    if (widget.playlist == null || widget.videoUrl.isEmpty) return false;
-    final idx = widget.playlist!.indexWhere((v) => v['url'] == widget.videoUrl);
-    return idx > 0;
-  }
+bool get _hasPrevious {
+  if (widget.playlist == null || widget.videoUrl.isEmpty) return false;
+  final idx = widget.playlist!.indexWhere((v) => v['url'] == widget.videoUrl);
+  return idx > 0;
+}
 
-  void _playNext() {
-    if (!_hasNext) return;
-    final currentUrl = widget.videoUrl;
-    // Exact current video ka index dhundo, taaki koi jump na ho
-    final currentIndex = widget.playlist!.indexWhere((v) => v['url'] == currentUrl);
-    final nextIndex = currentIndex + 1;
-    final nextItem = widget.playlist![nextIndex];
-    
-    _replacing = true;
-    final goLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RealVideoPlayer(
-          videoUrl: nextItem['url']!,
-          title: nextItem['title']!,
-          playlist: widget.playlist,
-          currentIndex: nextIndex, // Sahi index pass hoga
-          startLandscape: goLandscape,
-        ),
+void _playNext() {
+  if (!_hasNext) return;
+  final currentUrl = widget.videoUrl;
+  final currentIndex = widget.playlist!.indexWhere((v) => v['url'] == currentUrl);
+  final nextIndex = currentIndex + 1;
+  final nextItem = widget.playlist![nextIndex];
+  
+  _replacing = true;
+  final goLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => RealVideoPlayer(
+        videoUrl: nextItem['url']!,
+        title: nextItem['title']!,
+        playlist: widget.playlist,
+        currentIndex: nextIndex, 
+        startLandscape: goLandscape,
       ),
-    );
-  }
+    ),
+  );
+}
+
+void _playPrevious() {
+  if (!_hasPrevious) return;
+  final currentUrl = widget.videoUrl;
+  final currentIndex = widget.playlist!.indexWhere((v) => v['url'] == currentUrl);
+  final prevIndex = currentIndex - 1;
+  final prevItem = widget.playlist![prevIndex];
+  
+  _replacing = true;
+  final goLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => RealVideoPlayer(
+        videoUrl: prevItem['url']!,
+        title: prevItem['title']!,
+        playlist: widget.playlist,
+        currentIndex: prevIndex,
+        startLandscape: goLandscape,
+      ),
+    ),
+  );
+}
 
   void _playPrevious() {
     if (!_hasPrevious) return;
