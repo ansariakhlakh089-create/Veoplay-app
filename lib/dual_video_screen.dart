@@ -357,10 +357,9 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   }
 
 Future<void> _takeFullScreenshot() async {
-  final prevCtrl1 = _showCtrl1;
-  final prevCtrl2 = _showCtrl2;
+  _snack('📸 Screenshot बन रहा है...'); // 👈 Ye line add karo
   try {
-    // UI se controls chhupao
+    // कंट्रोल्स को थोड़ी देर के लिए छुपा दो ताकि साफ़ स्क्रीनशॉट आए
     setState(() {
       _showCtrl1 = false;
       _showCtrl2 = false;
