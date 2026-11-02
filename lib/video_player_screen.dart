@@ -1154,29 +1154,6 @@ void _playPrevious() {
   );
 }
 
-  void _playPrevious() {
-    if (!_hasPrevious) return;
-    final currentUrl = widget.videoUrl;
-    final currentIndex = widget.playlist!.indexWhere((v) => v['url'] == currentUrl);
-    final prevIndex = currentIndex - 1;
-    final prevItem = widget.playlist![prevIndex];
-    
-    _replacing = true;
-    final goLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RealVideoPlayer(
-          videoUrl: prevItem['url']!,
-          title: prevItem['title']!,
-          playlist: widget.playlist,
-          currentIndex: prevIndex,
-          startLandscape: goLandscape,
-        ),
-      ),
-    );
-  }
-
   String _formatDuration(Duration d) {
     final hours = d.inHours;
     final minutes = (d.inMinutes % 60).toString().padLeft(2, '0');
