@@ -744,367 +744,329 @@ void dispose() {
   super.dispose();
 }
 
-@override
-Widget build(BuildContext context) {
-  if (widget.songs.isEmpty) {
+  @override
+  Widget build(BuildContext context) {
+    if (widget.songs.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppTheme.bg,
+        body: Center(
+          child: Text("No songs found",
+              style: TextStyle(color: AppTheme.textPrimary)),
+        ),
+      );
+    }
+    if (_setupError != null) {
+      return Scaffold(
+        backgroundColor: AppTheme.bg,
+        appBar: AppBar(backgroundColor: Colors.transparent),
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: SelectableText(
+              "ERROR:\n$_setupError",
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final song = widget.songs[_currentIndex];
+    final songTitle = globalSongNames[song.id] ?? song.title;
+    final isFav = _favoriteIds.contains(song.id);
+
     return Scaffold(
       backgroundColor: AppTheme.bg,
-      body: Center(
-        child: Text("No songs found",
-            style: TextStyle(color: AppTheme.textPrimary)),
-      ),
-    );
-  }
-  if (_setupError != null) {
-    return Scaffold(
-      backgroundColor: AppTheme.bg,
-      appBar: AppBar(backgroundColor: Colors.transparent),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Center(
-          child: SelectableText(
-            "ERROR:\n$_setupError",
-            style: const TextStyle(color: Colors.red, fontSize: 14),
-          ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppTheme.textPrimary, size: 30),
+          onPressed: () => Navigator.pop(context),
         ),
-      ),
-    );
-  }
-
-  final song = widget.songs[_currentIndex];
-  final songTitle = globalSongNames[song.id] ?? song.title;
-  final isFav = _favoriteIds.contains(song.id);
-
-  return Scaffold(
-    backgroundColor: AppTheme.bg,
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back,
-            color: AppTheme.textPrimary, size: 30),
-        onPressed: () => Navigator.pop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.queue_music,
-              color: AppTheme.iconColor),
-          tooltip: 'Queue',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const QueueScreen(),
-              ),
-            );
-          },
-        ),
-        IconButton(
-          icon: Icon(
-            _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
-            color: _sleepRemaining > 0
-                ? AppTheme.primaryBlue
-                : AppTheme.iconColor,
-          ),
-          tooltip: _sleepRemaining > 0
-              ? '$_sleepRemaining मिनट बाकी'
-              : 'Sleep timer',
-          onPressed: _showMusicSleepTimerDialog,
-        ),
-      ],
-    ),
-    body: Column(
-  children: [
-    Expanded(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            AlbumArtWidget(songId: song.id, size: 250, radius: 20),
-            const SizedBox(height: 30),
-            // ... (yahan wo Fixed Height wala Title/Artist aayega) ...
-            const SizedBox(height: 16),
-            // ... (Action buttons: Add, Share, EQ, Favorite) ...
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    ),
-    
-    // 👇 Ab Slider aur Play buttons screen ke bottom pe fix rahenge
-    Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Yahan apna Slider StreamBuilder wala code paste karo
-          // Yahan apna Play/Pause/Next/Prev buttons wala Row paste karo
-        ],
-      ),
-    ),
-  ],
-),
-  
-    // 👇 Fixed Height taaki buttons na hilein
-SizedBox(
-  height: 70, 
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Text(
-        songTitle,
-        textAlign: TextAlign.center,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: AppTheme.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      const SizedBox(height: 4),
-      Text(
-        song.artist ?? "Unknown",
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-      ),
-    ],
-  ),
-),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => _showAddToPlaylistDialog(song),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.card,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.primaryBlue.withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    color: AppTheme.textPrimary,
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              GestureDetector(
-                onTap: () => _shareSong(song),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.card,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.primaryBlue.withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.share,
-                    color: AppTheme.textPrimary,
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              GestureDetector(
-                onTap: _showEqualizerDialog,
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppTheme.card,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppTheme.primaryBlue.withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.equalizer,
-                    color: AppTheme.textPrimary,
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 24),
-              GestureDetector(
-                onTap: () => _toggleFavorite(song),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isFav
-                        ? Colors.pinkAccent.withOpacity(0.2)
-                        : AppTheme.card,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isFav
-                          ? Colors.pinkAccent
-                          : AppTheme.primaryBlue.withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Icon(
-                    isFav ? Icons.favorite : Icons.favorite_border,
-                    color: isFav
-                        ? Colors.pinkAccent
-                        : AppTheme.textPrimary,
-                    size: 22,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          StreamBuilder<Duration>(
-            stream: _player.positionStream,
-            builder: (context, positionSnapshot) {
-              final position = positionSnapshot.data ?? Duration.zero;
-              return StreamBuilder<Duration?>(
-                stream: _player.durationStream,
-                builder: (context, durationSnapshot) {
-                  final duration = durationSnapshot.data ?? Duration.zero;
-                  final maxSeconds = duration.inSeconds > 0
-                      ? duration.inSeconds.toDouble()
-                      : 1.0;
-                  final currentSeconds = position.inSeconds
-                      .toDouble()
-                      .clamp(0.0, maxSeconds);
-
-                  return Column(
-                    children: [
-                      Slider(
-                        value: currentSeconds,
-                        min: 0,
-                        max: maxSeconds,
-                        activeColor: AppTheme.primaryBlue,
-                        inactiveColor: AppTheme.cardBorder,
-                        onChanged: duration.inSeconds > 0
-                            ? (value) {
-                                _player.seek(
-                                  Duration(seconds: value.toInt()),
-                                );
-                              }
-                            : null,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(_formatDuration(position),
-                              style: TextStyle(
-                                  color: AppTheme.textSecondary)),
-                          Text(_formatDuration(duration),
-                              style: TextStyle(
-                                  color: AppTheme.textSecondary)),
-                        ],
-                      ),
-                    ],
-                  );
-                },
+        actions: [
+          IconButton(
+            icon: Icon(Icons.queue_music, color: AppTheme.iconColor),
+            tooltip: 'Queue',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const QueueScreen()),
               );
             },
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                icon: Icon(
-                  _loopMode == 0
-                      ? Icons.repeat
-                      : _loopMode == 1
-                          ? Icons.repeat_one
-                          : Icons.shuffle,
-                  color: _loopMode == 0
-                      ? AppTheme.textTertiary
-                      : AppTheme.primaryBlue,
-                  size: 24,
-                ),
-                onPressed: _toggleLoop,
-              ),
-              IconButton(
-                icon: Icon(Icons.skip_previous,
-                    color: AppTheme.textPrimary, size: 32),
-                onPressed: _playPrevious,
-              ),
-              StreamBuilder<PlayerState>(
-                stream: _player.playerStateStream,
-                builder: (context, snapshot) {
-                  final playing = snapshot.data?.playing ?? false;
-                  return GestureDetector(
-                    onTap: _togglePlay,
-                    child: Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryBlue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        playing ? Icons.pause : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.skip_next,
-                    color: AppTheme.textPrimary, size: 32),
-                onPressed: _playNext,
-              ),
-              IconButton(
-                icon: Icon(Icons.speed,
-                    color: AppTheme.textTertiary, size: 24),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: AppTheme.card,
-                    builder: (context) {
-                      final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-                      return Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: speeds.map((s) {
-                            return ChoiceChip(
-                              label: Text('${s}x',
-                                  style: TextStyle(
-                                    color: _player.speed == s
-                                        ? Colors.white
-                                        : AppTheme.textPrimary,
-                                  )),
-                              selected: _player.speed == s,
-                              selectedColor: AppTheme.primaryBlue,
-                              backgroundColor: AppTheme.cardBorder,
-                              onSelected: (_) {
-                                _player.setSpeed(s);
-                                Navigator.pop(context);
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
+          IconButton(
+            icon: Icon(
+              _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
+              color: _sleepRemaining > 0 ? AppTheme.primaryBlue : AppTheme.iconColor,
+            ),
+            tooltip: _sleepRemaining > 0 ? '$_sleepRemaining मिनट बाकी' : 'Sleep timer',
+            onPressed: _showMusicSleepTimerDialog,
           ),
         ],
       ),
-    ),
-  );
-}
-}
+      body: Column(
+        children: [
+          // 👇 TOP PART: Album Art, Title, Action Buttons (Scroll hota rahega)
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  AlbumArtWidget(songId: song.id, size: 250, radius: 20),
+                  const SizedBox(height: 30),
+                  
+                  // 👇 Fixed Height taaki buttons na hilein
+                  SizedBox(
+                    height: 70,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          songTitle,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppTheme.textPrimary,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          song.artist ?? "Unknown",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: AppTheme.textSecondary, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Action Buttons (Add, Share, EQ, Favorite)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _showAddToPlaylistDialog(song),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppTheme.primaryBlue.withOpacity(0.5),
+                                width: 1.5),
+                          ),
+                          child: Icon(Icons.add, color: AppTheme.textPrimary, size: 22),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => _shareSong(song),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppTheme.primaryBlue.withOpacity(0.5),
+                                width: 1.5),
+                          ),
+                          child: Icon(Icons.share, color: AppTheme.textPrimary, size: 22),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: _showEqualizerDialog,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.card,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: AppTheme.primaryBlue.withOpacity(0.5),
+                                width: 1.5),
+                          ),
+                          child: Icon(Icons.equalizer, color: AppTheme.textPrimary, size: 22),
+                        ),
+                      ),
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () => _toggleFavorite(song),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isFav ? Colors.pinkAccent.withOpacity(0.2) : AppTheme.card,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isFav ? Colors.pinkAccent : AppTheme.primaryBlue.withOpacity(0.5),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Icon(
+                            isFav ? Icons.favorite : Icons.favorite_border,
+                            color: isFav ? Colors.pinkAccent : AppTheme.textPrimary,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+
+          // 👇 BOTTOM PART: Slider aur Play/Pause buttons (Hamesha niche fix rahenge)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Slider
+                StreamBuilder<Duration>(
+                  stream: _player.positionStream,
+                  builder: (context, positionSnapshot) {
+                    final position = positionSnapshot.data ?? Duration.zero;
+                    return StreamBuilder<Duration?>(
+                      stream: _player.durationStream,
+                      builder: (context, durationSnapshot) {
+                        final duration = durationSnapshot.data ?? Duration.zero;
+                        final maxSeconds = duration.inSeconds > 0
+                            ? duration.inSeconds.toDouble()
+                            : 1.0;
+                        final currentSeconds = position.inSeconds
+                            .toDouble()
+                            .clamp(0.0, maxSeconds);
+
+                        return Column(
+                          children: [
+                            Slider(
+                              value: currentSeconds,
+                              min: 0,
+                              max: maxSeconds,
+                              activeColor: AppTheme.primaryBlue,
+                              inactiveColor: AppTheme.cardBorder,
+                              onChanged: duration.inSeconds > 0
+                                  ? (value) {
+                                      _player.seek(Duration(seconds: value.toInt()));
+                                    }
+                                  : null,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(_formatDuration(position),
+                                    style: TextStyle(color: AppTheme.textSecondary)),
+                                Text(_formatDuration(duration),
+                                    style: TextStyle(color: AppTheme.textSecondary)),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                
+                // Play/Pause buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _loopMode == 0
+                            ? Icons.repeat
+                            : _loopMode == 1
+                                ? Icons.repeat_one
+                                : Icons.shuffle,
+                        color: _loopMode == 0
+                            ? AppTheme.textTertiary
+                            : AppTheme.primaryBlue,
+                        size: 24,
+                      ),
+                      onPressed: _toggleLoop,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.skip_previous, color: AppTheme.textPrimary, size: 32),
+                      onPressed: _playPrevious,
+                    ),
+                    StreamBuilder<PlayerState>(
+                      stream: _player.playerStateStream,
+                      builder: (context, snapshot) {
+                        final playing = snapshot.data?.playing ?? false;
+                        return GestureDetector(
+                          onTap: _togglePlay,
+                          child: Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              playing ? Icons.pause : Icons.play_arrow,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.skip_next, color: AppTheme.textPrimary, size: 32),
+                      onPressed: _playNext,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.speed, color: AppTheme.textTertiary, size: 24),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: AppTheme.card,
+                          builder: (context) {
+                            final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+                            return Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Wrap(
+                                spacing: 10,
+                                runSpacing: 10,
+                                children: speeds.map((s) {
+                                  return ChoiceChip(
+                                    label: Text('${s}x',
+                                        style: TextStyle(
+                                          color: _player.speed == s
+                                              ? Colors.white
+                                              : AppTheme.textPrimary,
+                                        )),
+                                    selected: _player.speed == s,
+                                    selectedColor: AppTheme.primaryBlue,
+                                    backgroundColor: AppTheme.cardBorder,
+                                    onSelected: (_) {
+                                      _player.setSpeed(s);
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+} 
