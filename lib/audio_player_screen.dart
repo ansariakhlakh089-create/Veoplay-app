@@ -986,19 +986,19 @@ void dispose() {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      icon: Icon(
-                        _loopMode == 0
-                            ? Icons.repeat
-                            : _loopMode == 1
-                                ? Icons.repeat_one
-                                : Icons.shuffle,
-                        color: _loopMode == 0
-                            ? AppTheme.textTertiary
-                            : AppTheme.primaryBlue,
-                        size: 24,
-                      ),
-                      onPressed: _toggleLoop,
-                    ),
+  icon: Icon(
+    _loopMode == 0
+        ? Icons.repeat
+        : _loopMode == 1
+            ? Icons.repeat_one
+            : (_player.shuffleModeEnabled ? Icons.shuffle : Icons.repeat),
+    color: _loopMode == 0
+        ? AppTheme.textTertiary
+        : AppTheme.primaryBlue,
+    size: 24,
+  ),
+  onPressed: _toggleLoop,
+),
                     IconButton(
                       icon: Icon(Icons.skip_previous, color: AppTheme.textPrimary, size: 32),
                       onPressed: _playPrevious,
