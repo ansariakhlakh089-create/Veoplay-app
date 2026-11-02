@@ -3050,10 +3050,7 @@ _applyVolume(newVol);
                           ),
                         ),
 
-                      // ----- Video List Panel -----
-                      if (_showVideoList) _buildVideoListPanel(),
-
-                      // ----- Lock Button -----
+                                            // ----- Lock Button -----
                       if (_locked)
                         Positioned(
                           top: MediaQuery.of(context).padding.top + 12,
@@ -3077,8 +3074,7 @@ _applyVolume(newVol);
                     ],
                   ),
                 ),
-                ),
-      ), // 👈 Scaffold yahan close hua
-    ); // 👈 PopScope yahan close hua
+      ), // 👈 NAYA: Scaffold yahan close hua
+    ); // 👈 NAYA: PopScope yahan close hua
   }
-}
+  }
