@@ -141,16 +141,19 @@ void main() async {
   CrashLog.install();
   mk.MediaKit.ensureInitialized();
 
-  try {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
-      androidNotificationChannelName: 'VeoPlay Audio',
-      androidNotificationOngoing: true,
-      androidNotificationIcon: 'mipmap/launcher_icon', // 👈 यहाँ आइकॉन का सही नाम जोड़ा गया है
+    try {
+    await AudioService.init(
+      builder: () => VeoAudioHandler(globalAudioPlayer),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
+        androidNotificationChannelName: 'VeoPlay Audio',
+        androidNotificationOngoing: true,
+        androidNotificationIcon: 'mipmap/launcher_icon',
+      ),
     );
   } catch (e) {
     debugPrint('Audio background init error: $e');
-  }
+    }
 
   try {
     final info = await PackageInfo.fromPlatform();
