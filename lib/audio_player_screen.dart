@@ -156,11 +156,16 @@ await _player.play();
   }
 
   void _syncLoopFromPlayer() {
-    if (_togglingLoop || !mounted) return;
-    final m = _player.loopMode == LoopMode.one
-        ? 1
-        : (_player.shuffleModeEnabled ? 2 : 0);
-    if (m != _loopMode) setState(() => _loopMode = m);
+  if (_togglingLoop || !mounted) return;
+  int m;
+  if (_player.loopMode == LoopMode.one) {
+    m = 1;
+  } else if (_player.loopMode == LoopMode.all) {
+    m = 2;
+  } else {
+    m = 0;
+  }
+  if (m != _loopMode) setState(() => _loopMode = m);
   }
 
   Future<void> _toggleLoop() async {
