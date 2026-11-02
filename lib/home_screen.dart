@@ -60,8 +60,9 @@ class _HomeScreenState extends State<HomeScreen>
       _loadRecent();
       _loadFavoriteVideos();
       _loadVideoPlaylists();
-      _loadWatchProgress();
+            _loadWatchProgress();
       _loadHiddenFolders();
+      askNotificationPermission();
     });
   }
   
