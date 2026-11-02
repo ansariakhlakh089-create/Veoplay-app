@@ -44,13 +44,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     });
 
     if (_player.loopMode == LoopMode.one) {
-      _loopMode = 1;
-    } else if (_player.shuffleModeEnabled) {
-      _loopMode = 2;
-    } else {
-      _loopMode = 0;
+  _loopMode = 1;
+} else if (_player.loopMode == LoopMode.all) {
+  _loopMode = 2; // Loop All active hai
+} else {
+  _loopMode = 0;
     }
-
+    
     _loadFavorites();
     // Notification / lock-screen से Favorite या Loop बदला तो यहाँ भी दिखे
     musicDataNotifier.addListener(_loadFavorites);
