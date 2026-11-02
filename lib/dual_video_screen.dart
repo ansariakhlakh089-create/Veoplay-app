@@ -473,69 +473,83 @@ void _toggleLockSlot(int slot) {
 
 // 👇 Function buttons row (per-panel)
   Widget _buildSlotButtons(int slot) {
-    final c = _ctrl(slot);
-    if (c == null) return const SizedBox.shrink();
-    final speed = slot == 0 ? _speed1 : _speed2;
-    final loop = slot == 0 ? _loop1 : _loop2;
-    final mute = slot == 0 ? _mute1 : _mute2;
-    final lock = slot == 0 ? _lock1 : _lock2;
+  final c = _ctrl(slot);
+  if (c == null) return const SizedBox.shrink();
+  final speed = slot == 0 ? _speed1 : _speed2;
+  final loop = slot == 0 ? _loop1 : _loop2;
+  final lock = slot == 0 ? _lock1 : _lock2;
 
-    Widget btn({
-      required IconData icon,
-      required VoidCallback onTap,
-      Color? color,
-      bool active = false,
-    }) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: active
-                ? AppTheme.primaryBlue.withOpacity(0.3)
-                : Colors.black.withOpacity(0.5),
-            shape: BoxShape.circle,
-            border: active
-                ? Border.all(color: AppTheme.primaryBlue, width: 1)
-                : null,
-          ),
-          child: Icon(icon, color: color ?? Colors.white, size: 16),
+  // Yahan humne 'icon' ki jagah 'child' (Widget) liya hai taaki Speed text mein dikhe
+  Widget btn({
+    required Widget child,
+    required VoidCallback onTap,
+    bool active = false,
+  }) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, // 👈 Tap ko capture karne ke liye
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8), // 👈 Spacing badha di (pehle 3 thi)
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: active
+              ? AppTheme.primaryBlue.withOpacity(0.3)
+              : Colors.black.withOpacity(0.5),
+          shape: BoxShape.circle,
+          border: active
+              ? Border.all(color: AppTheme.primaryBlue, width: 1)
+              : null,
         ),
-      );
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        btn(
-          icon: Icons.speed,
-          onTap: () => _cycleSpeed(slot),
-          active: speed != 1.0,
-          color: speed != 1.0 ? AppTheme.primaryBlue : Colors.white70,
-        ),
-        btn(
-          icon: loop == 1 ? Icons.repeat_one : Icons.repeat,
-          onTap: () => _cycleLoopSlot(slot),
-          active: loop != 0,
-          color: loop != 0 ? AppTheme.primaryBlue : Colors.white70,
-        ),
-        btn(
-          icon: Icons.camera_alt_outlined,
-          onTap: () => _takeFullScreenshot(),
-        ),
-        btn(
-          icon: mute ? Icons.volume_off : Icons.volume_up,
-          onTap: () => _toggleMuteSlot(slot),
-          color: mute ? Colors.redAccent : Colors.white70,
-        ),
-        btn(
-          icon: lock ? Icons.lock : Icons.lock_open,
-          onTap: () => _toggleLockSlot(slot),
-          color: lock ? Colors.amber : Colors.white70,
-        ),
-      ],
+        child: child,
+      ),
     );
+  }
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      // 1. Speed Text (1.0x, 1.5x) mein dikhega
+      btn(
+        child: Text(
+          '${speed}x',
+          style: TextStyle(
+            color: speed != 1.0 ? AppTheme.primaryBlue : Colors.white70,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        onTap: () => _cycleSpeed(slot),
+        active: speed != 1.0,
+      ),
+      // 2. Loop
+      btn(
+        child: Icon(
+          loop == 1 ? Icons.repeat_one : Icons.repeat,
+          color: loop != 0 ? AppTheme.primaryBlue : Colors.white70,
+          size: 18,
+        ),
+        onTap: () => _cycleLoopSlot(slot),
+        active: loop != 0,
+      ),
+      // 3. Screenshot
+      btn(
+        child: const Icon(Icons.content_cut, color: Colors.white70, size: 18),
+        onTap: _takeFullScreenshot,
+      ),
+      // 👈 4. Volume icon YAHAN SE HATA DIYA GAYA HAI
+      
+      // 5. Lock
+      btn(
+        child: Icon(
+          lock ? Icons.lock : Icons.lock_open,
+          color: lock ? Colors.amber : Colors.white70,
+          size: 18,
+        ),
+        onTap: () => _toggleLockSlot(slot),
+        active: lock,
+      ),
+    ],
+  );
   }
 
   // 👇 हर panel का अपना play/pause
