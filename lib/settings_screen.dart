@@ -390,6 +390,19 @@ _settingTile(
                   color: AppTheme.textTertiary),
             ),
 
+            _settingTile(
+  icon: Icons.visibility,
+  title: 'Hidden Items',
+  subtitle: 'छुपाए गए वीडियो और गाने',
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HiddenItemsScreen()),
+    );
+  },
+  trailing: Icon(Icons.chevron_right, color: AppTheme.textTertiary),
+),
+
             // ============ ABOUT ============
             _sectionTitle('ABOUT'),
 
