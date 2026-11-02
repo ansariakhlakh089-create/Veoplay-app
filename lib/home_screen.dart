@@ -2240,7 +2240,26 @@ if (_isVideoNew(item['url']!))
     ),
   );
   }
-    
+
+ // Naya: Video Hide karne ke liye
+ListTile(
+  leading: const Icon(Icons.visibility_off, color: AppTheme.iconColor),
+  title: Text("Hide Video", style: TextStyle(color: AppTheme.textPrimary)),
+  onTap: () {
+    Navigator.pop(context);
+    _hideVideo(item);
+  },
+),
+// Naya: Folder Hide karne ke liye
+ListTile(
+  leading: const Icon(Icons.folder_off, color: AppTheme.iconColor),
+  title: Text("Hide Folder (${item['folder']})", style: TextStyle(color: AppTheme.textPrimary)),
+  onTap: () {
+    Navigator.pop(context);
+    _hideFolder(_folderKey(item));
+  },
+),
+  
   void _showVideoOptions(BuildContext context,
       Map<String, String> item, int index) {
     showModalBottomSheet(
