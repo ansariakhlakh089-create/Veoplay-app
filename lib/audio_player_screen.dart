@@ -99,9 +99,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }).toList();
 
    await _player.setAudioSource(
-        ConcatenatingAudioSource(children: sources),
-        initialIndex: _currentIndex,
-      );
+  ConcatenatingAudioSource(children: sources),
+  initialIndex: _currentIndex,
+);
+
+// 👇 NAYI LINE: Jab playlist khatam ho toh wapas shuru se chale
+await _player.setLoopMode(LoopMode.all); 
+
+await _player.play();
       final prefs = await SharedPreferences.getInstance();
       final defSpeed = prefs.getDouble('default_music_speed') ?? 1.0;
       await _player.setSpeed(defSpeed);
