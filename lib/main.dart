@@ -136,6 +136,16 @@ void openExternalVideo(String uri) {
   );
 }
 
+// Android 13+ पर notification दिखाने के लिए permission माँगो
+Future<void> askNotificationPermission() async {
+  try {
+    await const MethodChannel('veoplay/orientation')
+        .invokeMethod('requestNotifications');
+  } catch (e) {
+    debugPrint('Notification permission error: $e');
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   CrashLog.install();
