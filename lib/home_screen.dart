@@ -4123,3 +4123,98 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
   }
 }
                           
+class HiddenItemsScreen extends StatefulWidget {
+  const HiddenItemsScreen({super.key});
+
+  @override
+  State<HiddenItemsScreen> createState() => _HiddenItemsScreenState();
+}
+
+class _HiddenItemsScreenState extends State<HiddenItemsScreen> {
+  Set<String> _hiddenFolders = {};
+  Set<String> _hiddenVideoIds = {};
+  Set<int> _hiddenSongIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _hiddenFolders = (prefs.getStringList('hidden_folders') ?? []).toSet();
+        _hiddenVideoIds = (prefs.getStringList('hidden_videos') ?? []).toSet();
+        _hiddenSongIds = (prefs.getStringList('hidden_songs') ?? []).map((e) => int.tryParse(e) ?? -1).where((e) => e != -1).toSet();
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('hidden_folders', _hiddenFolders.toList());
+    await prefs.setStringList('hidden_videos', _hiddenVideoIds.toList());
+    await prefs.setStringList('hidden_songs', _hiddenSongIds.map((e) => e.toString()).toList());
+    rescanRequestNotifier.value++; // Home screen ko refresh karne ke liye
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text('Hidden Items', style: TextStyle(color: AppTheme.textPrimary)),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (_hiddenFolders.isNotEmpty) ...[
+            Text("Hidden Folders", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold)),
+            ..._hiddenFolders.map((f) => ListTile(
+              leading: const Icon(Icons.folder_off, color: Colors.white70),
+              title: Text(f, style: TextStyle(color: AppTheme.textPrimary)),
+              trailing: TextButton(
+                onPressed: () { setState(() => _hiddenFolders.remove(f)); _save(); },
+                child: const Text("Unhide"),
+              ),
+            )),
+            const Divider(),
+          ],
+          if (_hiddenVideoIds.isNotEmpty) ...[
+            Text("Hidden Videos", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold)),
+            ..._hiddenVideoIds.map((id) => ListTile(
+              leading: const Icon(Icons.videocam_off, color: Colors.white70),
+              title: Text("Video ID: $id", style: TextStyle(color: AppTheme.textPrimary)),
+              trailing: TextButton(
+                onPressed: () { setState(() => _hiddenVideoIds.remove(id)); _save(); },
+                child: const Text("Unhide"),
+              ),
+            )),
+            const Divider(),
+          ],
+          if (_hiddenSongIds.isNotEmpty) ...[
+            Text("Hidden Songs", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold)),
+            ..._hiddenSongIds.map((id) => ListTile(
+              leading: const Icon(Icons.music_off, color: Colors.white70),
+              title: Text("Song ID: $id", style: TextStyle(color: AppTheme.textPrimary)),
+              trailing: TextButton(
+                onPressed: () { setState(() => _hiddenSongIds.remove(id)); _save(); },
+                child: const Text("Unhide"),
+              ),
+            )),
+          ],
+          if (_hiddenFolders.isEmpty && _hiddenVideoIds.isEmpty && _hiddenSongIds.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 100),
+                child: Text("कोई हिडन आइटम नहीं है", style: TextStyle(color: AppTheme.textSecondary)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
