@@ -3048,10 +3048,11 @@ _applyVolume(newVol);
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                ),
-      ), // 👈 NAYA: Scaffold yahan close hua
-    ); // 👈 NAYA: PopScope yahan close hua
-  }
-  }
+                      ], // Stack children
+                    ), // Stack
+                  ), // GestureDetector
+                ), // Listener close
+              ), // Scaffold close
+            ); // 👈 PopScope yahan close hua
+          } // _buildPlayer close
+        } // Class close
