@@ -159,11 +159,13 @@ Future<void> _loadHiddenFolders() async {
   }
 }
   
-Future<void> _saveHiddenFolders() async {
+Future<void> _saveHiddenData() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setStringList('hidden_folders', _hiddenFolders.toList());
+  await prefs.setStringList('hidden_videos', _hiddenVideoIds.toList());
+  await prefs.setStringList('hidden_songs', _hiddenSongIds.map((e) => e.toString()).toList());
 }
-
+  
 Future<bool> _verifyOrCreateFolderPin() async {
   final prefs = await SharedPreferences.getInstance();
   final savedPin = prefs.getString('hidden_folder_pin');
