@@ -46,7 +46,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (_player.loopMode == LoopMode.one) {
   _loopMode = 1;
 } else if (_player.loopMode == LoopMode.all) {
-  _loopMode = 2; // Loop All active hai
+  _loopMode = 2; // Playlist start hote hi Loop All set hoga
 } else {
   _loopMode = 0;
     }
