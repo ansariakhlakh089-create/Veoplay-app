@@ -34,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen>
   // 👇👇👇 ये नई लाइन्स ऐड करो 👇👇👇
   bool _isVideoSelectionMode = false;
   Set<String> _selectedVideoIds = {};
+  bool _isSongSelectionMode = false;
+  Set<int> _selectedSongIds = {};
 
   @override
   void initState() {
