@@ -150,14 +150,15 @@ Future<void> _loadWatchProgress() async {
 
 Future<void> _loadHiddenFolders() async {
   final prefs = await SharedPreferences.getInstance();
-  final list = prefs.getStringList('hidden_folders') ?? [];
   if (mounted) {
     setState(() {
-      _hiddenFolders = list.toSet();
+      _hiddenFolders = (prefs.getStringList('hidden_folders') ?? []).toSet();
+      _hiddenVideoIds = (prefs.getStringList('hidden_videos') ?? []).toSet();
+      _hiddenSongIds = (prefs.getStringList('hidden_songs') ?? []).map((e) => int.tryParse(e) ?? -1).where((e) => e != -1).toSet();
     });
   }
 }
-
+  
 Future<void> _saveHiddenFolders() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setStringList('hidden_folders', _hiddenFolders.toList());
