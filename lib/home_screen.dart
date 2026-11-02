@@ -122,6 +122,8 @@ Set<String> _watchedVideos = {};
 
 // 👇👇👇 ये नई लाइन्स ऐड करो 👇👇👇
 Set<String> _hiddenFolders = {};
+Set<String> _hiddenVideoIds = {}; // Sirf videos ke liye
+Set<int> _hiddenSongIds = {};     // Sirf songs ke liye
 bool _showHiddenFolders = false;
 Future<void> _loadWatchProgress() async {
   final prefs = await SharedPreferences.getInstance();
