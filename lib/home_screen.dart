@@ -3492,6 +3492,16 @@ ListTile(
     );
   }
 
+  // Naya: Song Hide karne ke liye
+ListTile(
+  leading: const Icon(Icons.visibility_off, color: AppTheme.iconColor),
+  title: Text("Hide Song", style: TextStyle(color: AppTheme.textPrimary)),
+  onTap: () {
+    Navigator.pop(context);
+    _hideSong(song);
+  },
+),
+  
   void _showSongOptions(SongModel song) {
     showModalBottomSheet(
       context: context,
