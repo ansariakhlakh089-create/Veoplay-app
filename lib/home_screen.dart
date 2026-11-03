@@ -1157,8 +1157,6 @@ Widget build(BuildContext context) {
     },
     child: Scaffold( // 👈 Purana Scaffold yahan se shuru hoga
       backgroundColor: AppTheme.bg,
-      // ... aage ka code ...
-      backgroundColor: AppTheme.bg,
       appBar: AppBar(
   backgroundColor: Colors.transparent,
   elevation: 0,
