@@ -1834,17 +1834,24 @@ Widget build(BuildContext context) {
               selectedIndex: _currentTab,
               onDestinationSelected: (index) async {
                 if (index == 1) {
-                  if (_recentUrl != null && _recentTitle != null) {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RealVideoPlayer(
-                          videoUrl: _recentUrl!,
-                          title: _recentTitle!,
-                          startPosition: _recentPosition,
-                        ),
-                      ),
-                    );
+  if (_recentUrl != null && _recentTitle != null) {
+    
+    // 👇 NAYA CODE: Recent video ka index dhundo
+    final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
+    
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RealVideoPlayer(
+          videoUrl: _recentUrl!,
+          title: _recentTitle!,
+          startPosition: _recentPosition,
+          // 👇 Ye do lines add karni hain
+          playlist: recentIndex >= 0 ? _visibleVideos : null,
+          currentIndex: recentIndex >= 0 ? recentIndex : 0,
+        ),
+      ),
+    );
                     if (result != null && result is Map) {
                       setState(() {
                         _recentTitle = result['title'];
