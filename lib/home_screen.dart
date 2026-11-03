@@ -1349,7 +1349,7 @@ Widget build(BuildContext context) {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const ProfileScreen()),
+                                builder: (_) => ProfileScreen()),
                           );
                         },
                         child: CircleAvatar(
