@@ -1394,7 +1394,7 @@ Widget build(BuildContext context) {
                                   ),
                                   const SizedBox(height: 12),
                                 ],
-                                if (_recentTitle != null) ...[
+                                if (_recentTitle != null && !_isVideoSelectionMode) ...[
                                    Row(
                                     children: [
                                       Text("Recent",
