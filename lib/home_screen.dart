@@ -368,16 +368,16 @@ void _toggleVideoSelection(String id) {
     } else {
       _selectedVideoIds.add(id);
     }
+    // 👈 Auto-exit (if empty) wali line yahan se hata di gayi hai
   });
 }
 
 void _selectAllVideos() {
   setState(() {
-    final visible = _visibleVideos;
-    if (_selectedVideoIds.length == visible.length) {
+    if (_selectedVideoIds.length == _visibleVideos.length) {
       _selectedVideoIds.clear();
     } else {
-      _selectedVideoIds = visible
+      _selectedVideoIds = _visibleVideos // 👈 _visibleVideos use karo
           .map((v) => v['id'] ?? '')
           .where((id) => id.isNotEmpty)
           .toSet();
@@ -467,6 +467,7 @@ void _toggleSongSelection(int id) {
     } else {
       _selectedSongIds.add(id);
     }
+    // 👈 Auto-exit (if empty) wali line yahan se hata di gayi hai
   });
 }
 
