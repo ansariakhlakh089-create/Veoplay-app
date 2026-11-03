@@ -1162,7 +1162,7 @@ Widget build(BuildContext context) {
       : null,
   title: _isVideoSelectionMode
       ? Text(
-          "${_selectedVideoIds.length} चुने गए",
+          "${_selectedVideoIds.length}/${visibleVideos.length}", // 👈 Video ke liye
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
