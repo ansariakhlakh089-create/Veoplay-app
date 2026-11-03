@@ -1621,59 +1621,57 @@ Widget build(BuildContext context) {
                         ),
                       ),
 
-      bottomNavigationBar: NavigationBar(
+      // 👇 Yahan se naya code shuru hota hai
+bottomNavigationBar: (_isVideoSelectionMode || _isSongSelectionMode)
+    ? Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        decoration: BoxDecoration(
+          color: AppTheme.card,
+          border: Border(top: BorderSide(color: AppTheme.cardBorder)),
+        ),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.star_border, color: Colors.white),
+                onPressed: () {}, // Favorites logic
+              ),
+              IconButton(
+                icon: const Icon(Icons.playlist_add, color: Colors.white),
+                onPressed: _isVideoSelectionMode 
+                    ? _showAddMultipleToPlaylistDialog 
+                    : _showAddMultipleSongsToPlaylistDialog,
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.white),
+                onPressed: _isVideoSelectionMode 
+                    ? _deleteSelectedVideos 
+                    : _deleteSelectedSongs,
+              ),
+              IconButton(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                onPressed: () {}, // More options
+              ),
+            ],
+          ),
+        ),
+      )
+    : NavigationBar( // 👈 Yahan se aapka PURANA NavigationBar shuru hoga
         backgroundColor: AppTheme.card,
-        indicatorColor:
-            AppTheme.primaryBlue.withOpacity(0.2),
+        indicatorColor: AppTheme.primaryBlue.withOpacity(0.2),
         selectedIndex: _currentTab,
         onDestinationSelected: (index) {
-          if (index == 1) {
-            if (_recentUrl != null && _recentTitle != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => RealVideoPlayer(
-                    videoUrl: _recentUrl!,
-                    title: _recentTitle!,
-                    startPosition: _recentPosition,
-                  ),
-                ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content:
-                        Text("कोई हाल ही में चलाया गया वीडियो नहीं है")),
-              );
-            }
-            return;
-          }
-          setState(() {
-            _currentTab = index;
-            _isVideoSelectionMode = false;
-            _selectedVideoIds.clear();
-            if (index != 2) {
-              _isSongSelectionMode = false;
-              _selectedSongIds.clear();
-            }
-          });
-          if (index == 2 && !_audioLoaded) {
-            _loadSongs();
-          }
+          
+          // ... (yahan aapka purana saara onDestinationSelected wala code aayega) ...
+          
         },
         destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.video_library), label: "Videos"),
-          NavigationDestination(
-              icon: Icon(Icons.play_circle_fill, size: 36),
-              label: "Play"),
-          NavigationDestination(
-              icon: Icon(Icons.music_note), label: "Music"),
+          NavigationDestination(icon: Icon(Icons.video_library), label: "Videos"),
+          NavigationDestination(icon: Icon(Icons.play_circle_fill, size: 36), label: "Play"),
+          NavigationDestination(icon: Icon(Icons.music_note), label: "Music"),
         ],
-      ),
-    ),
-  );
-}
+      ), // 👈 NavigationBar ka end
 
   String _folderKey(Map<String, String> v) {
     final url = v['url'] ?? '';
