@@ -2207,11 +2207,16 @@ void didChangeAppLifecycleState(AppLifecycleState state) {
   if (state == AppLifecycleState.resumed) {
     _pipRequested = false;
   }
-  if (state == AppLifecycleState.paused && _isInitialized) {
-    // Home / screen-off पर वीडियो रोको (PiP में नहीं रोकना)
-    if (!_pipRequested) {
-      _controller.pause();
+  
+  // 👇 NAYA FIX: Jab app background me jaye toh Auto-PiP chalu ho jaye
+  if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+    if (_isInitialized && !_locked && _controller.value.isPlaying) {
+      _enterPip(); // Ye function pehle se aapke paas hai
+    } else if (_isInitialized && !_pipRequested) {
+      _controller.pause(); // Agar PiP support nahi hai toh pause ho jaye
     }
+  }
+}
     final pos = _controller.value.position.inSeconds;
     final dur = _controller.value.duration.inSeconds;
     _saveResume(widget.videoUrl, pos, dur);
