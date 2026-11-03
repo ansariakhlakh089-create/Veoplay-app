@@ -13,7 +13,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'VeoPlay User';
-  int _userCoins = 0;
   int _totalVideos = 0;
   int _totalSongs = 0;
   int _totalFavorites = 0;
@@ -39,7 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadStats() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('user_name') ?? 'VeoPlay User';
-    final coins = prefs.getInt('user_coins') ?? 0;
     final videoCount = await VideoCacheDb.count();
     final songs = prefs.getStringList('cached_songs') ?? [];
     final favSongs = prefs.getStringList('favorite_songs') ?? [];
@@ -49,7 +47,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!mounted) return;
     setState(() {
       _userName = name;
-      _userCoins = coins;
       _totalVideos = videoCount;
       _totalSongs = songs.length;
       _totalFavorites = favSongs.length + favVideos.length;
