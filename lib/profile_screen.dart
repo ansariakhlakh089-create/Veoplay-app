@@ -54,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  Future<void&gt; _editName() async {
+  Future<void> _editName() async {
     final controller = TextEditingController(text: _userName);
     final newName = await showDialog<String>(
       context: context,
