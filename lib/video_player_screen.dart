@@ -406,7 +406,6 @@ if (_autoNextTriggered &&
           }
         }
       }
-      setState(() {});
     });
     _startHideTimer();
   }
