@@ -238,6 +238,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer>
   int _loopMode = 0;
   int _fitMode = 0;
   bool _autoPlayNext = true;
+  bool isExternalSubtitle = false; // 👈 Ye add karo
 
   // 👇👇👇 Subtitle के लिए नए वेरिएबल्स 👇👇👇
 List<SubtitleLine> _subtitles = [];
