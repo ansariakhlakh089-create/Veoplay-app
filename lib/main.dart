@@ -153,17 +153,18 @@ void main() async {
   mk.MediaKit.ensureInitialized();
 
     try {
-    await AudioService.init(
-      builder: () => VeoAudioHandler(globalAudioPlayer),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
-        androidNotificationChannelName: 'VeoPlay Audio',
-        androidNotificationOngoing: true,
-        androidNotificationIcon: 'mipmap/launcher_icon',
-      ),
-    );
-  } catch (e) {
-    debugPrint('Audio background init error: $e');
+  await AudioService.init(
+    builder: () => VeoPlayAudioHandler(globalAudioPlayer),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
+      androidNotificationChannelName: 'VeoPlay Audio',
+      androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/ic_launcher', // 👈 Yahan ic_launcher karo
+      androidStopForegroundOnPause: false, // 👈 Background me pause hone par notification na hate
+    ),
+  );
+} catch (e) {
+  debugPrint('Audio background init error: $e');
     }
 
   try {
