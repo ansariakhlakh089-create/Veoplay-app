@@ -24,6 +24,9 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   _MkController? _c2;
   late int _i1;
   late int _i2;
+  bool _ready1 = false;     // 👈 Ye add karo
+bool _ready2 = false;     // 👈 Ye add karo
+bool _showList = false;   // 👈 Ye add karo
   bool _showCtrl1 = true;
 bool _showCtrl2 = true;
 bool prevCtrl1 = true;
