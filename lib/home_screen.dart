@@ -1169,7 +1169,7 @@ Widget build(BuildContext context) {
               color: AppTheme.textPrimary))
       : (_currentTab == 2 && _isSongSelectionMode)
           ? Text(
-              "${_selectedSongIds.length} चुने गए",
+              "${_selectedSongIds.length}/${_visibleSongs.length}", // 👈 Music ke liye
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
