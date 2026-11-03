@@ -5,7 +5,7 @@ const String kFeedbackContact = '';
 
 // ==================== Profile Screen ====================
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  ProfileScreen({super.key});
 
   @override
   State&lt;ProfileScreen&gt; createState() => _ProfileScreenState();
