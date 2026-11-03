@@ -8,7 +8,7 @@ class ProfileScreen extends StatefulWidget {
   ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen&gt; createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
@@ -35,7 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  Future<void&gt; _loadStats() async {
+  Future<void> _loadStats() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('user_name') ?? 'VeoPlay User';
     final videoCount = await VideoCacheDb.count();
@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void&gt; _editName() async {
     final controller = TextEditingController(text: _userName);
-    final newName = await showDialog<String&gt;(
+    final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
