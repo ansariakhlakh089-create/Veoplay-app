@@ -164,6 +164,13 @@ class _MkController extends ChangeNotifier {
     } catch (_) {}
   }
 
+ Future<void> setAudioDelay(double seconds) async {
+  try {
+    await (player.platform as mk.NativePlayer)
+        .setProperty('audio-delay', seconds.toStringAsFixed(2));
+  } catch (_) {}
+ }
+  
   Future<void> setAudioTrack(mk.AudioTrack t) => player.setAudioTrack(t);
   Future<void> setSubtitleTrack(mk.SubtitleTrack t) =>
       player.setSubtitleTrack(t);
