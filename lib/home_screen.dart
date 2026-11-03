@@ -55,33 +55,38 @@ List<SongModel> get _visibleSongs {
 }
   
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    recentChangedNotifier.addListener(_onRecentChanged);
-    musicDataNotifier.addListener(_onMusicDataChanged);
-    rescanRequestNotifier.addListener(_onRescanRequested);
-    isDarkMode.addListener(_onThemeChanged);
-    _seqSub = globalAudioPlayer.sequenceStateStream.listen((s) {
-      final tag = s?.currentSource?.tag;
-      if (tag is MediaItem) {
-        final id = int.tryParse(tag.id);
-        if (id != null) _addRecentSong(id);
-      }
-      if (mounted) setState(() {});
-    });
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addObserver(this);
+  recentChangedNotifier.addListener(_onRecentChanged);
+  musicDataNotifier.addListener(_onMusicDataChanged);
+  rescanRequestNotifier.addListener(_onRescanRequested);
+  isDarkMode.addListener(_onThemeChanged);
+  
+  _seqSub = globalAudioPlayer.sequenceStateStream.listen((s) {
+    final tag = s?.currentSource?.tag;
+    if (tag is MediaItem) {
+      final id = int.tryParse(tag.id);
+      if (id != null) _addRecentSong(id);
+    }
+    if (mounted) setState(() {});
+  });
 
-    // 👈 परमिशन और वीडियो लोडिंग को स्क्रीन रेंडर होने के बाद कॉल करें ताकि ऐप फ्रीज न हो
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadVideos();
-      _loadRecent();
-      _loadFavoriteVideos();
-      _loadVideoPlaylists();
-            _loadWatchProgress();
-      _loadHiddenFolders();
-      askNotificationPermission();
-    });
-  }
+  // 👇 YAHAN SE NAYA CODE SHURU HAI 👇
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // 1. Sabse pehle Notification Permission maango
+    await askNotificationPermission(); 
+    
+    // 2. Phir videos aur history load karo
+    _loadVideos();
+    _loadRecent();
+    _loadFavoriteVideos();
+    _loadVideoPlaylists();
+    _loadWatchProgress();
+    _loadHiddenFolders();
+  });
+  // 👆 YAHAN TAK NAYA CODE KHATAM 👆
+}
 
 // 👇 Yahan se function shuru karo
 Future<void> askNotificationPermission() async {
