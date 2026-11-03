@@ -2138,7 +2138,16 @@ if (_subtitles.isNotEmpty || _controller.realSubtitleTracks.isNotEmpty)
       _showSubtitleSettingsDialog();
     },
   ),
-        
+
+         ListTile(
+  leading: Icon(Icons.sync, color: AppTheme.iconColor),
+  title: Text('Audio/Video Sync', style: TextStyle(color: AppTheme.textPrimary)),
+  onTap: () {
+    Navigator.pop(context);
+    _showSyncDialog();
+  },
+),
+          
           ListTile(
             leading: Icon(Icons.closed_caption, color: AppTheme.iconColor),
             title: Text('Subtitle Track',
