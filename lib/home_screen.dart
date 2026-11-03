@@ -1724,8 +1724,9 @@ Widget build(BuildContext context) {
               icon: Icon(Icons.music_note), label: "Music"),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   String _folderKey(Map<String, String> v) {
     final url = v['url'] ?? '';
