@@ -2074,18 +2074,14 @@ bottomNavigationBar: (_isVideoSelectionMode || _isSongSelectionMode)
         children: [
           // 👇 Selection Mode में Checkbox दिखाओ
           if (_isVideoSelectionMode)
-            Padding(
-              padding: const EdgeInsets.only(right: 8, top: 25),
-              child: Icon(
-                isSelected
-                    ? Icons.check_circle
-                    : Icons.radio_button_unchecked,
-                color: isSelected
-                    ? AppTheme.primaryBlue
-                    : AppTheme.textTertiary,
-                size: 24,
-              ),
-            ),
+  Padding(
+    padding: const EdgeInsets.only(right: 12, top: 20),
+    child: Icon(
+      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+      color: isSelected ? Colors.greenAccent : AppTheme.textSecondary,
+      size: 26,
+    ),
+  ),
           Stack(
             children: [
               ClipRRect(
