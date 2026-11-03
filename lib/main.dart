@@ -233,3 +233,58 @@ class VeoPlay extends StatelessWidget {
     );
   }
 }
+
+// ==================== Audio Handler (Background Music ke liye) ====================
+class VeoPlayAudioHandler extends BaseAudioHandler with SeekHandler {
+  final AudioPlayer player;
+
+  VeoPlayAudioHandler(this.player) {
+    player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+    player.durationStream.listen((d) {
+      if (d != null) mediaItem.add(mediaItem.value?.copyWith(duration: d));
+    });
+    player.currentIndexStream.listen((index) {
+      if (index != null && player.sequence != null && player.sequence!.isNotEmpty) {
+        final tag = player.sequence![index].tag;
+        if (tag is MediaItem) {
+          mediaItem.add(tag);
+        }
+      }
+    });
+  }
+
+  PlaybackState _transformEvent(PlaybackEvent event) {
+    return PlaybackState(
+      controls: [
+        MediaControl.skipToPrevious,
+        if (player.playing) MediaControl.pause else MediaControl.play,
+        MediaControl.skipToNext,
+      ],
+      systemActions: const {MediaAction.seek},
+      androidCompactActionIndices: const [0, 1, 2],
+      processingState: const {
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[player.processingState]!,
+      playing: player.playing,
+      updatePosition: player.position,
+      bufferedPosition: player.bufferedPosition,
+      speed: player.speed,
+      queueIndex: event.currentIndex,
+    );
+  }
+
+  @override
+  Future<void> play() => player.play();
+  @override
+  Future<void> pause() => player.pause();
+  @override
+  Future<void> seek(Duration position) => player.seek(position);
+  @override
+  Future<void> skipToNext() => player.seekToNext();
+  @override
+  Future<void> skipToPrevious() => player.seekToPrevious();
+}
