@@ -158,7 +158,7 @@ void main() async {
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
       androidNotificationChannelName: 'VeoPlay Audio',
-      androidNotificationOngoing: true,  // 👈 TRUE karo (pehle false tha)
+      androidNotificationOngoing: false, // 👈 TRUE karo (pehle false tha)
       androidNotificationIcon: 'mipmap/ic_launcher',
       androidStopForegroundOnPause: false, // 👈 false hi rahega
     ),
