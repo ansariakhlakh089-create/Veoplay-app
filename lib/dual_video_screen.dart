@@ -24,11 +24,10 @@ class _DualVideoScreenState extends State<DualVideoScreen> {
   _MkController? _c2;
   late int _i1;
   late int _i2;
-  bool _ready1 = false;
-  bool _ready2 = false;
-  bool _showList = false;
-  bool _showCtrl1 = true; // C-1: हर panel के controls
-  bool _showCtrl2 = true;
+  bool _showCtrl1 = true;
+bool _showCtrl2 = true;
+bool prevCtrl1 = true;
+bool prevCtrl2 = true;
   bool _leaving = false;
   bool _isSyncMode = true; // 👈 यहाँ तक
   final GlobalKey _screenKey = GlobalKey();
