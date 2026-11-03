@@ -11,7 +11,7 @@ class ProfileScreen extends StatefulWidget {
   State&lt;ProfileScreen&gt; createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State&lt;ProfileScreen&gt; {
+class _ProfileScreenState extends State<ProfileScreen> {
   String _userName = 'VeoPlay User';
   int _totalVideos = 0;
   int _totalSongs = 0;
