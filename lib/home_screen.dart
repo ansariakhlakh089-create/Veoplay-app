@@ -1130,9 +1130,22 @@ if (!permission.isAuth && !permission.hasAccess) return;
 }
   
   @override
-  Widget build(BuildContext context) {
-    final visibleVideos = _visibleVideos;
-    return Scaffold(
+Widget build(BuildContext context) {
+  final visibleVideos = _visibleVideos;
+  // 👇 YAHAN SE POP-SCOPE SHURU KARO
+  return PopScope(
+    canPop: !(_isVideoSelectionMode || _isSongSelectionMode),
+    onPopInvokedWithResult: (didPop, result) {
+      if (didPop) return;
+      if (_isVideoSelectionMode) {
+        setState(() { _isVideoSelectionMode = false; _selectedVideoIds.clear(); });
+      } else if (_isSongSelectionMode) {
+        setState(() { _isSongSelectionMode = false; _selectedSongIds.clear(); });
+      }
+    },
+    child: Scaffold( // 👈 Purana Scaffold yahan se shuru hoga
+      backgroundColor: AppTheme.bg,
+      // ... aage ka code ...
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
   backgroundColor: Colors.transparent,
@@ -1179,9 +1192,9 @@ if (!permission.isAuth && !permission.hasAccess) return;
                         colors: [
                           AppTheme.primaryBlue,
                           AppTheme.primaryPurple
-                        ],
-                      ),
-                    ),
+                          ],
+                        ),
+                     ),
                     child: const Icon(Icons.play_arrow,
                         color: Colors.white),
                   );
