@@ -1161,6 +1161,58 @@ void _playPrevious() {
   );
 }
 
+double _audioDelay = 0.0; // Class variables me isko add kar lena
+
+void _showSyncDialog() {
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        backgroundColor: AppTheme.card,
+        title: Text('Audio / Video Sync', style: TextStyle(color: AppTheme.textPrimary)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Audio Delay: ${_audioDelay.toStringAsFixed(1)}s',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+            Slider(
+              value: _audioDelay,
+              min: -5.0,
+              max: 5.0,
+              divisions: 50,
+              activeColor: AppTheme.primaryBlue,
+              onChanged: (v) {
+                setDialogState(() => _audioDelay = v);
+                _controller.setAudioDelay(v);
+              },
+            ),
+            Text(
+              'Video ki aawaz aage badhani ho toh + karein, peeche laani ho toh - karein.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppTheme.textTertiary, fontSize: 11),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setDialogState(() => _audioDelay = 0.0);
+              _controller.setAudioDelay(0.0);
+            },
+            child: const Text('Reset'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+  
   String _formatDuration(Duration d) {
     final hours = d.inHours;
     final minutes = (d.inMinutes % 60).toString().padLeft(2, '0');
