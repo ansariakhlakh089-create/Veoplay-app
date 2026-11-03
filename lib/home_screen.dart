@@ -82,6 +82,17 @@ List<SongModel> get _visibleSongs {
       askNotificationPermission();
     });
   }
+
+// 👇 Yahan se function shuru karo
+Future<void> askNotificationPermission() async {
+  // Android 13+ ke liye notification permission maango
+  if (Platform.isAndroid) {
+    final status = await Permission.notification.status;
+    if (status.isDenied) {
+      await Permission.notification.request();
+    }
+  }
+}
   
   void _onThemeChanged() {
     if (mounted) setState(() {});
