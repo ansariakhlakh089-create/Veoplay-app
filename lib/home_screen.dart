@@ -1631,7 +1631,8 @@ Widget build(BuildContext context) {
                             ],
                           ),
                         ),
-                      ),
+                      ],
+                    ),
 
       // 👇 Yahan se naya code shuru hota hai
 bottomNavigationBar: (_isVideoSelectionMode || _isSongSelectionMode)
