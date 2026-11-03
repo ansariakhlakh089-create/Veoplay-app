@@ -2754,277 +2754,283 @@ if (_subtitlesEnabled && _subtitles.isNotEmpty)
                           ),
                         ),
 
-                      // ----- नीचे कंट्रोल बार -----
-                      if (_showControls)
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            padding:
-                                const EdgeInsets.fromLTRB(16, 20, 16, 24),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [
-                                  Colors.black.withOpacity(0.85),
-                                  Colors.transparent
-                                ],
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  children: [
-                                    _sideBtn(Icons.content_cut, Colors.white,
-                                        _takeScreenshot),
-                                    const SizedBox(width: 10),
-                                    _sideBtn(
-                                      _muted
-                                          ? Icons.volume_off
-                                          : Icons.volume_up,
-                                      _muted
-                                          ? Colors.redAccent
-                                          : Colors.white,
-                                      _toggleMute,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    _sideBtn(
-                                      _locked
-                                          ? Icons.lock
-                                          : Icons.lock_open,
-                                      _locked ? Colors.amber : Colors.white,
-                                      _toggleLock,
-                                    ),
-                                    const Spacer(),
-                                    _sideBtn(
-                                      Icons.vertical_split,
-                                      Colors.white,
-                                      _openDual,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    _sideBtn(
-                                      Icons.playlist_play,
-                                      _showVideoList
-                                          ? AppTheme.primaryBlue
-                                          : Colors.white,
-                                      () => setState(() =>
-                                          _showVideoList = !_showVideoList),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    IconButton(
-                                      padding: EdgeInsets.zero,
-                                      constraints:
-                                          const BoxConstraints(),
-                                      icon: Icon(
-                                          _isFullscreen
-                                              ? Icons.fullscreen_exit
-                                              : Icons.screen_rotation,
-                                          color: Colors.white,
-                                          size: 20),
-                                      onPressed: _toggleFullscreen,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Text(
-                                        _formatDuration(
-                                            _controller.value.position),
-                                        style: const TextStyle(
-                                            color: Colors.white70)),
-                                    Expanded(
-                                      child: SliderTheme(
-                                        data: SliderThemeData(
-                                          trackHeight: 3,
-                                          thumbShape:
-                                              const RoundSliderThumbShape(
-                                                  enabledThumbRadius: 7),
-                                          activeTrackColor:
-                                              AppTheme.primaryBlue,
-                                          inactiveTrackColor:
-                                              Colors.white24,
-                                          thumbColor: AppTheme.primaryBlue,
-                                        ),
-                                        child: Slider(
-                                          value: (_isSeeking &&
-                                                      _previewSeekPosition !=
-                                                          null
-                                                  ? _previewSeekPosition!
-                                                  : _controller.value
-                                                      .position.inSeconds
-                                                      .toDouble())
-                                              .clamp(
-                                                  0,
-                                                  _controller.value.duration
-                                                      .inSeconds
-                                                      .toDouble()),
-                                          min: 0,
-                                          max: _controller
-                                              .value.duration.inSeconds
-                                              .toDouble(),
-                                          onChangeStart: (value) {
-                                            setState(() {
-                                              _isSeeking = true;
-                                              _previewSeekPosition = value;
-                                            });
-                                            _generatePreviewThumbnail(value);
-                                          },
-                                          onChanged: (value) {
-                                            setState(() {
-                                              _previewSeekPosition = value;
-                                            });
-                                            _generatePreviewThumbnail(value);
-                                          },
-                                          onChangeEnd: (value) {
-                                            _seekTo(value);
-                                            setState(() {
-                                              _isSeeking = false;
-                                              _previewSeekPosition = null;
-                                              _previewThumbnail = null;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                        _formatDuration(
-                                            _controller.value.duration),
-                                        style: const TextStyle(
-                                            color: Colors.white70)),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints:
-                                                const BoxConstraints(),
-                                            icon: Icon(
-                                              _loopMode == 1
-                                                  ? Icons.repeat_one
-                                                  : Icons.repeat,
-                                              color: _loopMode == 0
-                                                  ? Colors.white54
-                                                  : AppTheme.primaryBlue,
-                                              size: 18,
-                                            ),
-                                            onPressed: _cycleLoop,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints:
-                                                const BoxConstraints(),
-                                            icon: Icon(
-                                              _fitMode == 0
-                                                  ? Icons.aspect_ratio
-                                                  : (_fitMode == 1
-                                                      ? Icons.zoom_out_map
-                                                      : Icons.fullscreen),
-                                              color: Colors.white70,
-                                              size: 18,
-                                            ),
-                                            onPressed: _cycleFit,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          padding: EdgeInsets.zero,
-                                          constraints:
-                                              const BoxConstraints(),
-                                          icon: Icon(Icons.skip_previous,
-                                              color: _hasPrevious
-                                                  ? Colors.white
-                                                  : Colors.white24,
-                                              size: 24),
-                                          onPressed: _hasPrevious
-                                              ? _playPrevious
-                                              : null,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        GestureDetector(
-                                          onTap: _togglePlay,
-                                          child: Container(
-                                            width: 50,
-                                            height: 50,
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.primaryBlue,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              _controller.value.isPlaying
-                                                  ? Icons.pause
-                                                  : Icons.play_arrow,
-                                              color: Colors.white,
-                                              size: 26,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        IconButton(
-                                          padding: EdgeInsets.zero,
-                                          constraints:
-                                              const BoxConstraints(),
-                                          icon: Icon(Icons.skip_next,
-                                              color: _hasNext
-                                                  ? Colors.white
-                                                  : Colors.white24,
-                                              size: 24),
-                                          onPressed:
-                                              _hasNext ? _playNext : null,
-                                        ),
-                                      ],
-                                    ),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints:
-                                                const BoxConstraints(),
-                                            icon: const Icon(Icons.speed,
-                                                color: Colors.white70,
-                                                size: 20),
-                                            onPressed: _showSpeedDialog,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          IconButton(
-                                            padding: EdgeInsets.zero,
-                                            constraints:
-                                                const BoxConstraints(),
-                                            icon: const Icon(
-                                                Icons.picture_in_picture_alt,
-                                                color: Colors.white70,
-                                                size: 18),
-                                            onPressed: _enterPip,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                     // ----- नीचे कंट्रोल बार -----
+if (_showControls)
+  Positioned(
+    bottom: 0,
+    left: 0,
+    right: 0,
+    child: Container(
+      padding:
+          const EdgeInsets.fromLTRB(16, 20, 16, 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withOpacity(0.85),
+            Colors.transparent
+          ],
+        ),
+      ),
+      // 👇 NAYA FIX: AnimatedBuilder use kiya hai
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  _sideBtn(Icons.content_cut, Colors.white,
+                      _takeScreenshot),
+                  const SizedBox(width: 10),
+                  _sideBtn(
+                    _muted
+                        ? Icons.volume_off
+                        : Icons.volume_up,
+                    _muted
+                        ? Colors.redAccent
+                        : Colors.white,
+                    _toggleMute,
+                  ),
+                  const SizedBox(width: 10),
+                  _sideBtn(
+                    _locked
+                        ? Icons.lock
+                        : Icons.lock_open,
+                    _locked ? Colors.amber : Colors.white,
+                    _toggleLock,
+                  ),
+                  const Spacer(),
+                  _sideBtn(
+                    Icons.vertical_split,
+                    Colors.white,
+                    _openDual,
+                  ),
+                  const SizedBox(width: 6),
+                  _sideBtn(
+                    Icons.playlist_play,
+                    _showVideoList
+                        ? AppTheme.primaryBlue
+                        : Colors.white,
+                    () => setState(() =>
+                        _showVideoList = !_showVideoList),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(),
+                    icon: Icon(
+                        _isFullscreen
+                            ? Icons.fullscreen_exit
+                            : Icons.screen_rotation,
+                        color: Colors.white,
+                        size: 20),
+                    onPressed: _toggleFullscreen,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Text(
+                      _formatDuration(
+                          _controller.value.position),
+                      style: const TextStyle(
+                          color: Colors.white70)),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderThemeData(
+                        trackHeight: 3,
+                        thumbShape:
+                            const RoundSliderThumbShape(
+                                enabledThumbRadius: 7),
+                        activeTrackColor:
+                            AppTheme.primaryBlue,
+                        inactiveTrackColor:
+                            Colors.white24,
+                        thumbColor: AppTheme.primaryBlue,
+                      ),
+                      child: Slider(
+                        value: (_isSeeking &&
+                                    _previewSeekPosition !=
+                                        null
+                                ? _previewSeekPosition!
+                                : _controller.value
+                                    .position.inSeconds
+                                    .toDouble())
+                            .clamp(
+                                0,
+                                _controller.value.duration
+                                    .inSeconds
+                                    .toDouble()),
+                        min: 0,
+                        max: _controller
+                            .value.duration.inSeconds
+                            .toDouble(),
+                        onChangeStart: (value) {
+                          setState(() {
+                            _isSeeking = true;
+                            _previewSeekPosition = value;
+                          });
+                          _generatePreviewThumbnail(value);
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _previewSeekPosition = value;
+                          });
+                          _generatePreviewThumbnail(value);
+                        },
+                        onChangeEnd: (value) {
+                          _seekTo(value);
+                          setState(() {
+                            _isSeeking = false;
+                            _previewSeekPosition = null;
+                            _previewThumbnail = null;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  Text(
+                      _formatDuration(
+                          _controller.value.duration),
+                      style: const TextStyle(
+                          color: Colors.white70)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(),
+                          icon: Icon(
+                            _loopMode == 1
+                                ? Icons.repeat_one
+                                : Icons.repeat,
+                            color: _loopMode == 0
+                                ? Colors.white54
+                                : AppTheme.primaryBlue,
+                            size: 18,
+                          ),
+                          onPressed: _cycleLoop,
+                        ),
+                        const SizedBox(width: 10),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(),
+                          icon: Icon(
+                            _fitMode == 0
+                                ? Icons.aspect_ratio
+                                : (_fitMode == 1
+                                    ? Icons.zoom_out_map
+                                    : Icons.fullscreen),
+                            color: Colors.white70,
+                            size: 18,
+                          ),
+                          onPressed: _cycleFit,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(),
+                        icon: Icon(Icons.skip_previous,
+                            color: _hasPrevious
+                                ? Colors.white
+                                : Colors.white24,
+                            size: 24),
+                        onPressed: _hasPrevious
+                            ? _playPrevious
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: _togglePlay,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _controller.value.isPlaying
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 26,
                           ),
                         ),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(),
+                        icon: Icon(Icons.skip_next,
+                            color: _hasNext
+                                ? Colors.white
+                                : Colors.white24,
+                                size: 24),
+                        onPressed:
+                            _hasNext ? _playNext : null,
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(),
+                          icon: const Icon(Icons.speed,
+                              color: Colors.white70,
+                              size: 20),
+                          onPressed: _showSpeedDialog,
+                        ),
+                        const SizedBox(width: 10),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints:
+                              const BoxConstraints(),
+                          icon: const Icon(
+                              Icons.picture_in_picture_alt,
+                              color: Colors.white70,
+                              size: 18),
+                          onPressed: _enterPip,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    ),
+  ),
 
-                                            // ----- Lock Button -----
+                   // ----- Lock Button -----
                       if (_locked)
                         Positioned(
                           top: MediaQuery.of(context).padding.top + 12,
