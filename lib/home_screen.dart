@@ -2777,18 +2777,14 @@ if (_isVideoNew(item['url']!))
             child: Row(
               children: [
                 if (_isSongSelectionMode)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: Icon(
-                      isSelected
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                      color: isSelected
-                          ? AppTheme.primaryBlue
-                          : AppTheme.textSecondary,
-                      size: 23,
-                    ),
-                  ),
+  Padding(
+    padding: const EdgeInsets.only(right: 12),
+    child: Icon(
+      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+      color: isSelected ? Colors.greenAccent : AppTheme.textSecondary,
+      size: 26,
+    ),
+  ),
                 Stack(
                   children: [
                     AlbumArtWidget(
