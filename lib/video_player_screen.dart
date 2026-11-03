@@ -2646,47 +2646,45 @@ _applyVolume(newVol);
                         ),
 
                       // ----- Subtitle Display Overlay -----
-                      if (_subtitlesEnabled && _subtitles.isNotEmpty)
-                        Positioned(
-                          left: 20,
-                          right: 20,
-                          bottom: _showControls ? 130 : 40,
-                          child: IgnorePointer(
-                            child: Builder(builder: (context) {
-                              final text = _getCurrentSubtitle();
-                              if (text == null || text.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-                              return Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.75),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-  text,
-  textAlign: TextAlign.center,
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: _subtitleFontSize,          // 👈 variable
-    fontWeight: FontWeight.w500,
-    shadows: const [
-      Shadow(
-        color: Colors.black,
-        blurRadius: 4,
-        offset: Offset(1, 1),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ),
-
+if (_subtitlesEnabled && _subtitles.isNotEmpty)
+  Positioned(
+    left: 20,
+    right: 20,
+    bottom: _showControls ? 130 : 40,
+    child: IgnorePointer(
+      // 👇 AnimatedBuilder use karo taaki sirf ye part update ho
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final text = _getCurrentSubtitle();
+          if (text == null || text.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: _subtitleFontSize,
+                  fontWeight: FontWeight.w500,
+                  shadows: const [
+                    Shadow(color: Colors.black, blurRadius: 4, offset: Offset(1, 1)),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  ),
                       // ----- टॉप बार -----
                       if (_showControls && !_locked)
                         Positioned(
