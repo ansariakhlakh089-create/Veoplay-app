@@ -1524,6 +1524,7 @@ Widget build(BuildContext context) {
                                   const SizedBox(height: 8),
                                   GestureDetector(
                                     onTap: () async {
+                                      final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
                                       final result = await Navigator.push(
                                         context,
                                         MaterialPageRoute(
