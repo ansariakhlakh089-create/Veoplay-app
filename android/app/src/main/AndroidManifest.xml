@@ -24,11 +24,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
-        android:label="Veoplay"
+        android:label="VeoPlay"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
         tools:targetApi="34">
 
         <activity
@@ -50,7 +49,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Kisi aur app se video/audio open karne ke liye -->
+            <!-- Open video/audio from other apps (File Manager etc.) -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -60,7 +59,7 @@
                 <data android:mimeType="audio/*" />
             </intent-filter>
 
-            <!-- Share menu se video bhejne ke liye -->
+            <!-- Receive a video from the Share menu -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -79,7 +78,7 @@
             </intent-filter>
         </service>
 
-        <!-- Headphone/Bluetooth buttons ke liye -->
+        <!-- Headphone / Bluetooth media buttons -->
         <receiver
             android:name="com.ryanheise.audioservice.MediaButtonReceiver"
             android:exported="true"
@@ -95,7 +94,7 @@
             
     </application>
 
-    <!-- File Picker aur External apps ke liye queries -->
+    <!-- Queries for File Picker and external apps -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
