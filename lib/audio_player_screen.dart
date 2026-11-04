@@ -297,7 +297,7 @@ await _player.play();
   void _showMusicSleepTimerDialog() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -427,7 +427,7 @@ await _player.play();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -590,7 +590,7 @@ await _player.play();
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -620,7 +620,7 @@ await _player.play();
                   final name = await showDialog<String>(
                     context: context,
                     builder: (context) => AlertDialog(
-                      backgroundColor: AppTheme.card,
+                      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       title: Text("New Playlist",
                           style: TextStyle(color: AppTheme.textPrimary)),
                       content: TextField(
@@ -1034,7 +1034,7 @@ void dispose() {
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
-                          backgroundColor: AppTheme.card,
+                          backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
                           builder: (context) {
                             final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
                             return Padding(
@@ -1052,7 +1052,7 @@ void dispose() {
                                         )),
                                     selected: _player.speed == s,
                                     selectedColor: AppTheme.primaryBlue,
-                                    backgroundColor: AppTheme.cardBorder,
+                                    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
                                     onSelected: (_) {
                                       _player.setSpeed(s);
                                       Navigator.pop(context);
