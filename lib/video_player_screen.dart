@@ -244,7 +244,7 @@ class _RealVideoPlayerState extends State<RealVideoPlayer>
   bool _muted = false;
   bool _showVideoList = false;
   int _loopMode = 0;
-  int _fitMode = 1;
+  int _fitMode = 0;
   bool _autoPlayNext = true;
 
   // 👇👇👇 Subtitle के लिए नए वेरिएबल्स 👇👇👇
