@@ -7,8 +7,7 @@ import 'package:on_audio_query/on_audio_query.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_service/audio_service.dart' hide MediaItem;
-import 'package:video_player/video_player.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';   // 👈 यहाँ जोड़ें
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
@@ -22,7 +21,7 @@ import 'package:volume_controller/volume_controller.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:simple_pip_mode/simple_pip.dart';   // 👈 यह नई line
+import 'package:simple_pip_mode/simple_pip.dart';
 import 'package:simple_pip_mode/pip_widget.dart';
 import 'package:simple_pip_mode/actions/pip_action.dart';
 import 'package:simple_pip_mode/actions/pip_actions_layout.dart';
@@ -31,7 +30,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:media_kit/media_kit.dart' as mk;
 import 'package:media_kit_video/media_kit_video.dart' as mkv;
 import 'video_cache_db.dart';
-import 'crash_log.dart'; // 👈 Ye nayi line ADD karo
+import 'crash_log.dart';
 
 // ---- Split files (same library, code unchanged) ----
 part 'splash_screen.dart';
@@ -41,8 +40,8 @@ part 'dual_video_screen.dart';
 part 'media_widgets.dart';
 part 'audio_handler.dart';
 part 'audio_player_screen.dart';
-part 'video_search_screen.dart';   // 👈 नई line
-part 'profile_screen.dart';        // 👈 नई line
+part 'video_search_screen.dart';
+part 'profile_screen.dart';
 part 'music_screens.dart';
 part 'theme_helper.dart';
 part 'settings_screen.dart';
@@ -55,14 +54,14 @@ final AudioPlayer globalAudioPlayer = AudioPlayer(
 );
 final ValueNotifier<int> rescanRequestNotifier = ValueNotifier<int>(0);
 
-// App version (pubspec.yaml से अपने-आप पढ़ा जाता है)
+// App version (read automatically from pubspec.yaml)
 String appVersionName = '1.0.0';
 String appVersionFull = '1.0.0 (Build 1)';
 
-// ऊपर का खाली बॉक्स विज्ञापन (Ad) की जगह है। AdMob जुड़ने पर इसे true करें।
+// Placeholder for an ad slot on the Home screen. Keep false (the app has no ads).
 const bool kShowAdSlot = false;
 
-// ---- Music Sleep Timer (स्क्रीन बंद होने पर भी चलता रहता है) ----
+// ---- Music Sleep Timer (keeps running when the screen is off) ----
 final ValueNotifier<int> musicSleepRemaining = ValueNotifier<int>(0);
 Timer? _musicSleepOnce;
 Timer? _musicSleepTick;
@@ -92,10 +91,10 @@ final Map<int, String> globalSongNames = {};
 final ValueNotifier<int> musicDataNotifier = ValueNotifier<int>(0);
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// ---- बाहर से (File Manager / Share) आया वीडियो ----
-// ऐप बंद थी तब आया हुआ वीडियो यहाँ रुकता है, Splash के बाद खुलता है
+// ---- Video opened from outside the app (File Manager / Share) ----
+// A video received while the app was closed waits here and opens after the Splash screen
 String? pendingLaunchUri;
-// Splash खत्म होकर Home आ गया या नहीं
+// Whether Splash has finished and Home is showing
 bool appReadyForIntents = false;
 
 String? _uriFromIntent(dynamic intent) {
@@ -137,7 +136,7 @@ void openExternalVideo(String uri) {
   );
 }
 
-// Android 13+ पर notification दिखाने के लिए permission माँगो
+// Ask for notification permission on Android 13+
 Future<void> askNotificationPermission() async {
   try {
     await const MethodChannel('veoplay/orientation')
@@ -154,7 +153,7 @@ void main() async {
 
     try {
   await AudioService.init(
-    builder: () => VeoPlayAudioHandler(globalAudioPlayer),
+    builder: () => VeoAudioHandler(globalAudioPlayer),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.aucyos.veoplay.channel.audio',
       androidNotificationChannelName: 'VeoPlay Audio',
@@ -181,7 +180,7 @@ void main() async {
     debugPrint('Theme load error: $e');
   }
   
-  // ऐप बंद थी और "Open with" से वीडियो खोला गया हो तो वो यहाँ पकड़ो
+  // If the app was closed and a video was opened with "Open with", catch it here
   try {
     final first = await ReceiveIntent.getInitialIntent()
         .timeout(const Duration(seconds: 2), onTimeout: () => null);
@@ -200,7 +199,7 @@ void main() async {
       if (appReadyForIntents) {
         openExternalVideo(u);
       } else {
-        // Splash चल रही है — अभी push किया तो Splash उसे replace कर देगी
+        // Splash is still running: pushing now would be replaced by Splash
         pendingLaunchUri = u;
       }
     });
@@ -232,59 +231,4 @@ class VeoPlay extends StatelessWidget {
       },
     );
   }
-}
-
-// ==================== Audio Handler (Background Music ke liye) ====================
-class VeoPlayAudioHandler extends BaseAudioHandler with SeekHandler {
-  final AudioPlayer player;
-
-  VeoPlayAudioHandler(this.player) {
-    player.playbackEventStream.map(_transformEvent).pipe(playbackState);
-    player.durationStream.listen((d) {
-      if (d != null) mediaItem.add(mediaItem.value?.copyWith(duration: d));
-    });
-    player.currentIndexStream.listen((index) {
-      if (index != null && player.sequence != null && player.sequence!.isNotEmpty) {
-        final tag = player.sequence![index].tag;
-        if (tag is MediaItem) {
-          mediaItem.add(tag);
-        }
-      }
-    });
-  }
-
-  PlaybackState _transformEvent(PlaybackEvent event) {
-    return PlaybackState(
-      controls: [
-        MediaControl.skipToPrevious,
-        if (player.playing) MediaControl.pause else MediaControl.play,
-        MediaControl.skipToNext,
-      ],
-      systemActions: const {MediaAction.seek},
-      androidCompactActionIndices: const [0, 1, 2],
-      processingState: const {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[player.processingState]!,
-      playing: player.playing,
-      updatePosition: player.position,
-      bufferedPosition: player.bufferedPosition,
-      speed: player.speed,
-      queueIndex: event.currentIndex,
-    );
-  }
-
-  @override
-  Future<void> play() => player.play();
-  @override
-  Future<void> pause() => player.pause();
-  @override
-  Future<void> seek(Duration position) => player.seek(position);
-  @override
-  Future<void> skipToNext() => player.seekToNext();
-  @override
-  Future<void> skipToPrevious() => player.seekToPrevious();
 }
