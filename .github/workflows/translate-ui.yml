@@ -1,0 +1,29 @@
+name: Translate UI to English (run once)
+
+# Manual: GitHub -> Actions -> "Translate UI to English (run once)" -> Run workflow
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Translate all Hindi UI strings in lib/ to English
+        run: python3 tools/translate_ui.py --write
+
+      - name: Commit the translated files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A lib
+          if git diff --cached --quiet; then
+            echo "Nothing to commit (already English)."
+          else
+            git commit -m "Translate UI strings to English"
+            git push
+          fi
