@@ -11,9 +11,14 @@ jobs:
         run: |
           keytool -genkeypair -v -keystore my-upload-key.jks -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias upload -storepass VeoPlay123 -keypass VeoPlay123 -dname "CN=Akhlakh Ansari, OU=VeoPlay, O=VeoPlay, C=IN"
       
-      - name: Get Base64
+      - name: Get Base64 File
         run: |
-          echo "================ COPY FROM HERE ================"
-          base64 -w0 my-upload-key.jks
-          echo ""
-          echo "================ COPY TILL HERE ================"
+          base64 -w0 my-upload-key.jks > keystore_base64.txt
+          echo "Base64 file ban gayi hai."
+
+      # 👇 Ye naya step add kiya hai
+      - name: Upload Base64 File
+        uses: actions/upload-artifact@v4
+        with:
+          name: keystore-base64
+          path: keystore_base64.txt
