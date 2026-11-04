@@ -1,6 +1,5 @@
 name: Release AAB (Play Store)
 
-# सिर्फ़ हाथ से चलता है: Actions → "Release AAB (Play Store)" → Run workflow
 on:
   workflow_dispatch:
 
@@ -42,10 +41,10 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload-keystore.jks"
+          # 👇 Yahan -i add kiya hai taaki extra spaces se error na aaye
+          echo "$KEYSTORE_BASE64" | base64 -d -i > "$RUNNER_TEMP/upload-keystore.jks"
           echo "KEYSTORE_PATH=$RUNNER_TEMP/upload-keystore.jks" >> "$GITHUB_ENV"
 
-      # build.gradle को छुए बिना release signing लगाने वाली Gradle init-script
       - name: Signing init-script
         run: |
           mkdir -p ~/.gradle/init.d
@@ -75,6 +74,8 @@ jobs:
         run: |
           mkdir -p android
           echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> android/gradle.properties
+          # 👇 Daemon band karo taaki naye variables (secrets) properly padhe jayein
+          echo "org.gradle.daemon=false" >> android/gradle.properties
 
       - name: Build signed AAB
         env:
@@ -83,7 +84,6 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: flutter build appbundle --release --build-number=${{ github.run_number }}
 
-      # जाँच: "Android Debug" दिखे तो signing नहीं लगी
       - name: Signing जाँचो
         run: keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab | head -12
 
