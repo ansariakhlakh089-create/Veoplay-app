@@ -2548,33 +2548,38 @@ _applyVolume(newVol);
                   child: Stack(
                     children: [
                       // ----- वीडियो -----
-                      Positioned.fill(
-                        child: Transform.scale(
-                          scale: _zoomScale,
-                          child: mkv.Video(
-                          controller: _controller.video,
-                          controls: mkv.NoVideoControls,
-                          fill: Colors.black,
-                          wakelock: false,
-                          fit: _fitMode == 0
-                              ? BoxFit.contain
-                              : (_fitMode == 1 ? BoxFit.cover : BoxFit.fill),
-                          subtitleViewConfiguration:
-                              mkv.SubtitleViewConfiguration(
-                            visible: _subtitlesEnabled && _subtitles.isEmpty,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: _subtitleFontSize,
-                              fontWeight: FontWeight.w500,
-                              backgroundColor: const Color(0xB3000000),
-                            ),
-                            textAlign: TextAlign.center,
-                            padding: EdgeInsets.fromLTRB(
-                                20, 0, 20, _showControls ? 130 : 40),
-                          ),
-                        ),
-                        ),
-                      ),
+Positioned.fill(
+  child: Transform.scale(
+    scale: _zoomScale,
+    // 👇 NAYA FIX: Center aur AspectRatio use karo taaki video bilkul center me aaye
+    child: Center(
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: mkv.Video(
+          controller: _controller.video,
+          controls: mkv.NoVideoControls,
+          fill: Colors.black,
+          wakelock: false,
+          // 👇 AspectRatio size handle kar raha hai, isliye fill use karo
+          fit: BoxFit.fill, 
+          subtitleViewConfiguration:
+              mkv.SubtitleViewConfiguration(
+            visible: _subtitlesEnabled && _subtitles.isEmpty,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: _subtitleFontSize,
+              fontWeight: FontWeight.w500,
+              backgroundColor: const Color(0xB3000000),
+            ),
+            textAlign: TextAlign.center,
+            padding: EdgeInsets.fromLTRB(
+                20, 0, 20, _showControls ? 130 : 40),
+          ),
+        ),
+      ),
+    ),
+  ),
+),
 
                       // ----- Skip Indicator -----
                       if (_skipIndicator.isNotEmpty)
