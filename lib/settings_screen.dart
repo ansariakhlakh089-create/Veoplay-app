@@ -50,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text("Clear all data?",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: Text(
@@ -426,7 +426,7 @@ _settingTile(
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    backgroundColor: AppTheme.card,
+                    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
                     title: Text('Privacy Policy',
                         style: TextStyle(color: AppTheme.textPrimary)),
                     content: SingleChildScrollView(
@@ -471,7 +471,7 @@ _settingTile(
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
         child: Padding(
@@ -529,7 +529,7 @@ _settingTile(
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16)),
         child: Padding(
