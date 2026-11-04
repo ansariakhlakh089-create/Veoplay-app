@@ -1524,18 +1524,22 @@ Widget build(BuildContext context) {
                                   const SizedBox(height: 8),
                                   GestureDetector(
                                     onTap: () async {
-                                      final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
-                                      final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => RealVideoPlayer(
-                                            videoUrl: _recentUrl!,
-                                            title: _recentTitle!,
-                                            startPosition:
-                                                _recentPosition,
-                                          ),
-                                        ),
-                                      );
+  // 👇 Recent video ka index dhundo
+  final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
+  
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => RealVideoPlayer(
+        videoUrl: _recentUrl!,
+        title: _recentTitle!,
+        startPosition: _recentPosition,
+        // 👇 Ye do lines add karo
+        playlist: recentIndex >= 0 ? _visibleVideos : null,
+        currentIndex: recentIndex >= 0 ? recentIndex : 0,
+      ),
+    ),
+  );
                                       if (result != null && result is Map) {
                                         setState(() {
                                           _recentTitle = result['title'];
