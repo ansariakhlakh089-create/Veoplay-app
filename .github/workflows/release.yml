@@ -41,31 +41,16 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          # 👇 Yahan -i add kiya hai taaki extra spaces se error na aaye
-          echo "$KEYSTORE_BASE64" | base64 -d -i > "$RUNNER_TEMP/upload-keystore.jks"
-          echo "KEYSTORE_PATH=$RUNNER_TEMP/upload-keystore.jks" >> "$GITHUB_ENV"
-
-      - name: Signing init-script
+          # JKS file banao
+          echo "$KEYSTORE_BASE64" | base64 -d -i > android/app/upload-keystore.jks
+          
+      - name: Create key.properties
         run: |
-          mkdir -p ~/.gradle/init.d
-          cat > ~/.gradle/init.d/ci-signing.gradle <<'GRADLE'
-          allprojects {
-              plugins.withId('com.android.application') {
-                  def ksPath = System.getenv('KEYSTORE_PATH')
-                  if (ksPath) {
-                      extensions.getByName('androidComponents').finalizeDsl { android ->
-                          def cfg = android.signingConfigs.create('ciRelease')
-                          cfg.storeFile = new File(ksPath)
-                          cfg.storePassword = System.getenv('KEYSTORE_PASSWORD')
-                          cfg.keyAlias = System.getenv('KEY_ALIAS')
-                          cfg.keyPassword = System.getenv('KEY_PASSWORD')
-                          android.buildTypes.getByName('release').signingConfig = cfg
-                          println 'CI release signing लग गया'
-                      }
-                  }
-              }
-          }
-          GRADLE
+          # key.properties file banao
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
 
       - name: Generate App Icons
         run: dart run flutter_launcher_icons
@@ -74,7 +59,7 @@ jobs:
         run: |
           mkdir -p android
           echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> android/gradle.properties
-          # 👇 Daemon band karo taaki naye variables (secrets) properly padhe jayein
+          # Daemon band karo taaki naye variables (secrets) properly padhe jayein
           echo "org.gradle.daemon=false" >> android/gradle.properties
 
       - name: Build signed AAB
