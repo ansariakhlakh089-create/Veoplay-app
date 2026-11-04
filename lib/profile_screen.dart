@@ -59,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text("Rename",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text('Help & Feedback',
             style: TextStyle(color: AppTheme.textPrimary)),
         content: SingleChildScrollView(
@@ -160,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text('Privacy Policy',
             style: TextStyle(color: AppTheme.textPrimary)),
         content: SingleChildScrollView(
@@ -209,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       showModalBottomSheet(
         context: context,
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius:
               BorderRadius.vertical(top: Radius.circular(20)),
@@ -598,7 +598,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text('About VeoPlay',
             style: TextStyle(color: AppTheme.textPrimary)),
         content: Column(
