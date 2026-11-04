@@ -1,5 +1,5 @@
 name: veoplay_app
-description: My first Flutter video player built on smartphone
+description: VeoPlay - video and music player
 publish_to: 'none'
 version: 1.0.1+2
 
@@ -10,7 +10,6 @@ dependencies:
   flutter:
     sdk: flutter
   wakelock_plus: ^1.2.8
-  video_player: ^2.8.7
   simple_pip_mode: ^1.1.0
   share_plus: ^10.1.4
   cupertino_icons: ^1.0.8
@@ -31,7 +30,6 @@ dependencies:
   media_kit_video: ^2.0.1
   media_kit_libs_android_video: ^1.3.6
   permission_handler: ^11.3.1
-  flutter_ass_player: ^0.1.0
 
 dependency_overrides:
   shared_preferences_android: ^2.4.6
