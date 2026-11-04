@@ -769,7 +769,7 @@ if (_autoNextTriggered &&
   void _showVideoEqualizer() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -915,7 +915,7 @@ if (_autoNextTriggered &&
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1168,7 +1168,7 @@ void _showSyncDialog() {
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setDialogState) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text('Audio / Video Sync', style: TextStyle(color: AppTheme.textPrimary)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1239,7 +1239,7 @@ void _showSyncDialog() {
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         insetPadding:
             const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape:
@@ -1323,7 +1323,7 @@ void _showSleepTimerDialog() {
   showDialog(
     context: context,
     builder: (context) => Dialog(
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SingleChildScrollView(
@@ -1668,7 +1668,7 @@ void _showSubtitleSettingsDialog() {
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setDialogState) => AlertDialog(
-        backgroundColor: AppTheme.card,
+        backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
         title: Text('Subtitle Settings',
             style: TextStyle(color: AppTheme.textPrimary)),
         content: SingleChildScrollView(
@@ -1861,7 +1861,7 @@ Future<void> _showAudioTrackPicker() async {
   final current = _controller.currentAudio.id;
   showModalBottomSheet(
     context: context,
-    backgroundColor: AppTheme.card,
+    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -1915,7 +1915,7 @@ void _showSubtitleTrackPicker() {
   final current = _controller.currentSubtitle.id;
   showModalBottomSheet(
     context: context,
-    backgroundColor: AppTheme.card,
+    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -2026,7 +2026,7 @@ void _showVideoInfo() {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: AppTheme.card,
+      backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
       title: Text('Video Info', style: TextStyle(color: AppTheme.textPrimary)),
       content: SingleChildScrollView(
         child: SelectableText(lines.join('\n\n'),
@@ -2075,7 +2075,7 @@ void _showMoreOptionsMenu() {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppTheme.card,
+    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
