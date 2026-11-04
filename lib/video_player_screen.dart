@@ -1189,10 +1189,10 @@ void _showSyncDialog() {
               },
             ),
             Text(
-              'Move the slider toward + if the sound plays before the picture, and toward - if the sound plays after the picture.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppTheme.textTertiary, fontSize: 11),
-            ),
+  'If audio is ahead of video, use + to delay it.\nIf audio is behind video, use - to advance it.',
+  textAlign: TextAlign.center,
+  style: TextStyle(color: AppTheme.textTertiary, fontSize: 11),
+),
           ],
         ),
         actions: [
