@@ -174,7 +174,7 @@ bool prevCtrl2 = true;
             _failed2 = true;
           }
         });
-        _snack('वीडियो नहीं खुल पाया');
+        _snack('Could not open video');
       }
       return;
     }
@@ -359,7 +359,7 @@ bool prevCtrl2 = true;
   }
 
 Future<void> _takeFullScreenshot() async {
-  _snack('📸 Screenshot बन रहा है...'); // 👈 Ye line add karo
+  _snack('📸 Generating screenshot...'); // 👈 Ye line add karo
   try {
     // कंट्रोल्स को थोड़ी देर के लिए छुपा दो ताकि साफ़ स्क्रीनशॉट आए
     setState(() {
@@ -391,7 +391,7 @@ Future<void> _takeFullScreenshot() async {
     );
 
     if (bytes1 == null || bytes2 == null) {
-      _snack('Screenshot नहीं बन पाया (frame error)');
+      _snack('Could not take screenshot (frame error)');
       if (mounted) setState(() { _showCtrl1 = prevCtrl1; _showCtrl2 = prevCtrl2; });
       return;
     }
@@ -434,24 +434,24 @@ Future<void> _takeFullScreenshot() async {
     }
 
     if (byteData == null) {
-      _snack('Screenshot save नहीं हो पाया');
+      _snack('Could not save screenshot');
       return;
     }
 
     final bytes = byteData.buffer.asUint8List();
     final perm = await PhotoManager.requestPermissionExtend();
     if (!perm.hasAccess) {
-      _snack('Gallery की permission दो');
+      _snack('Gallery permission required');
       return;
     }
 
     final name = 'VeoPlay_Dual_${DateTime.now().millisecondsSinceEpoch}.png';
     await PhotoManager.editor.saveImage(bytes, filename: name, title: name);
-    _snack('Dual Video का screenshot सेव हो गया');
+    _snack('Dual Video screenshot saved');
 
   } catch (e) {
     debugPrint('Screenshot error: $e');
-    _snack('Screenshot में दिक्कत आई');
+    _snack('Error taking screenshot');
     if (mounted) setState(() { _showCtrl1 = prevCtrl1; _showCtrl2 = prevCtrl2; });
   }
 }
@@ -989,8 +989,8 @@ IconButton(
       _c2?.play();
     }
     _snack(_isSyncMode
-        ? 'Sync ON: एक साथ चलेंगे, ऑडियो स्विच होगा'
-        : 'Sync OFF: बारी-बारी से चलेंगे');
+        ? 'Sync ON: both play together, audio can be switched'
+        : 'Sync OFF: videos play one at a time');
   },
 ),
 const SizedBox(width: 4),
@@ -1026,7 +1026,7 @@ const SizedBox(width: 4),
               Navigator.pop(ctx);
               _load(0, i);
             },
-            child: Text('Video 1 में लगाओ',
+            child: Text('Set as Video 1',
                 style: TextStyle(color: AppTheme.textPrimary)),
           ),
           SimpleDialogOption(
@@ -1034,7 +1034,7 @@ const SizedBox(width: 4),
               Navigator.pop(ctx);
               _load(1, i);
             },
-            child: Text('Video 2 में लगाओ',
+            child: Text('Set as Video 2',
                 style: TextStyle(color: AppTheme.textPrimary)),
           ),
         ],

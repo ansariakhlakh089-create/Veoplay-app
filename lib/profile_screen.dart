@@ -60,13 +60,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("नाम बदलें",
+        title: Text("Rename",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(hintText: "अपना नाम लिखें"),
+          decoration: const InputDecoration(hintText: "Enter your name"),
         ),
         actions: [
           TextButton(
@@ -113,17 +113,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              q('वीडियो या गाने नहीं दिख रहे?',
-                  'फ़ोन की Settings → Apps → VeoPlay → Permissions में Photos/Videos और Music की permission दें। फिर Home पर नीचे खींचें, या Settings में "Rescan Media" दबाएँ।'),
-              q('वीडियो चलाते समय क्या-क्या कर सकते हैं?',
-                  'डबल-टैप से ±10 सेकंड, लंबा दबाने पर 2x speed, ऊपर-नीचे swipe से brightness और volume, और बाएँ-दाएँ खींचकर seek।'),
-              q('वीडियो वहीं से कैसे शुरू करें जहाँ छोड़ी थी?',
-                  'यह अपने-आप होता है। Settings में Resume चालू रखें।'),
-              q('गाना अपने-आप कैसे बंद करें?',
-                  'Music player में घड़ी वाले आइकन से Sleep Timer लगाएँ।'),
+              q('Videos or songs not showing?',
+                  'Grant Photos/Videos and Music permissions in Phone Settings → Apps → VeoPlay → Permissions. Then pull down on Home, or tap "Rescan Media" in Settings.'),
+              q('What can I do while playing a video?',
+                  'Double-tap for ±10s, long press for 2x speed, swipe up/down for brightness and volume, and swipe left/right to seek.'),
+              q('How to resume a video where I left off?',
+                  'It happens automatically. Keep Resume enabled in Settings.'),
+              q('How to stop music automatically?',
+                  'Use the clock icon in the Music player to set a Sleep Timer.'),
               if (kFeedbackContact.isNotEmpty) ...[
                 const Divider(),
-                Text('Feedback या समस्या बताने के लिए संपर्क करें:',
+                Text('Contact us for feedback or issues:',
                     style: TextStyle(
                         color: AppTheme.textSecondary, fontSize: 13)),
                 const SizedBox(height: 4),
@@ -143,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Clipboard.setData(ClipboardData(text: kFeedbackContact));
                 Navigator.pop(context);
                 ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(content: Text('कॉपी हो गया')),
+                  const SnackBar(content: Text('Copied')),
                 );
               },
               child: const Text('Copy'),
@@ -234,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _historyItem(Icons.music_note,
                       '${recentSongs.length} songs recently played'),
                 if (recentVideos == null && recentSongs.isEmpty)
-                  Text('कोई history नहीं है',
+                  Text('No history',
                       style: TextStyle(
                           color: AppTheme.textSecondary,
                           fontSize: 14)),
@@ -565,7 +565,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       .showSnackBar(
                     const SnackBar(
                       content:
-                          Text('Play Store पर rate करें'),
+                          Text('Rate on Play Store'),
                       duration: Duration(seconds: 2),
                     ),
                   );

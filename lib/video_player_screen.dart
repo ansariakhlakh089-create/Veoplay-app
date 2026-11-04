@@ -126,7 +126,7 @@ class _MkController extends ChangeNotifier {
 
     return done.future.timeout(
       const Duration(seconds: 25),
-      onTimeout: () => throw 'वीडियो लोड होने में बहुत देर लगी',
+      onTimeout: () => throw 'Video took too long to load',
     );
   }
 
@@ -542,12 +542,12 @@ if (_autoNextTriggered &&
     try {
       final bytes = await _controller.screenshot();
       if (bytes == null) {
-        _snack('Screenshot नहीं बन पाया');
+        _snack('Could not take screenshot');
         return;
       }
       final perm = await PhotoManager.requestPermissionExtend();
       if (!perm.hasAccess) {
-        _snack('Gallery की permission दो');
+        _snack('Gallery permission required');
         return;
       }
       final name = 'VeoPlay_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -556,10 +556,10 @@ if (_autoNextTriggered &&
         filename: name,
         title: name,
       );
-      _snack('Screenshot Gallery में सेव हो गया');
+      _snack('Screenshot saved to Gallery');
     } catch (e) {
       debugPrint('Screenshot error: $e');
-      _snack('Screenshot में दिक्कत आई');
+      _snack('Error taking screenshot');
     }
   }
 
@@ -620,7 +620,7 @@ if (_autoNextTriggered &&
               Expanded(
                 child: (list == null || list.isEmpty)
                     ? const Center(
-                        child: Text('कोई वीडियो लिस्ट नहीं है',
+                        child: Text('No video list',
                             style: TextStyle(color: Colors.white54)),
                       )
                     : ListView.builder(
@@ -762,7 +762,7 @@ if (_autoNextTriggered &&
       await np.setProperty('af', 'lavfi=[${parts.join(',')}]');
     } catch (e) {
       debugPrint('Video EQ error: $e');
-      _snack('इस device पर Equalizer नहीं चल पाया');
+      _snack('Equalizer could not run on this device');
     }
   }
 
@@ -940,7 +940,7 @@ if (_autoNextTriggered &&
                         onPressed: () async {
                           final now = _controller.value.position.inSeconds;
                           if (marks.any((m) => (m - now).abs() < 2)) {
-                            _snack('यह bookmark पहले से है');
+                            _snack('This bookmark already exists');
                             return;
                           }
                           setSheet(() {
@@ -959,7 +959,7 @@ if (_autoNextTriggered &&
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
-                        'अभी कोई bookmark नहीं है.\nवीडियो की जिस जगह पर रहना है वहाँ "Add here" दबाओ.',
+                        'No bookmarks yet.\nTap "Add here" at the point in the video you want to save.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: AppTheme.textSecondary),
                       ),
@@ -1024,7 +1024,7 @@ if (_autoNextTriggered &&
   void _openDual() {
     final list = widget.playlist;
     if (list == null || list.length < 2) {
-      _snack('Dual के लिए लिस्ट में कम से कम 2 वीडियो चाहिए');
+      _snack('Need at least 2 videos in the list for Dual mode');
       return;
     }
     final i1 = widget.currentIndex ?? 0;
@@ -1189,7 +1189,7 @@ void _showSyncDialog() {
               },
             ),
             Text(
-              'Video ki aawaz aage badhani ho toh + karein, peeche laani ho toh - karein.',
+              'Move the slider toward + if the sound plays before the picture, and toward - if the sound plays after the picture.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppTheme.textTertiary, fontSize: 11),
             ),
@@ -1362,7 +1362,7 @@ void _showSleepTimerDialog() {
                         Icon(Icons.timer,
                             color: AppTheme.textSecondary, size: 16),
                         const SizedBox(width: 6),
-                        Text('$min मिनट',
+                        Text('$min min',
                             style: TextStyle(color: AppTheme.textPrimary)),
                       ],
                     ),
@@ -1377,7 +1377,7 @@ void _showSleepTimerDialog() {
                 _sleepTimer?.cancel();
                 _sleepTimer = null;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Sleep timer हटाया')),
+                  const SnackBar(content: Text('Sleep timer removed')),
                 );
               },
               child: Container(
@@ -1387,7 +1387,7 @@ void _showSleepTimerDialog() {
                   color: Colors.redAccent.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('Sleep Timer हटाओ',
+                child: const Text('Remove Sleep Timer',
                     style: TextStyle(color: Colors.redAccent)),
               ),
             ),
@@ -1404,11 +1404,11 @@ void _startSleepTimer(int minutes) {
     if (mounted) {
       _controller.pause();
       setState(() {});  // UI update for play icon
-      _snack('😴 Sleep timer: video रुक गया');
+      _snack('😴 Sleep timer: video paused');
     }
   });
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('$minutes मिनट बाद video रुकेगा')),
+    SnackBar(content: Text('Video will pause in $minutes minutes')),
   );
 }
 
@@ -1418,7 +1418,7 @@ Future<void> _enterPip() async {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('इस device पर PiP support नहीं है'),
+          content: Text('PiP is not supported on this device'),
         ),
       );
     }
@@ -1506,7 +1506,7 @@ Future<void> _loadSubtitle() async {
     // SRT/VTT के लिए मौजूदा parser
     final parsed = _parseSrt(content);
     if (parsed.isEmpty) {
-      _snack('Subtitle फाइल खाली है या पढ़ी नहीं जा सकी');
+      _snack('Subtitle file is empty or unreadable');
       return;
     }
 
@@ -1518,10 +1518,10 @@ Future<void> _loadSubtitle() async {
     });
     await _controller.setSubtitleTrack(mk.SubtitleTrack.no());
 
-    _snack('✅ ${parsed.length} subtitles लोड हो गए');
+    _snack('✅ ${parsed.length} subtitles loaded');
   } catch (e) {
     debugPrint('Subtitle load error: $e');
-    _snack('Subtitle लोड नहीं हो पाया');
+    _snack('Could not load subtitle');
   }
 }
 
@@ -1832,7 +1832,7 @@ Future<void> _playAsAudio() async {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('🎵 "${widget.title}" ऑडियो मोड में चल रहा है'),
+          content: Text('🎵 "${widget.title}" is playing in audio mode'),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -1842,7 +1842,7 @@ Future<void> _playAsAudio() async {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('ऑडियो मोड में नहीं चल पाया'),
+          content: Text('Could not play in audio mode'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -1854,8 +1854,8 @@ Future<void> _showAudioTrackPicker() async {
   final tracks = _controller.realAudioTracks;
   if (tracks.length < 2) {
     _snack(tracks.isEmpty
-        ? 'इस वीडियो में audio track की जानकारी नहीं मिली'
-        : 'इस वीडियो में सिर्फ़ एक audio track है');
+        ? 'No audio track information found for this video'
+        : 'This video has only one audio track');
     return;
   }
   final current = _controller.currentAudio.id;
@@ -1889,9 +1889,9 @@ Future<void> _showAudioTrackPicker() async {
                 Navigator.pop(sheetContext);
                 try {
                   await _controller.setAudioTrack(tracks[i]);
-                  _snack('Audio track बदल गया');
+                  _snack('Audio track changed');
                 } catch (e) {
-                  _snack('Audio track नहीं बदल पाया');
+                  _snack('Could not change audio track');
                 }
               },
             ),
@@ -1972,7 +1972,7 @@ void _showSubtitleTrackPicker() {
             ),
           ListTile(
             leading: Icon(Icons.folder_open, color: AppTheme.iconColor),
-            title: Text('फ़ाइल से लोड करो (.srt / .vtt / .ass / .ssa)',
+            title: Text('Load from file (.srt / .vtt / .ass / .ssa)',
                 style: TextStyle(color: AppTheme.textPrimary)),
             onTap: () {
               Navigator.pop(sheetContext);
@@ -1991,18 +1991,18 @@ void _toggleAbRepeat() {
   setState(() {
     if (_abA == null) {
       _abA = pos;
-      _snack('A सेट: ${_formatDuration(pos)}');
+      _snack('A set: ${_formatDuration(pos)}');
     } else if (_abB == null) {
       if (pos <= _abA!) {
-        _snack('B, A के बाद होना चाहिए');
+        _snack('B must be after A');
       } else {
         _abB = pos;
-        _snack('B सेट: A-B repeat चालू');
+        _snack('B set: A-B repeat on');
       }
     } else {
       _abA = null;
       _abB = null;
-      _snack('A-B repeat बंद');
+      _snack('A-B repeat off');
     }
   });
 }
@@ -2013,7 +2013,7 @@ void _showVideoInfo() {
   final audio = _controller.currentAudio;
   String row(String k, String val) => '$k: $val';
   final lines = <String>[
-    row('नाम', widget.title),
+    row('Name', widget.title),
     row('Resolution',
         v.size.width > 0 ? '${v.size.width.toInt()}x${v.size.height.toInt()}' : '—'),
     row('Duration', _formatDuration(v.duration)),
@@ -2048,10 +2048,10 @@ void _toggleRotationLock() {
     SystemChrome.setPreferredOrientations(landscape
         ? [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]
         : [DeviceOrientation.portraitUp]);
-    _snack('Rotation लॉक');
+    _snack('Rotation locked');
   } else {
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
-    _snack('Rotation अनलॉक');
+    _snack('Rotation unlocked');
   }
 }
 
@@ -2162,7 +2162,7 @@ if (_subtitles.isNotEmpty || _controller.realSubtitleTracks.isNotEmpty)
             title: Text(
                 _abA == null
                     ? 'A-B Repeat'
-                    : (_abB == null ? 'A-B Repeat (B सेट करो)' : 'A-B Repeat बंद करो'),
+                    : (_abB == null ? 'A-B Repeat (set B)' : 'Turn off A-B Repeat'),
                 style: TextStyle(color: AppTheme.textPrimary)),
             onTap: () {
               Navigator.pop(context);
@@ -2173,7 +2173,7 @@ if (_subtitles.isNotEmpty || _controller.realSubtitleTracks.isNotEmpty)
             leading: Icon(
                 _rotationLocked ? Icons.screen_lock_rotation : Icons.screen_rotation,
                 color: AppTheme.iconColor),
-            title: Text(_rotationLocked ? 'Rotation अनलॉक' : 'Rotation लॉक',
+            title: Text(_rotationLocked ? 'Unlock Rotation' : 'Lock Rotation',
                 style: TextStyle(color: AppTheme.textPrimary)),
             onTap: () {
               Navigator.pop(context);
@@ -2407,7 +2407,7 @@ Widget build(BuildContext context) {
                         color: Colors.redAccent, size: 64),
                     const SizedBox(height: 16),
                     const Text(
-                      "वीडियो नहीं खुल पाया",
+                      "Could not open video",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     const SizedBox(height: 8),
@@ -2422,7 +2422,7 @@ Widget build(BuildContext context) {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text("वापस जाएँ"),
+                      child: const Text("Go Back"),
                     ),
                   ],
                 ),

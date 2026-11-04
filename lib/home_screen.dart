@@ -206,7 +206,7 @@ Future<void> _hideVideo(Map<String, String> item) async {
   if (id.isNotEmpty) {
     setState(() => _hiddenVideoIds.add(id));
     await _saveHiddenData();
-    _toast('Video छुपा दी गई');
+    _toast('Video hidden');
   }
 }
 
@@ -214,14 +214,14 @@ Future<void> _hideVideo(Map<String, String> item) async {
 Future<void> _hideFolder(String folderKey) async {
   setState(() => _hiddenFolders.add(folderKey));
   await _saveHiddenData();
-  _toast('Folder छुपा दिया गया');
+  _toast('Folder hidden');
 }
 
 // Song Hide karne ke liye
 Future<void> _hideSong(SongModel song) async {
   setState(() => _hiddenSongIds.add(song.id));
   await _saveHiddenData();
-  _toast('गाना छुपा दिया गया');
+  _toast('Song hidden');
 }
   
 Future<bool> _verifyOrCreateFolderPin() async {
@@ -234,7 +234,7 @@ Future<bool> _verifyOrCreateFolderPin() async {
     builder: (ctx) => AlertDialog(
       backgroundColor: AppTheme.card,
       title: Text(
-        savedPin == null ? '5-Digit PIN बनाएँ' : 'PIN डालें',
+        savedPin == null ? 'Create 5-digit PIN' : 'Enter PIN',
         style: TextStyle(color: AppTheme.textPrimary),
       ),
       content: TextField(
@@ -265,11 +265,11 @@ Future<bool> _verifyOrCreateFolderPin() async {
   if (entered == null || entered.length < 5) return false;
   if (savedPin == null) {
     await prefs.setString('hidden_folder_pin', entered);
-    _toast('🔒 PIN सेट हो गया');
+    _toast('🔒 PIN set successfully');
     return true;
   }
   if (entered == savedPin) return true;
-  _toast('❌ गलत PIN!');
+  _toast('❌ Wrong PIN!');
   return false;
 }
   
@@ -357,8 +357,8 @@ double _getVideoProgress(String url) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_favoriteVideoIds.contains(id)
-              ? '❤️ Favorite में जोड़ा'
-              : 'Favorite से हटाया'),
+              ? '❤️ Added to Favorites'
+              : 'Removed from Favorites'),
           duration: const Duration(seconds: 1),
         ),
       );
@@ -409,9 +409,9 @@ Future<void> _deleteSelectedVideos() async {
     context: context,
     builder: (context) => AlertDialog(
       backgroundColor: AppTheme.card,
-      title: Text("$count वीडियो डिलीट करें?",
+      title: Text("Delete $count videos?",
           style: TextStyle(color: AppTheme.textPrimary)),
-      content: Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएंगे।",
+      content: Text("These videos will be permanently deleted from your device.",
           style: TextStyle(color: AppTheme.textSecondary)),
       actions: [
         TextButton(
@@ -461,8 +461,8 @@ Future<void> _deleteSelectedVideos() async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(deletedIds.length == idsToDelete.length
-              ? '✅ ${deletedIds.length} वीडियो डिलीट हो गए'
-              : '${deletedIds.length}/${idsToDelete.length} वीडियो डिलीट हुए')),
+              ? '✅ ${deletedIds.length} videos deleted'
+              : '${deletedIds.length}/${idsToDelete.length} videos deleted')),
     );
   }
 }
@@ -507,9 +507,9 @@ Future<void> _deleteSelectedSongs() async {
     context: context,
     builder: (dialogContext) => AlertDialog(
       backgroundColor: AppTheme.card,
-      title: Text('$count गाने डिलीट करें?',
+      title: Text('Delete $count songs?',
           style: TextStyle(color: AppTheme.textPrimary)),
-      content: Text('चुने गए गाने डिवाइस से हट जाएंगे। यह कार्रवाई वापस नहीं होगी।',
+      content: Text('The selected songs will be deleted from your device. This action cannot be undone.',
           style: TextStyle(color: AppTheme.textSecondary)),
       actions: [
         TextButton(
@@ -564,7 +564,7 @@ Future<void> _deleteSelectedSongs() async {
   if (deletedIds.isEmpty) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('गाने डिलीट नहीं हो पाए')),
+        const SnackBar(content: Text('Could not delete songs')),
       );
     }
     return;
@@ -602,8 +602,8 @@ Future<void> _deleteSelectedSongs() async {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(deletedIds.length == count
-          ? '${deletedIds.length} गाने डिलीट हो गए'
-          : '${deletedIds.length}/$count गाने डिलीट हुए'),
+          ? '${deletedIds.length} songs deleted'
+          : '${deletedIds.length}/$count songs deleted'),
     ),
   );
 }
@@ -623,7 +623,7 @@ void _showAddMultipleToPlaylistDialog() {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text("$count videos को Playlist में जोड़ें",
+              child: Text("Add $count videos to Playlist",
                   style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 18,
@@ -631,7 +631,7 @@ void _showAddMultipleToPlaylistDialog() {
             ),
             ListTile(
               leading: Icon(Icons.add, color: AppTheme.primaryBlue),
-              title: Text("नई Playlist बनाएँ",
+              title: Text("Create new Playlist",
                   style: TextStyle(color: AppTheme.textPrimary)),
               onTap: () async {
                 Navigator.pop(context);
@@ -647,7 +647,7 @@ void _showAddMultipleToPlaylistDialog() {
                   _isVideoSelectionMode = false;
                   _selectedVideoIds.clear();
                 });
-                _toast("'$name' में $count videos जोड़ दिए");
+                _toast("Added $count videos to '$name'");
               },
             ),
             ..._videoPlaylists.keys.map((name) => ListTile(
@@ -669,7 +669,7 @@ void _showAddMultipleToPlaylistDialog() {
                       _isVideoSelectionMode = false;
                       _selectedVideoIds.clear();
                     });
-                    _toast("'$name' में $count videos जोड़ दिए");
+                    _toast("Added $count videos to '$name'");
                   },
                 )),
           ],
@@ -695,7 +695,7 @@ void _showAddMultipleToPlaylistDialog() {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text("$count गानों को Playlist में जोड़ें",
+                child: Text("Add $count songs to Playlist",
                     style: TextStyle(
                         color: AppTheme.textPrimary,
                         fontSize: 18,
@@ -703,7 +703,7 @@ void _showAddMultipleToPlaylistDialog() {
               ),
               ListTile(
                 leading: const Icon(Icons.add, color: AppTheme.primaryBlue),
-                title: Text("नई Playlist बनाएँ",
+                title: Text("Create new Playlist",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context);
@@ -720,7 +720,7 @@ void _showAddMultipleToPlaylistDialog() {
                   });
                   await _savePlaylists();
                   musicDataNotifier.value++;
-                  _toast("'$name' में $count गाने जोड़ दिए");
+                  _toast("Added $count songs to '$name'");
                 },
               ),
               ..._playlists.keys.map((name) => ListTile(
@@ -746,7 +746,7 @@ void _showAddMultipleToPlaylistDialog() {
                       });
                       await _savePlaylists();
                       musicDataNotifier.value++;
-                      _toast("'$name' में $count गाने जोड़ दिए");
+                      _toast("Added $count songs to '$name'");
                     },
                   )),
             ],
@@ -788,14 +788,14 @@ void _showAddMultipleToPlaylistDialog() {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text(initial == null ? "नई Playlist" : "नाम बदलें",
+        title: Text(initial == null ? "New Playlist" : "Rename",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
           decoration: InputDecoration(
-              hintText: "Playlist का नाम",
+              hintText: "Playlist name",
               hintStyle: TextStyle(color: AppTheme.textSecondary)),
         ),
         actions: [
@@ -818,12 +818,12 @@ void _showAddMultipleToPlaylistDialog() {
     final name = await _askVideoPlaylistName();
     if (name == null) return;
     if (_videoPlaylists.containsKey(name)) {
-      _toast("इस नाम की Playlist पहले से है");
+      _toast("A Playlist with this name already exists");
       return;
     }
     setState(() => _videoPlaylists[name] = []);
     await _saveVideoPlaylists();
-    _toast("Playlist बन गई");
+    _toast("Playlist created");
   }
 
   Future<void> _deleteVideoPlaylist(String name) async {
@@ -831,9 +831,9 @@ void _showAddMultipleToPlaylistDialog() {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("'$name' हटाएँ?",
+        title: Text("Delete '$name'?",
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text("Playlist हटेगी, वीडियो फोन में रहेंगे।",
+        content: Text("The Playlist will be deleted. Videos will stay on your phone.",
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -849,14 +849,14 @@ void _showAddMultipleToPlaylistDialog() {
     if (confirm != true) return;
     setState(() => _videoPlaylists.remove(name));
     await _saveVideoPlaylists();
-    _toast("Playlist हटा दी");
+    _toast("Playlist deleted");
   }
 
   Future<void> _renameVideoPlaylist(String oldName) async {
     final newName = await _askVideoPlaylistName(initial: oldName);
     if (newName == null || newName == oldName) return;
     if (_videoPlaylists.containsKey(newName)) {
-      _toast("इस नाम की Playlist पहले से है");
+      _toast("A Playlist with this name already exists");
       return;
     }
     setState(() {
@@ -864,7 +864,7 @@ void _showAddMultipleToPlaylistDialog() {
       _videoPlaylists[newName] = list;
     });
     await _saveVideoPlaylists();
-    _toast("नाम बदल दिया");
+    _toast("Renamed");
   }
 
   Future<void> _addVideoToPlaylist(String name, String videoId) async {
@@ -872,7 +872,7 @@ void _showAddMultipleToPlaylistDialog() {
     if (!list.contains(videoId)) list.add(videoId);
     setState(() => _videoPlaylists[name] = list);
     await _saveVideoPlaylists();
-    _toast("'$name' में जोड़ दिया");
+    _toast("Added to '$name'");
   }
 
   Future<void> _removeVideoFromPlaylist(
@@ -881,13 +881,13 @@ void _showAddMultipleToPlaylistDialog() {
     list.remove(videoId);
     setState(() => _videoPlaylists[name] = list);
     await _saveVideoPlaylists();
-    _toast("'$name' से हटा दिया");
+    _toast("Removed from '$name'");
   }
 
   void _showAddVideoToPlaylistDialog(Map<String, String> video) {
     final videoId = video['id'];
     if (videoId == null || videoId.isEmpty) {
-      _toast("इस वीडियो को add नहीं कर सकते");
+      _toast("This video cannot be added");
       return;
     }
     showModalBottomSheet(
@@ -911,7 +911,7 @@ void _showAddMultipleToPlaylistDialog() {
               ),
               ListTile(
                 leading: const Icon(Icons.add, color: AppTheme.primaryBlue),
-                title: Text("नई Playlist बनाएँ",
+                title: Text("Create new Playlist",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context);
@@ -1109,7 +1109,7 @@ Future<void> _scanVideos({bool silent = false}) async {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _scanInfo = 'फ़ोन में कोई वीडियो album नहीं मिला';
+          _scanInfo = 'No video albums found on this phone';
         });
       }
       return;
@@ -1117,7 +1117,7 @@ Future<void> _scanVideos({bool silent = false}) async {
 
     final album = albums.first;
     final count = await album.assetCountAsync;
-    _scanInfo = 'Scan में $count वीडियो मिले';
+    _scanInfo = 'Scan found $count videos';
     final prefs = await SharedPreferences.getInstance();
     final customNames = await _loadCustomNames();
 
@@ -1402,7 +1402,7 @@ Widget build(BuildContext context) {
                             Icon(Icons.folder_off,
                                 color: AppTheme.textSecondary, size: 60),
                             const SizedBox(height: 16),
-                            Text("Video access permission चाहिए",
+                            Text("Video access permission required",
                                 style: TextStyle(
                                     color: AppTheme.textPrimary,
                                     fontSize: 16),
@@ -1411,7 +1411,7 @@ Widget build(BuildContext context) {
                             ElevatedButton(
                               onPressed: () =>
                                   PhotoManager.openSetting(),
-                              child: const Text("Settings खोलें"),
+                              child: const Text("Open Settings"),
                             ),
                           ],
                         ),
@@ -1428,7 +1428,7 @@ Widget build(BuildContext context) {
                                       MediaQuery.of(context).size.height *
                                           0.3),
                               Center(
-                                child: Text("कोई वीडियो नहीं मिला",
+                                child: Text("No videos found",
                                     style: TextStyle(
                                         color: AppTheme.textSecondary,
                                         fontSize: 16)),
@@ -1446,7 +1446,7 @@ Widget build(BuildContext context) {
                                 ),
                               const SizedBox(height: 8),
                               Center(
-                                child: Text("नीचे खींचकर दोबारा खोजें",
+                                child: Text("Pull down to rescan",
                                     style: TextStyle(
                                         color: AppTheme.textTertiary,
                                         fontSize: 13)),
@@ -1740,7 +1740,7 @@ Widget build(BuildContext context) {
                           });
                           await prefs.setStringList(
                               'favorite_videos', _favoriteVideoIds.toList());
-                          _toast('$count videos Favorite में जोड़ दिए');
+                          _toast('Added $count videos to Favorites');
                         } else if (_isSongSelectionMode) {
                           if (_selectedSongIds.isEmpty) return;
                           final count = _selectedSongIds.length;
@@ -1753,7 +1753,7 @@ Widget build(BuildContext context) {
                               'favorite_songs',
                               _favoriteIds.map((e) => e.toString()).toList());
                           musicDataNotifier.value++;
-                          _toast('$count गाने Favorite में जोड़ दिए');
+                          _toast('Added $count songs to Favorites');
                         }
                       },
                     ),
@@ -1787,8 +1787,8 @@ Widget build(BuildContext context) {
                                       color: AppTheme.iconColor),
                                   title: Text(
                                     _isVideoSelectionMode
-                                        ? "Selected Videos छुपाएँ (Hide)"
-                                        : "Selected Songs छुपाएँ (Hide)",
+                                        ? "Hide selected videos"
+                                        : "Hide selected songs",
                                     style:
                                         TextStyle(color: AppTheme.textPrimary),
                                   ),
@@ -1804,7 +1804,7 @@ Widget build(BuildContext context) {
                                         _selectedVideoIds.clear();
                                       });
                                       await _saveHiddenData();
-                                      _toast('$c videos छुपा दिए गए');
+                                      _toast('$c videos hidden');
                                     } else if (_isSongSelectionMode &&
                                         _selectedSongIds.isNotEmpty) {
                                       final c = _selectedSongIds.length;
@@ -1814,7 +1814,7 @@ Widget build(BuildContext context) {
                                         _selectedSongIds.clear();
                                       });
                                       await _saveHiddenData();
-                                      _toast('$c गाने छुपा दिए गए');
+                                      _toast('$c songs hidden');
                                     }
                                   },
                                 ),
@@ -1878,7 +1878,7 @@ Widget build(BuildContext context) {
                     );
                     if (mounted) _loadRecent();
                   } else {
-                    _toast("चलाने के लिए कोई वीडियो नहीं मिला");
+                    _toast("No videos found to play");
                   }
                   return;
                 }
@@ -1982,7 +1982,7 @@ Widget build(BuildContext context) {
                               _hiddenFolders.add(folderKey);
                             });
                             _saveHiddenData();
-                            _toast("'$folderName' हाइड कर दिया");
+                            _toast("'$folderName' hidden");
                           },
                         ),
                       ],
@@ -2062,8 +2062,8 @@ Widget build(BuildContext context) {
                   const SizedBox(width: 10),
                   Text(
                     _showHiddenFolders
-                        ? "Hidden Folders छुपाओ"
-                        : "Hidden Folders दिखाओ (${hiddenList.length})",
+                        ? "Hide Hidden Folders"
+                        : "Show Hidden Folders (${hiddenList.length})",
                     style: TextStyle(
                         color: AppTheme.textSecondary, fontSize: 14),
                   ),
@@ -2087,7 +2087,7 @@ Widget build(BuildContext context) {
                   _hiddenFolders.remove(folderKey);
                 });
                 _saveHiddenData();
-                _toast("'$folderName' दिखने लगा");
+                _toast("'$folderName' is visible again");
               },
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -2136,7 +2136,7 @@ Widget build(BuildContext context) {
         child: Padding(
           padding: const EdgeInsets.all(30),
           child: Text(
-            "अभी कोई Playlist नहीं है\nऊपर + दबाकर बनाओ",
+            "No Playlist yet\nTap + above to create one",
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: AppTheme.textSecondary, fontSize: 15),
@@ -2603,11 +2603,11 @@ if (_isVideoNew(item['url']!))
 
   void _showSortMenu() {
     final options = [
-      'नया पहले',
-      'पुराना पहले',
-      'नाम (A-Z)',
-      'साइज़ (बड़ा पहले)',
-      'Favorite पहले ❤️'
+      'Newest First',
+      'Oldest First',
+      'Name (A-Z)',
+      'Size (Largest First)',
+      'Favorites First ❤️'
     ];
     showModalBottomSheet(
       context: context,
@@ -2696,7 +2696,7 @@ if (_isVideoNew(item['url']!))
     try {
       if (globalAudioPlayer.sequence == null ||
           globalAudioPlayer.sequence!.isEmpty) {
-        _toast('पहले कोई गाना चलाओ');
+        _toast('Play a song first');
         return;
       }
       final source = AudioSource.uri(
@@ -2711,14 +2711,14 @@ if (_isVideoNew(item['url']!))
       final nextIndex = (globalAudioPlayer.currentIndex ?? 0) + 1;
       final current = globalAudioPlayer.audioSource;
       if (current is! ConcatenatingAudioSource) {
-        _toast('अभी लिस्ट से गाना नहीं चल रहा');
+        _toast('Not playing from a list right now');
         return;
       }
       await current.insert(nextIndex, source);
-      _toast('"${globalSongNames[song.id] ?? song.title}" अगला चलेगा');
+      _toast('"${globalSongNames[song.id] ?? song.title}" will play next');
     } catch (e) {
       debugPrint('Play next error: $e');
-      _toast('नहीं हो पाया');
+      _toast('Could not add song to queue');
     }
   }
 
@@ -2726,7 +2726,7 @@ if (_isVideoNew(item['url']!))
     try {
       final file = File(song.data);
       if (!await file.exists()) {
-        _toast('फ़ाइल नहीं मिली');
+        _toast('File not found');
         return;
       }
       await Share.shareXFiles(
@@ -2737,7 +2737,7 @@ if (_isVideoNew(item['url']!))
       );
     } catch (e) {
       debugPrint('Song share error: $e');
-      _toast('Share नहीं हो पाया');
+      _toast('Failed to share');
     }
   }
 
@@ -2771,13 +2771,13 @@ if (_isVideoNew(item['url']!))
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("नई Playlist",
+        title: Text("New Playlist",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(hintText: "Playlist का नाम"),
+          decoration: const InputDecoration(hintText: "Playlist name"),
         ),
         actions: [
           TextButton(
@@ -2798,7 +2798,7 @@ if (_isVideoNew(item['url']!))
     final name = await _askPlaylistName();
     if (name == null) return;
     if (_playlists.containsKey(name)) {
-      _toast("इस नाम की Playlist पहले से है");
+      _toast("A Playlist with this name already exists");
       return;
     }
     setState(() => _playlists[name] = []);
@@ -2810,7 +2810,7 @@ if (_isVideoNew(item['url']!))
     if (!list.contains(song.id)) list.add(song.id);
     setState(() => _playlists[name] = list);
     await _savePlaylists();
-    _toast("'$name' में जोड़ दिया");
+    _toast("Added to '$name'");
   }
 
   void _addToPlaylistDialog(SongModel song) {
@@ -2824,7 +2824,7 @@ if (_isVideoNew(item['url']!))
             children: [
               ListTile(
                 leading: const Icon(Icons.add, color: AppTheme.primaryBlue),
-                title: Text("नई Playlist बनाएँ",
+                title: Text("Create new Playlist",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () async {
                   Navigator.pop(context);
@@ -2859,9 +2859,9 @@ if (_isVideoNew(item['url']!))
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("'$name' हटाएँ?",
+        title: Text("Delete '$name'?",
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text("सिर्फ़ Playlist हटेगी, गाने फोन में रहेंगे।",
+        content: Text("Only the Playlist will be deleted. Songs will stay on your phone.",
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -2885,13 +2885,13 @@ if (_isVideoNew(item['url']!))
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("Playlist का नाम बदलें",
+        title: Text("Rename Playlist",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(hintText: "नया नाम"),
+          decoration: const InputDecoration(hintText: "New name"),
         ),
         actions: [
           TextButton(
@@ -2907,7 +2907,7 @@ if (_isVideoNew(item['url']!))
     final clean = newName.replaceAll('|', '').replaceAll(',', '').trim();
     if (clean.isEmpty || clean == oldName) return;
     if (_playlists.containsKey(clean)) {
-      _toast("इस नाम की Playlist पहले से है");
+      _toast("A Playlist with this name already exists");
       return;
     }
     setState(() {
@@ -2915,7 +2915,7 @@ if (_isVideoNew(item['url']!))
       _playlists[clean] = list;
     });
     await _savePlaylists();
-    _toast("नाम बदल दिया");
+    _toast("Renamed");
   }
 
   Future<void> _removeSongFromPlaylist(
@@ -2927,7 +2927,7 @@ if (_isVideoNew(item['url']!))
       _playlists[playlistName] = list;
     });
     await _savePlaylists();
-    _toast("'$playlistName' से हटा दिया");
+    _toast("Removed from '$playlistName'");
   }
 
   List<SongModel> _songsByIds(List<int> ids) {
@@ -3316,7 +3316,7 @@ if (_isVideoNew(item['url']!))
           children: [
             CircularProgressIndicator(color: AppTheme.primaryBlue),
             SizedBox(height: 16),
-            Text("गाने लोड हो रहे हैं...",
+            Text("Loading songs...",
                 style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
           ],
         ),
@@ -3332,14 +3332,14 @@ if (_isVideoNew(item['url']!))
               Icon(Icons.music_off,
                   color: AppTheme.textSecondary, size: 60),
               const SizedBox(height: 16),
-              Text("Music access permission चाहिए",
+              Text("Music access permission required",
                   style: TextStyle(
                       color: AppTheme.textPrimary, fontSize: 16),
                   textAlign: TextAlign.center),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => PhotoManager.openSetting(),
-                child: const Text("Settings खोलें"),
+                child: const Text("Open Settings"),
               ),
               const SizedBox(height: 8),
               TextButton(
@@ -3350,7 +3350,7 @@ if (_isVideoNew(item['url']!))
                   });
                   _loadSongs();
                 },
-                child: const Text("फिर कोशिश करें"),
+                child: const Text("Try again"),
               ),
             ],
           ),
@@ -3359,7 +3359,7 @@ if (_isVideoNew(item['url']!))
     }
     if (_visibleSongs.isEmpty) {
       return Center(
-        child: Text("कोई गाना नहीं मिला",
+        child: Text("No songs found",
             style:
                 TextStyle(color: AppTheme.textSecondary, fontSize: 16)),
       );
@@ -3492,7 +3492,7 @@ if (_isVideoNew(item['url']!))
             child: names.isEmpty
                 ? Center(
                     child: Text(
-                        "अभी कोई Playlist नहीं है, ऊपर + दबाकर बनाओ",
+                        "No Playlist yet, tap + above to create one",
                         style: TextStyle(
                             color: AppTheme.textSecondary,
                             fontSize: 15),
@@ -3646,9 +3646,9 @@ if (_isVideoNew(item['url']!))
 
   void _showSongSortMenu() {
     final options = [
-      'नया गाना पहले',
-      'पुराना गाना पहले',
-      'नाम (A से Z)'
+      'Newest First',
+      'Oldest First',
+      'Name (A to Z)'
     ];
     showModalBottomSheet(
       context: context,
@@ -3737,8 +3737,8 @@ if (_isVideoNew(item['url']!))
                 ),
                 title: Text(
                     _favoriteIds.contains(song.id)
-                        ? "Favorite से हटाएँ"
-                        : "Favorite में जोड़ें",
+                        ? "Remove from Favorites"
+                        : "Add to Favorites",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(context);
@@ -3748,7 +3748,7 @@ if (_isVideoNew(item['url']!))
               ListTile(
                 leading: Icon(Icons.playlist_add,
                     color: AppTheme.iconColor),
-                title: Text("Playlist में जोड़ें",
+                title: Text("Add to Playlist",
                     style: TextStyle(color: AppTheme.textPrimary)),
                 onTap: () {
                   Navigator.pop(context);
@@ -3857,7 +3857,7 @@ if (_isVideoNew(item['url']!))
         content: TextField(
           controller: controller,
           style: TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(hintText: "नया नाम डालें"),
+          decoration: const InputDecoration(hintText: "Enter new name"),
         ),
         actions: [
           TextButton(
@@ -3887,9 +3887,9 @@ if (_isVideoNew(item['url']!))
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("गाना डिलीट करें?",
+        title: Text("Delete song?",
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text("ये गाना डिवाइस से हमेशा के लिए हट जाएगा।",
+        content: Text("This song will be permanently deleted from your device.",
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -3932,7 +3932,7 @@ if (_isVideoNew(item['url']!))
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text("गाना डिलीट नहीं हो पाया")),
+              content: Text("Could not delete song")),
         );
       }
       return;
@@ -4003,7 +4003,7 @@ if (_isVideoNew(item['url']!))
         content: TextField(
           controller: controller,
           style: TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(hintText: "नया नाम डालें"),
+          decoration: const InputDecoration(hintText: "Enter new name"),
         ),
         actions: [
           TextButton(
@@ -4036,9 +4036,9 @@ if (_isVideoNew(item['url']!))
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("वीडियो डिलीट करें?",
+        title: Text("Delete video?",
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text("ये वीडियो डिवाइस से हमेशा के लिए हट जाएगी।",
+        content: Text("This video will be permanently deleted from your device.",
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -4156,9 +4156,9 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text('सारी History हटाएँ?',
+        title: Text('Clear all history?',
             style: TextStyle(color: AppTheme.textPrimary)),
-        content: Text('सारी watch history हट जाएगी',
+        content: Text('All watch history will be cleared',
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -4218,7 +4218,7 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
                       Icon(Icons.history,
                           color: AppTheme.textTertiary, size: 60),
                       const SizedBox(height: 12),
-                      Text('कोई watch history नहीं है',
+                      Text('No watch history',
                           style: TextStyle(
                               color: AppTheme.textSecondary, fontSize: 14)),
                     ],
@@ -4410,7 +4410,7 @@ class _HiddenItemsScreenState extends State<HiddenItemsScreen> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(top: 100),
-                child: Text("कोई हिडन आइटम नहीं है", style: TextStyle(color: AppTheme.textSecondary)),
+                child: Text("No hidden items", style: TextStyle(color: AppTheme.textSecondary)),
               ),
             ),
         ],

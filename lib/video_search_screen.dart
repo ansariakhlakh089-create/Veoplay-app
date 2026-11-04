@@ -39,7 +39,7 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            hintText: 'वीडियो का नाम खोजें...',
+            hintText: 'Search video name...',
             hintStyle: TextStyle(color: AppTheme.textTertiary),
             border: InputBorder.none,
           ),
@@ -53,7 +53,7 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
                 children: [
                   Icon(Icons.search, color: AppTheme.textTertiary, size: 60),
                   const SizedBox(height: 12),
-                  Text('वीडियो या फोल्डर का नाम लिखें',
+                  Text('Enter a video or folder name',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
                 ],
@@ -61,7 +61,7 @@ class _VideoSearchScreenState extends State<VideoSearchScreen> {
             )
           : results.isEmpty
               ? Center(
-                  child: Text('कुछ नहीं मिला',
+                  child: Text('Nothing found',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 16)),
                 )

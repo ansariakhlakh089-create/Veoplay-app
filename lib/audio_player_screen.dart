@@ -118,7 +118,7 @@ await _player.play();
         Navigator.pop(context);
         messenger.showSnackBar(
           const SnackBar(
-            content: Text("ये गाना नहीं चल पाया, फ़ाइल हट चुकी हो सकती है"),
+            content: Text("This song could not be played. The file may have been removed."),
           ),
         );
       }
@@ -201,7 +201,7 @@ await _player.play();
       if (globalAudioPlayer.sequence == null ||
           globalAudioPlayer.sequence!.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('पहले कोई गाना चलाओ')),
+          const SnackBar(content: Text('Play a song first')),
         );
         return;
       }
@@ -218,7 +218,7 @@ await _player.play();
       final current = globalAudioPlayer.audioSource;
       if (current is! ConcatenatingAudioSource) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('अभी लिस्ट से गाना नहीं चल रहा')),
+          const SnackBar(content: Text('Not playing from a list right now')),
         );
         return;
       }
@@ -227,7 +227,7 @@ await _player.play();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                '"${globalSongNames[song.id] ?? song.title}" अगला चलेगा'),
+                '"${globalSongNames[song.id] ?? song.title}" will play next'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -242,7 +242,7 @@ await _player.play();
       final file = File(song.data);
       if (!await file.exists()) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('फ़ाइल नहीं मिली')),
+          const SnackBar(content: Text('File not found')),
         );
         return;
       }
@@ -255,7 +255,7 @@ await _player.play();
     } catch (e) {
       debugPrint('Song share error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Share नहीं हो पाया')),
+        const SnackBar(content: Text('Failed to share')),
       );
     }
   }
@@ -318,7 +318,7 @@ await _player.play();
                 if (_sleepRemaining > 0) ...[
                   const SizedBox(height: 8),
                   Text(
-                    '$_sleepRemaining मिनट बाकी',
+                    '$_sleepRemaining minutes left',
                     style: TextStyle(
                         color: AppTheme.primaryBlue,
                         fontSize: 14,
@@ -349,7 +349,7 @@ await _player.play();
                             Icon(Icons.timer,
                                 color: AppTheme.textSecondary, size: 16),
                             const SizedBox(width: 6),
-                            Text('$min मिनट',
+                            Text('$min min',
                                 style:
                                     TextStyle(color: AppTheme.textPrimary)),
                           ],
@@ -372,7 +372,7 @@ await _player.play();
                         color: Colors.redAccent.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text('Sleep Timer हटाओ',
+                      child: const Text('Remove Sleep Timer',
                           style: TextStyle(color: Colors.redAccent)),
                     ),
                   ),
@@ -391,7 +391,7 @@ await _player.play();
   void _startMusicSleepTimer(int minutes) {
     startGlobalSleepTimer(minutes);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$minutes मिनट बाद गाना रुकेगा')),
+      SnackBar(content: Text('Music will stop in $minutes minutes')),
     );
   }
 
@@ -399,7 +399,7 @@ await _player.play();
     cancelGlobalSleepTimer();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sleep timer हटाया')),
+        const SnackBar(content: Text('Sleep timer removed')),
       );
     }
   }
@@ -414,7 +414,7 @@ await _player.play();
     if (!mounted) return;
     if (params == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('इस फ़ोन पर Equalizer उपलब्ध नहीं है')),
+        const SnackBar(content: Text('Equalizer is not available on this phone')),
       );
       return;
     }
@@ -450,7 +450,7 @@ await _player.play();
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: Text("चालू करें",
+                      title: Text("Enable",
                           style: TextStyle(color: AppTheme.textPrimary)),
                       value: enabled,
                       onChanged: (v) async {
@@ -805,7 +805,7 @@ void dispose() {
               _sleepRemaining > 0 ? Icons.timer : Icons.timer_outlined,
               color: _sleepRemaining > 0 ? AppTheme.primaryBlue : AppTheme.iconColor,
             ),
-            tooltip: _sleepRemaining > 0 ? '$_sleepRemaining मिनट बाकी' : 'Sleep timer',
+            tooltip: _sleepRemaining > 0 ? '$_sleepRemaining minutes left' : 'Sleep timer',
             onPressed: _showMusicSleepTimerDialog,
           ),
         ],

@@ -90,7 +90,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> {
       ),
       body: videos.isEmpty
           ? Center(
-              child: Text('इस Playlist में कोई वीडियो नहीं है',
+              child: Text('No videos in this Playlist',
                   style: TextStyle(
                       color: AppTheme.textSecondary, fontSize: 16)),
             )

@@ -51,10 +51,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.card,
-        title: Text("सारा डेटा हटाएँ?",
+        title: Text("Clear all data?",
             style: TextStyle(color: AppTheme.textPrimary)),
         content: Text(
-            "सारी settings, favorites, playlists और recent history हट जाएगी। गाने/वीडियो फोन में रहेंगे।",
+            "All settings, favorites, playlists, and recent history will be deleted. Songs and videos will stay on your phone.",
             style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           TextButton(
@@ -94,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✅ सारा डेटा हटा दिया'),
+          content: Text('✅ All data cleared'),
           duration: Duration(seconds: 2),
         ),
       );
@@ -177,8 +177,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: _isDarkTheme ? Icons.dark_mode : Icons.light_mode,
               title: 'Dark Mode',
               subtitle: _isDarkTheme
-                  ? 'Dark mode चालू है'
-                  : 'Light mode चालू है',
+                  ? 'Dark mode is on'
+                  : 'Light mode is on',
               iconColor: AppTheme.primaryBlue,
               trailing: Switch(
                 value: _isDarkTheme,
@@ -192,14 +192,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               _settingTile(
               icon: Icons.bug_report_outlined,
-              title: 'Problem Report भेजें',
-              subtitle: 'अगर ऐप में कोई दिक्कत आई हो तो लॉग फ़ाइल शेयर करें',
+              title: 'Send Problem Report',
+              subtitle: 'Share the log file if you ran into any problem',
               onTap: () async {
                 final logPath = await CrashLog.path();
                 if (logPath == null) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('✅ कोई error log नहीं मिला, ऐप ठीक काम कर रहा है')),
+                      const SnackBar(content: Text('✅ No error log found, the app is working fine')),
                     );
                   }
                   return;
@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 _settingTile(
   icon: Icons.brightness_6,
   title: 'Default Brightness',
-  subtitle: 'वीडियो चलाते समय ब्राइटनेस',
+  subtitle: 'Brightness while playing video',
   trailing: SizedBox(
     width: 120,
     child: Slider(
@@ -250,7 +250,7 @@ _settingTile(
               _settingTile(
               icon: Icons.play_circle_outline,
               title: 'Auto-play Next',
-              subtitle: 'वीडियो खत्म होते ही अगला चलाएं',
+              subtitle: 'Play the next video automatically',
               trailing: Switch(
                 value: _autoPlayNext,
                 activeColor: AppTheme.primaryBlue,
@@ -264,7 +264,7 @@ _settingTile(
             _settingTile(
               icon: Icons.restore,
               title: 'Resume Playback',
-              subtitle: 'जहाँ छोड़ा था वहीं से चलाएं',
+              subtitle: 'Resume from where you left off',
               trailing: Switch(
                 value: _resumePlayback,
                 activeColor: AppTheme.primaryBlue,
@@ -277,8 +277,8 @@ _settingTile(
 
             _settingTile(
               icon: Icons.swipe,
-              title: 'Swipe से Seek',
-              subtitle: 'स्क्रीन पर दाएँ-बाएँ swipe करके आगे-पीछे',
+              title: 'Swipe to Seek',
+              subtitle: 'Swipe left or right on the screen to seek',
               trailing: Switch(
                 value: _gestSeek,
                 activeColor: AppTheme.primaryBlue,
@@ -292,7 +292,7 @@ _settingTile(
             _settingTile(
               icon: Icons.brightness_6,
               title: 'Brightness / Volume Swipe',
-              subtitle: 'बाएँ आधे पर brightness, दाएँ आधे पर volume',
+              subtitle: 'Brightness on the left half, volume on the right half',
               trailing: Switch(
                 value: _gestBV,
                 activeColor: AppTheme.primaryBlue,
@@ -306,7 +306,7 @@ _settingTile(
             _settingTile(
               icon: Icons.touch_app,
               title: 'Double-tap',
-              subtitle: 'बाएँ/दाएँ double-tap से ±10 सेकंड, बीच में pause',
+              subtitle: 'Double-tap left or right for ±10 seconds, center to pause',
               trailing: Switch(
                 value: _gestDouble,
                 activeColor: AppTheme.primaryBlue,
@@ -320,7 +320,7 @@ _settingTile(
             _settingTile(
               icon: Icons.fast_forward,
               title: 'Long-press 2x',
-              subtitle: 'दबाकर रखने पर 2x speed',
+              subtitle: 'Press and hold for 2x speed',
               trailing: Switch(
                 value: _gestHold,
                 activeColor: AppTheme.primaryBlue,
@@ -334,7 +334,7 @@ _settingTile(
             _settingTile(
               icon: Icons.speed,
               title: 'Default Video Speed',
-              subtitle: 'नए वीडियो पर लागू होगी',
+              subtitle: 'Applies to new videos',
               onTap: _showVideoSpeedDialog,
               trailing: Icon(Icons.chevron_right,
                   color: AppTheme.textTertiary),
@@ -343,7 +343,7 @@ _settingTile(
             _settingTile(
               icon: Icons.slow_motion_video,
               title: 'Default Music Speed',
-              subtitle: 'नए गाने पर लागू होगी',
+              subtitle: 'Applies to new songs',
               onTap: _showMusicSpeedDialog,
               trailing: Icon(Icons.chevron_right,
                   color: AppTheme.textTertiary),
@@ -355,11 +355,11 @@ _settingTile(
             _settingTile(
               icon: Icons.refresh,
               title: 'Rescan Media',
-              subtitle: 'वीडियो और गाने फिर से scan करें',
+              subtitle: 'Scan videos and songs again',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('वीडियो और गाने दोबारा scan हो रहे हैं...'),
+                    content: Text('Rescanning videos and songs...'),
                   ),
                 );
                 rescanRequestNotifier.value++;
@@ -374,7 +374,7 @@ _settingTile(
             _settingTile(
               icon: Icons.cleaning_services_outlined,
               title: 'Clear Thumbnail Cache',
-              subtitle: 'थंबनेल की cache हटाएं',
+              subtitle: 'Clear thumbnail cache',
               onTap: _clearThumbnailCache,
               trailing: Icon(Icons.chevron_right,
                   color: AppTheme.textTertiary),
@@ -383,7 +383,7 @@ _settingTile(
             _settingTile(
               icon: Icons.delete_forever_outlined,
               title: 'Clear All App Data',
-              subtitle: 'Favorites, playlists, settings हटाएं',
+              subtitle: 'Clear favorites, playlists, and settings',
               iconColor: Colors.redAccent,
               onTap: _clearAppData,
               trailing: Icon(Icons.chevron_right,
@@ -393,7 +393,7 @@ _settingTile(
             _settingTile(
   icon: Icons.visibility,
   title: 'Hidden Items',
-  subtitle: 'छुपाए गए वीडियो और गाने',
+  subtitle: 'Hidden videos and songs',
   onTap: () {
     Navigator.push(
       context,
@@ -421,7 +421,7 @@ _settingTile(
             _settingTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
-              subtitle: 'हमारी privacy policy पढ़ें',
+              subtitle: 'Read our privacy policy',
               onTap: () {
                 showDialog(
                   context: context,
@@ -431,7 +431,7 @@ _settingTile(
                         style: TextStyle(color: AppTheme.textPrimary)),
                     content: SingleChildScrollView(
                       child: Text(
-                        'VeoPlay का सारा data आपके फ़ोन में ही रहता है। कोई निजी जानकारी इकट्ठा, अपलोड या किसी से साझा नहीं की जाती।\n\nहम सिर्फ़ ये सेव करते हैं:\n• आपका नाम (दिखाने के लिए)\n• Favorites और playlists\n• वीडियो कहाँ तक देखा\n• App की settings\n\nवीडियो और गाने पढ़ने के लिए app को media की permission चाहिए। सारा data हटाने के लिए Settings में "Clear All Data" दबाएँ।',
+                        'VeoPlay keeps all your data on your phone. No personal information is collected, uploaded, or shared with anyone.\n\nWe only save:\n• Your name (for display)\n• Favorites and playlists\n• How far you watched each video\n• App settings\n\nThe app needs media permission to read your videos and songs. To delete all data, tap "Clear All Data" in Settings.',
                         style: TextStyle(
                             color: AppTheme.textSecondary, fontSize: 13),
                       ),
@@ -595,7 +595,7 @@ _settingTile(
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ $count थंबनेल हटा दिए'),
+            content: Text('✅ $count thumbnails cleared'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -603,7 +603,7 @@ _settingTile(
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cache clear नहीं हो पाई')),
+          const SnackBar(content: Text('Could not clear cache')),
         );
       }
     }

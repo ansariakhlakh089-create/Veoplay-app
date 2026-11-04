@@ -58,7 +58,7 @@ class _SongListScreenState extends State<SongListScreen> {
       ),
       body: songs.isEmpty
           ? Center(
-              child: Text("यहाँ अभी कोई गाना नहीं है",
+              child: Text("No songs here yet",
                   style: TextStyle(
                       color: AppTheme.textSecondary, fontSize: 16)))
           : ListView.builder(
@@ -176,7 +176,7 @@ class QueueScreen extends StatelessWidget {
 
           if (sequence.isEmpty) {
             return Center(
-              child: Text('Queue खाली है',
+              child: Text('Queue is empty',
                   style: TextStyle(
                       color: AppTheme.textSecondary, fontSize: 16)),
             );
@@ -234,7 +234,7 @@ class QueueScreen extends StatelessWidget {
                       color: AppTheme.textSecondary, fontSize: 12),
                 ),
                 trailing: isCurrent
-                    ? Text('चल रहा',
+                    ? Text('Playing',
                         style: TextStyle(
                             color: AppTheme.primaryBlue,
                             fontSize: 11,
@@ -299,7 +299,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
           autofocus: true,
           style: TextStyle(color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            hintText: 'गाना या कलाकार खोजें...',
+            hintText: 'Search song or artist...',
             hintStyle: TextStyle(color: AppTheme.textTertiary),
             border: InputBorder.none,
           ),
@@ -314,7 +314,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
                   Icon(Icons.search,
                       color: AppTheme.textTertiary, size: 60),
                   const SizedBox(height: 12),
-                  Text('गाना या कलाकार का नाम लिखें',
+                  Text('Enter a song or artist name',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 14)),
                 ],
@@ -322,7 +322,7 @@ class _MusicSearchScreenState extends State<MusicSearchScreen> {
             )
           : results.isEmpty
               ? Center(
-                  child: Text('कुछ नहीं मिला',
+                  child: Text('Nothing found',
                       style: TextStyle(
                           color: AppTheme.textSecondary, fontSize: 16)),
                 )
