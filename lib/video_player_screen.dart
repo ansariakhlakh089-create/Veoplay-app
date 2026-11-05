@@ -2566,6 +2566,7 @@ Positioned.fill(
           height: _controller.value.size.height,
           child: mkv.Video(
             controller: _controller.video,
+            alignment: Alignment.center, // 👈 Bas ye line add kar do
             controls: mkv.NoVideoControls,
             fill: Colors.black,
             wakelock: false,
