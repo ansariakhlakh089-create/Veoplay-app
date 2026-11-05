@@ -1377,21 +1377,16 @@ Widget build(BuildContext context) {
       body: Column(
   children: [
     Expanded(
-      child: _currentTab == 2
-          ? _buildMusicTab()
+  child: _currentTab == 1 // 👈 Music ab index 1 par hai (2 ko 1 kiya)
+      ? _buildMusicTab()
+      : _currentTab == 2 // 👈 Photos tab (index 2)
+          ? Center(
+              child: Text(
+                "Photos & Gallery Coming Soon...",
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+              ),
+            )
           : _isLoading
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: AppTheme.primaryBlue),
-                      SizedBox(height: 20),
-                      Text("Discovering videos...",
-                          style: TextStyle(
-                              color: Colors.white54, fontSize: 14)),
-                    ],
-                  ),
-                )
               : _permissionDenied
                   ? Center(
                       child: Padding(
