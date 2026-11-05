@@ -2353,13 +2353,17 @@ Widget _buildPipView() {
   }
   return Container(
     color: Colors.black,
-    child: mkv.Video(
-      controller: _controller.video,
-      controls: mkv.NoVideoControls,
-      fill: Colors.black,
-      wakelock: false,
-      subtitleViewConfiguration:
-          const mkv.SubtitleViewConfiguration(visible: false),
+    child: Center( // 👈 Yahan Center add kiya
+      child: mkv.Video(
+        controller: _controller.video,
+        alignment: Alignment.center, // 👈 Ye line add ki
+        fit: BoxFit.contain,         // 👈 Ye line add ki
+        controls: mkv.NoVideoControls,
+        fill: Colors.black,
+        wakelock: false,
+        subtitleViewConfiguration:
+            const mkv.SubtitleViewConfiguration(visible: false),
+      ),
     ),
   );
 }
