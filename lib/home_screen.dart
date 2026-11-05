@@ -2253,7 +2253,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
     );
   }
 
-  Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index, List<Map<String, String>> list) {
+Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index, List<Map<String, String>> list) {
   final isSelected = _selectedVideoIds.contains(item['id']);
 
   return GestureDetector(
@@ -2262,6 +2262,8 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
         _toggleVideoSelection(item['id'] ?? '');
         return;
       }
+      
+      // Video Player kholne ka logic
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -2273,11 +2275,37 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
           ),
         ),
       );
-      if (result != null && result is Map) { /* ... */ }
+
+      // 👇 Ye logic zaroori hai taaki Recent aur Progress update ho
+      if (result != null && result is Map) {
+        setState(() {
+          _recentTitle = result['title'];
+          _recentUrl = result['url'];
+          _recentPosition = result['position'];
+          _recentDuration = result['duration'];
+        });
+
+        final url = result['url'] as String?;
+        final pos = result['position'] as int? ?? 0;
+        final dur = result['duration'] as int? ?? 0;
+        if (url != null && dur > 0) {
+          await _saveWatchProgress(url, pos / dur);
+        }
+      } else {
+        await Future.delayed(const Duration(milliseconds: 300));
+        if (mounted) _loadRecent();
+      }
     },
-    onLongPress: () { /* ... */ },
     
-    // 👇 Yahan Row ki jagah Column aayega
+    // 👇 Long press par select karne ka logic
+    onLongPress: () {
+      if (!_isVideoSelectionMode) {
+        _toggleVideoSelectionMode();
+        _toggleVideoSelection(item['id'] ?? '');
+      }
+    },
+    
+    // 👇 VLC Jaisa Grid Design
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2293,27 +2321,36 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
               ),
               // Duration Badge
               Positioned(
-                bottom: 6, right: 6,
+                bottom: 6,
+                right: 6,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
-                  child: Text(item['duration']!, style: const TextStyle(color: Colors.white, fontSize: 10)),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    item['duration']!,
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               // NEW Badge
               if (_isVideoNew(item['url']!))
                 Positioned(
-                  top: 6, left: 6,
+                  top: 6,
+                  left: 6,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(4)),
-                    child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 9)),
+                    child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                   ),
                 ),
               // Checkbox (Selection Mode)
               if (_isVideoSelectionMode)
                 Positioned(
-                  top: 6, right: 6,
+                  top: 6,
+                  right: 6,
                   child: Icon(
                     isSelected ? Icons.check_box : Icons.check_box_outline_blank,
                     color: isSelected ? Colors.greenAccent : Colors.white,
@@ -2324,8 +2361,8 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
           ),
         ),
         const SizedBox(height: 8),
-        
-        // 2. Title Area
+
+        // 2. Video Title
         Text(
           item['title'] ?? 'No Title',
           style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
@@ -2334,7 +2371,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
         ),
         const SizedBox(height: 2),
         
-        // 3. Subtitle Area
+        // 3. Info (Size, Resolution)
         Row(
           children: [
             Expanded(
@@ -2356,7 +2393,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
       ],
     ),
   );
-  }
+}
 
   void _showVideoOptions(BuildContext context,
       Map<String, String> item, int index) {
