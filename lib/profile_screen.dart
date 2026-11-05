@@ -456,22 +456,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _circleButton(
-                    icon: Icons.privacy_tip_outlined,
-                    label: 'Privacy',
-                    onTap: _showPrivacyDialog,
-                  ),
-                  _circleButton(
-                    icon: Icons.palette_outlined,
-                    label: 'Theme',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                const SettingsScreen()),
-                      );
-                    },
-                  ),
+  icon: Icons.lock_outline, // 👈 Icon change kiya
+  label: 'Private',         // 👈 Label change kiya
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HiddenItemsScreen(), // 👈 Private items wali screen
+      ),
+    );
+  },
+),
                   _circleButton(
                     icon: Icons.history,
                     label: 'History',
