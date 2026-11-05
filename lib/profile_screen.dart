@@ -459,16 +459,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   icon: Icons.lock_outline, // 👈 Icon change kiya
   label: 'Private',         // 👈 Label change kiya
   onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => HiddenItemsScreen(
-  allVideos: widget.videoList, 
-  allSongs: widget.songs
-),
-    );
-  },
-),
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => HiddenItemsScreen(
+        allVideos: widget.videoList,
+        allSongs: widget.songs,
+      ), // 👈 MaterialPageRoute close
+    ), // 👈 Navigator.push close
+  );
+},
                   _circleButton(
                     icon: Icons.history,
                     label: 'History',
