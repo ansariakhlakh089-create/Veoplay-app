@@ -31,6 +31,12 @@ android {
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // 👇👇 YEH LINES YAHAN ADD KI GAYI HAIN (x86 error fix) 👇👇
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+        // 👆👆 YAHAN TAK 👆👆
     }
 
     // 👇 Ye naya signingConfigs block add kiya hai
