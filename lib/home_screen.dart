@@ -1687,17 +1687,23 @@ Widget build(BuildContext context) {
                             ),
                               ),
                               if (_videoTab == 0)
-                                SliverPadding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16, 0, 16, 18),
-                                  sliver: SliverList(
-                                    delegate: SliverChildBuilderDelegate(
-                                      (context, index) => _buildVideoTile(
-                                          context, visibleVideos[index], index, visibleVideos),
-                                      childCount: visibleVideos.length,
-                                    ),
-                                  ),
-                                )
+  SliverPadding(
+    padding: const EdgeInsets.fromLTRB(
+        16, 0, 16, 18),
+    sliver: SliverGrid(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.85,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 16,
+      ),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => _buildVideoTile(
+            context, visibleVideos[index], index, visibleVideos),
+        childCount: visibleVideos.length,
+      ),
+    ),
+  )
                               else
                                 SliverPadding(
                                   padding: const EdgeInsets.fromLTRB(
