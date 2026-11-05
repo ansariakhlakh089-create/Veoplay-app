@@ -2253,210 +2253,107 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
     );
   }
 
-  Widget _buildVideoTile(BuildContext context, Map<String, String> item,
-      int visibleIndex, List<Map<String, String>> visibleVideos) {
-  final index = videoList.indexWhere((v) => v['id'] == item['id']);
+  Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index, List<Map<String, String>> list) {
   final isSelected = _selectedVideoIds.contains(item['id']);
 
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 11),
-    child: GestureDetector(
-      onTap: () async {
-        // 👇 Selection Mode में टैप करने पर Select/Deselect हो
-        if (_isVideoSelectionMode) {
-          _toggleVideoSelection(item['id'] ?? '');
-          return;
-        }
-        // Normal Mode में टैप करने पर वीडियो चले
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => RealVideoPlayer(
-              videoUrl: item['url']!,
-              title: item['title']!,
-              playlist: visibleVideos,
-              currentIndex: visibleIndex,
-            ),
+  return GestureDetector(
+    onTap: () async {
+      if (_isVideoSelectionMode) {
+        _toggleVideoSelection(item['id'] ?? '');
+        return;
+      }
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RealVideoPlayer(
+            videoUrl: item['url']!,
+            title: item['title']!,
+            playlist: list,
+            currentIndex: index,
           ),
-        );
-             if (result != null && result is Map) {
-          setState(() {
-            _recentTitle = result['title'];
-            _recentUrl = result['url'];
-            _recentPosition = result['position'];
-            _recentDuration = result['duration'];
-          });
-
-          final url = result['url'] as String?;
-          final pos = result['position'] as int? ?? 0;
-          final dur = result['duration'] as int? ?? 0;
-          if (url != null && dur > 0) {
-            await _saveWatchProgress(url, pos / dur);
-          }
-        } else {
-          await Future.delayed(const Duration(milliseconds: 300));
-          if (mounted) _loadRecent();
-        }
-      },
-      // 👇 Long Press करने पर Selection Mode ON हो
-      onLongPress: () {
-        if (!_isVideoSelectionMode) {
-          _toggleVideoSelectionMode();
-          _toggleVideoSelection(item['id'] ?? '');
-        }
-      },
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 👇 Selection Mode में Checkbox दिखाओ
-          if (_isVideoSelectionMode)
-  Padding(
-    padding: const EdgeInsets.only(right: 12, top: 20),
-    child: Icon(
-      isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-      color: isSelected ? Colors.greenAccent : AppTheme.textSecondary,
-      size: 26,
-    ),
-  ),
-          Stack(
+        ),
+      );
+      if (result != null && result is Map) { /* ... */ }
+    },
+    onLongPress: () { /* ... */ },
+    
+    // 👇 Yahan Row ki jagah Column aayega
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Thumbnail Area
+        Expanded(
+          child: Stack(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: VideoThumbnailWidget(videoPath: item['url']!),
-              ),
-              Positioned(
-                bottom: 4,
-                right: 6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    item['duration']!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: VideoThumbnailWidget(videoPath: item['url']!),
                 ),
               ),
-              // 👇👇👇 Progress Bar (देखा हुआ) 👇👇👇
-if (_getVideoProgress(item['url']!) > 0 &&
-    !_watchedVideos.contains(item['url']))
-  Positioned(
-    bottom: 0,
-    left: 0,
-    right: 0,
-    child: ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(12),
-        bottomRight: Radius.circular(12),
-      ),
-      child: LinearProgressIndicator(
-        value: _getVideoProgress(item['url']!),
-        minHeight: 4,
-        backgroundColor: Colors.black45,
-        valueColor: AlwaysStoppedAnimation<Color>(
-          _getVideoProgress(item['url']!) > 0.5
-              ? Colors.greenAccent
-              : Colors.amber,
-        ),
-      ),
-    ),
-  ),
-
-// 👇👇👇 NEW Badge (नया वीडियो) 👇👇👇
-if (_isVideoNew(item['url']!))
-  Positioned(
-    top: 4,
-    left: 4,
-    child: Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.redAccent,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: const Text(
-        'NEW',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
-// 👆👆👆 यहाँ तक 👆👆👆
+              // Duration Badge
+              Positioned(
+                bottom: 6, right: 6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(4)),
+                  child: Text(item['duration']!, style: const TextStyle(color: Colors.white, fontSize: 10)),
+                ),
+              ),
+              // NEW Badge
+              if (_isVideoNew(item['url']!))
+                Positioned(
+                  top: 6, left: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(4)),
+                    child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 9)),
+                  ),
+                ),
+              // Checkbox (Selection Mode)
+              if (_isVideoSelectionMode)
+                Positioned(
+                  top: 6, right: 6,
+                  child: Icon(
+                    isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                    color: isSelected ? Colors.greenAccent : Colors.white,
+                    size: 24,
+                  ),
+                ),
             ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item['title'] ?? 'No Title',
-                  style: TextStyle(
-                      color: AppTheme.textPrimary, fontSize: 14),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  "${item['res'] ?? ''} | ${item['size'] ?? ''}",
-                  style: TextStyle(
-                      color: AppTheme.textSecondary, fontSize: 13),
-                ),
-                const SizedBox(height: 0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item['source'] ?? '',
-                        style: TextStyle(
-                            color: AppTheme.textTertiary,
-                            fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // 👇 Selection Mode में Favorite और Menu छुपाओ
-                    if (!_isVideoSelectionMode) ...[
-                      IconButton(
-                        onPressed: () => _toggleVideoFavorite(item),
-                        icon: Icon(
-                          _favoriteVideoIds.contains(item['id'])
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: _favoriteVideoIds.contains(item['id'])
-                              ? Colors.pinkAccent
-                              : AppTheme.iconColor,
-                          size: 18,
-                        ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 4),
-                      IconButton(
-                        onPressed: () =>
-                            _showVideoOptions(context, item, index),
-                        icon: Icon(Icons.more_vert,
-                            color: AppTheme.iconColor, size: 20),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
+        ),
+        const SizedBox(height: 8),
+        
+        // 2. Title Area
+        Text(
+          item['title'] ?? 'No Title',
+          style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 2),
+        
+        // 3. Subtitle Area
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                "${item['res'] ?? ''} | ${item['size'] ?? ''}",
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 11),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-        ],
-      ),
+            if (!_isVideoSelectionMode)
+              IconButton(
+                onPressed: () => _showVideoOptions(context, item, index),
+                icon: Icon(Icons.more_vert, color: AppTheme.iconColor, size: 18),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+          ],
+        ),
+      ],
     ),
   );
   }
