@@ -1092,16 +1092,18 @@ if (_autoNextTriggered &&
 
   // 0–100%: phone की volume, 100–200%: असली software boost (mpv)
   void _applyVolume(double newVol) {
-    final v = newVol.clamp(0.0, 2.0);
-    if (v <= 1.0) {
-      VolumeController().setVolume(v, showSystemUI: false);
-      _controller.setVolume(1.0);
-    } else {
-      VolumeController().setVolume(1.0, showSystemUI: false);
-      _controller.setVolume(v);
-    }
+  final v = newVol.clamp(0.0, 2.0);
+  if (v <= 1.0) {
+    VolumeController().setVolume(v, showSystemUI: false);
+    _controller.setVolume(1.0);
+  } else {
+    VolumeController().setVolume(1.0, showSystemUI: false);
+    _controller.setVolume(v);
   }
-
+  
+  // 👇 NAYA: Jab bhi volume change ho, limiter ko update karo
+  _applyVideoEq(); 
+  }
   void _skipForward() {
     if (!_isInitialized) return;
     final newPos = _controller.value.position + const Duration(seconds: 10);
