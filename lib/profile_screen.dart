@@ -546,6 +546,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
 
+             _listItem(
+  icon: Icons.privacy_tip_outlined,
+  title: 'Privacy Policy',
+  onTap: _showPrivacyDialog,
+),     
               _listItem(
                 icon: Icons.help_outline,
                 title: 'Help & Feedback',
