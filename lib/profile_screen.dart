@@ -469,6 +469,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ), // 👈 Navigator.push close
   );
 },
+),
                   _circleButton(
                     icon: Icons.history,
                     label: 'History',
