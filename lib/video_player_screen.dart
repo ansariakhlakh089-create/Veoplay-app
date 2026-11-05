@@ -746,26 +746,41 @@ if (_autoNextTriggered &&
   }
 
   Future<void> _applyVideoEq() async {
-    try {
-      final np = _controller.player.platform as mk.NativePlayer;
-      final active = _eqEnabled && _eqGains.any((g) => g.abs() > 0.1);
-      if (!active) {
-        await np.setProperty('af', '');
-        return;
-      }
-      final parts = <String>[];
+  try {
+    final np = _controller.player.platform as mk.NativePlayer;
+    final eqActive = _eqEnabled && _eqGains.any((g) => g.abs() > 0.1);
+    final volBoosted = _volume > 1.0; // 👈 NAYA: Check agar volume 100% se zyada hai
+
+    // Agar na EQ on hai, aur na hi volume 100% se zyada hai, toh filter hatao
+    if (!eqActive && !volBoosted) {
+      await np.setProperty('af', '');
+      return;
+    }
+
+    final parts = <String>[];
+    // 1. Equalizer part
+    if (eqActive) {
       for (int i = 0; i < 5; i++) {
         if (_eqGains[i].abs() < 0.1) continue;
-        parts.add(
-            'equalizer=f=${_eqFreqs[i]}:width_type=o:w=1.5:g=${_eqGains[i].toStringAsFixed(1)}');
+        parts.add('equalizer=f=${_eqFreqs[i]}:width_type=o:w=1.5:g=${_eqGains[i].toStringAsFixed(1)}');
       }
-      await np.setProperty('af', 'lavfi=[${parts.join(',')}]');
-    } catch (e) {
-      debugPrint('Video EQ error: $e');
-      _snack('Equalizer could not run on this device');
     }
-  }
+    
+    // 2. Limiter part (Awaaz faatne se rokne ke liye)
+    if (volBoosted) {
+      // acompressor ek pro-level limiter hai jo volume ko smooth karta hai
+      parts.add('acompressor=threshold=-10dB:ratio=4:attack=5:release=50');
+    }
 
+    if (parts.isEmpty) {
+      await np.setProperty('af', '');
+    } else {
+      await np.setProperty('af', 'lavfi=[${parts.join(',')}]');
+    }
+  } catch (e) {
+    debugPrint('Video EQ/Limiter error: $e');
+  }
+  }
   void _showVideoEqualizer() {
     showModalBottomSheet(
       context: context,
