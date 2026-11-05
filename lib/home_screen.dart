@@ -1695,45 +1695,46 @@ Widget build(BuildContext context) {
                 ],
               ),
 
-      // 👇 Ye hamesha upar float karta rahega (Play Button)
-floatingActionButton: FloatingActionButton(
-  onPressed: () async {
-    if (_recentUrl != null && _recentTitle != null) {
-      final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => RealVideoPlayer(
-            videoUrl: _recentUrl!,
-            title: _recentTitle!,
-            startPosition: _recentPosition,
-            playlist: recentIndex >= 0 ? _visibleVideos : null,
-            currentIndex: recentIndex >= 0 ? recentIndex : 0,
-          ),
-        ),
-      );
-      // ... (yahan recent video ka result update karne wala purana code rahega) ...
-      if (result != null && result is Map) {
-        setState(() {
-          _recentTitle = result['title'];
-          _recentUrl = result['url'];
-          _recentPosition = result['position'];
-          _recentDuration = result['duration'];
-        });
-      } else {
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (mounted) _loadRecent();
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No recent video found")),
-      );
-    }
-  },
-  backgroundColor: AppTheme.primaryBlue,
-  child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
-),
-floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Right side me dikhega
+      // 👇 यह बटन सिर्फ वीडियो टैब (_currentTab == 0) में ही दिखेगा
+floatingActionButton: (_currentTab == 0 && !_isVideoSelectionMode)
+    ? FloatingActionButton(
+        onPressed: () async {
+          if (_recentUrl != null && _recentTitle != null) {
+            final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => RealVideoPlayer(
+                  videoUrl: _recentUrl!,
+                  title: _recentTitle!,
+                  startPosition: _recentPosition,
+                  playlist: recentIndex >= 0 ? _visibleVideos : null,
+                  currentIndex: recentIndex >= 0 ? recentIndex : 0,
+                ),
+              ),
+            );
+            if (result != null && result is Map) {
+              setState(() {
+                _recentTitle = result['title'];
+                _recentUrl = result['url'];
+                _recentPosition = result['position'];
+                _recentDuration = result['duration'];
+              });
+            } else {
+              await Future.delayed(const Duration(milliseconds: 300));
+              if (mounted) _loadRecent();
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("No recent video found")),
+            );
+          }
+        },
+        backgroundColor: AppTheme.primaryBlue,
+        child: const Icon(Icons.play_arrow, color: Colors.white, size: 30),
+      )
+    : null, // 👈 यह null होने की वजह से बाकी टैब्स (Music/Photos) में बटन गायब हो जाएगा
+floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       
       bottomNavigationBar: (_isVideoSelectionMode || _isSongSelectionMode)
           ? Container(
