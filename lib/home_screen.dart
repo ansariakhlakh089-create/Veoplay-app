@@ -1374,20 +1374,32 @@ Widget build(BuildContext context) {
                     ),
                   ],
       ),
-      body: Column(
-  children: [
-    Expanded(
-  child: _currentTab == 1 // 👈 Music ab index 1 par hai (2 ko 1 kiya)
+      Expanded(
+  child: _currentTab == 1 // 👈 Music tab
       ? _buildMusicTab()
-      : _currentTab == 2 // 👈 Photos tab (index 2)
+      : _currentTab == 2 // 👈 Photos tab
           ? Center(
               child: Text(
                 "Photos & Gallery Coming Soon...",
-                style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                style: TextStyle(
+                    color: AppTheme.textSecondary, fontSize: 16),
               ),
             )
-          : _isLoading
-              : _permissionDenied
+          : _isLoading // 👈 Yahan Loading ka code add kiya hai
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                          color: AppTheme.primaryBlue),
+                      SizedBox(height: 20),
+                      Text("Discovering videos...",
+                          style: TextStyle(
+                              color: Colors.white54, fontSize: 14)),
+                    ],
+                  ),
+                )
+              : _permissionDenied // 👈 Permission Denied
                   ? Center(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -1412,16 +1424,14 @@ Widget build(BuildContext context) {
                         ),
                       ),
                     )
-                  : _visibleVideos.isEmpty
+                  : _visibleVideos.isEmpty // 👈 No Videos
                       ? RefreshIndicator(
                           onRefresh: () => _scanVideos(silent: true),
                           child: ListView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             children: [
                               SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height *
-                                          0.3),
+                                  height: MediaQuery.of(context).size.height * 0.3),
                               Center(
                                 child: Text("No videos found",
                                     style: TextStyle(
@@ -1449,6 +1459,233 @@ Widget build(BuildContext context) {
                             ],
                           ),
                         )
+                      : RefreshIndicator( // 👈 Videos List (Line 1452 se shuru hone wala code)
+                          onRefresh: () async {
+                            try {
+                              await PhotoManager.editor.android.removeAllNoExistsAsset();
+                            } catch (_) {}
+                            await _scanVideos(silent: true);
+                            await _loadRecent();
+                          },
+                          child: CustomScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            slivers: [
+                              SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                                sliver: SliverToBoxAdapter(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (kShowAdSlot) ...[
+                                        Container(
+                                          height: 80,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.card,
+                                            borderRadius: BorderRadius.circular(18),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                      if (_recentTitle != null && !_isVideoSelectionMode) ...[
+                                        Row(
+                                          children: [
+                                            Text("Recent",
+                                                style: TextStyle(
+                                                    fontSize: 22,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppTheme.textPrimary)),
+                                            const Spacer(),
+                                            GestureDetector(
+                                              behavior: HitTestBehavior.opaque,
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => VideoHistoryScreen(
+                                                        allVideos: _visibleVideos),
+                                                  ),
+                                                );
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.history,
+                                                      color: AppTheme.iconColor,
+                                                      size: 22),
+                                                  const SizedBox(width: 2),
+                                                  Icon(Icons.chevron_right,
+                                                      color: AppTheme.iconColor,
+                                                      size: 22),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        GestureDetector(
+                                          onTap: () async {
+                                            final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
+                                            final result = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => RealVideoPlayer(
+                                                  videoUrl: _recentUrl!,
+                                                  title: _recentTitle!,
+                                                  startPosition: _recentPosition,
+                                                  playlist: recentIndex >= 0 ? _visibleVideos : null,
+                                                  currentIndex: recentIndex >= 0 ? recentIndex : 0,
+                                                ),
+                                              ),
+                                            );
+                                            if (result != null && result is Map) {
+                                              setState(() {
+                                                _recentTitle = result['title'];
+                                                _recentUrl = result['url'];
+                                                _recentPosition = result['position'];
+                                                _recentDuration = result['duration'];
+                                              });
+                                            } else {
+                                              await Future.delayed(const Duration(milliseconds: 300));
+                                              if (mounted) _loadRecent();
+                                            }
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(24),
+                                            child: SizedBox(
+                                              height: 150,
+                                              width: double.infinity,
+                                              child: Stack(
+                                                fit: StackFit.expand,
+                                                children: [
+                                                  VideoThumbnailWidget(videoPath: _recentUrl!),
+                                                  Container(
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        begin: Alignment.topCenter,
+                                                        end: Alignment.bottomCenter,
+                                                        colors: [
+                                                          Colors.transparent,
+                                                          Colors.black.withOpacity(0.6),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const Center(
+                                                    child: Icon(Icons.play_circle_fill,
+                                                        color: Colors.white, size: 70),
+                                                  ),
+                                                  Positioned(
+                                                    left: 18,
+                                                    bottom: 18,
+                                                    right: 18,
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        const Text("Continue Watching",
+                                                            style: TextStyle(color: Colors.white70)),
+                                                        const SizedBox(height: 5),
+                                                        Text(_recentTitle!,
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: const TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: Colors.white)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                      Row(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => setState(() => _videoTab = 0),
+                                            child: Text("Videos",
+                                                style: TextStyle(
+                                                    fontSize: 19,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: _videoTab == 0
+                                                        ? AppTheme.textPrimary
+                                                        : AppTheme.textTertiary)),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          GestureDetector(
+                                            onTap: () => setState(() => _videoTab = 1),
+                                            child: Text("Folders",
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: _videoTab == 1
+                                                        ? AppTheme.textPrimary
+                                                        : AppTheme.textTertiary)),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          GestureDetector(
+                                            onTap: () => setState(() => _videoTab = 2),
+                                            child: Text("My List",
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: _videoTab == 2
+                                                        ? AppTheme.textPrimary
+                                                        : AppTheme.textTertiary)),
+                                          ),
+                                          const Spacer(),
+                                          if (_videoTab == 2)
+                                            IconButton(
+                                              onPressed: _createVideoPlaylist,
+                                              icon: Icon(Icons.add, color: AppTheme.iconColor),
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            ),
+                                          if (_videoTab != 2)
+                                            IconButton(
+                                              onPressed: _showSortMenu,
+                                              icon: Icon(Icons.sort, color: AppTheme.iconColor),
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              if (_videoTab == 0)
+                                SliverPadding(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                                  sliver: SliverGrid(
+                                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 0.85,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 16,
+                                    ),
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) => _buildVideoTile(
+                                          context, visibleVideos[index], index, visibleVideos),
+                                      childCount: visibleVideos.length,
+                                    ),
+                                  ),
+                                )
+                              else
+                                SliverPadding(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+                                  sliver: SliverToBoxAdapter(
+                                    child: _videoTab == 1
+                                        ? _buildFoldersList()
+                                        : _buildPlaylistsList(),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+),
                       : RefreshIndicator(
                           onRefresh: () async {
                             try {
