@@ -462,8 +462,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const HiddenItemsScreen(), // 👈 Private items wali screen
-      ),
+        builder: (_) => HiddenItemsScreen(
+  allVideos: widget.videoList, 
+  allSongs: widget.songs
+),
     );
   },
 ),
@@ -638,3 +640,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+  class HiddenItemsScreen extends StatefulWidget {
+  final List<Map<String, String>> allVideos;
+  final List<SongModel> allSongs;
+  
+  const HiddenItemsScreen({super.key, required this.allVideos, required this.allSongs});
+
+  @override
+  State<HiddenItemsScreen> createState() => _HiddenItemsScreenState();
+}
+
+class _HiddenItemsScreenState extends State<HiddenItemsScreen> {
+  Set<String> _hiddenVideoIds = {};
+  Set<int> _hiddenSongIds = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHiddenItems();
+  }
+
+  Future<void> _loadHiddenItems() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _hiddenVideoIds = (prefs.getStringList('hidden_videos') ?? []).toSet();
+        _hiddenSongIds = (prefs.getStringList('hidden_songs') ?? []).map((e) => int.tryParse(e) ?? -1).where((e) => e != -1).toSet();
+      });
+    }
+  }
+
+  // Unhide karne ka function
+  Future<void> _unhideVideo(String id) async {
+    setState(() => _hiddenVideoIds.remove(id));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('hidden_videos', _hiddenVideoIds.toList());
+    rescanRequestNotifier.value++; // Home screen refresh
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video Unhidden')));
+  }
+
+  Future<void> _unhideSong(int id) async {
+    setState(() => _hiddenSongIds.remove(id));
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('hidden_songs', _hiddenSongIds.map((e) => e.toString()).toList());
+    rescanRequestNotifier.value++;
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Song Unhidden')));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sirf hidden items filter karo
+    final hiddenVideos = widget.allVideos.where((v) => _hiddenVideoIds.contains(v['id'])).toList();
+    final hiddenSongs = widget.allSongs.where((s) => _hiddenSongIds.contains(s.id)).toList();
+
+    return Scaffold(
+      backgroundColor: AppTheme.bg,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: AppTheme.textPrimary),
+        title: Text('Private', style: TextStyle(color: AppTheme.textPrimary)),
+      ),
+      body: (hiddenVideos.isEmpty && hiddenSongs.isEmpty)
+          ? Center(child: Text("No hidden items", style: TextStyle(color: AppTheme.textSecondary)))
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (hiddenVideos.isNotEmpty) ...[
+                  Text("Videos", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ...hiddenVideos.map((item) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(item['title'] ?? '', style: TextStyle(color: AppTheme.textPrimary)),
+                    trailing: TextButton(
+                      onPressed: () => _unhideVideo(item['id']!),
+                      child: const Text('Unhide', style: TextStyle(color: Colors.greenAccent)),
+                    ),
+                    onTap: () {
+                      // Video play karo
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => RealVideoPlayer(
+                        videoUrl: item['url']!,
+                        title: item['title']!,
+                        playlist: hiddenVideos,
+                        currentIndex: hiddenVideos.indexOf(item),
+                      )));
+                    },
+                  )),
+                  const Divider(),
+                ],
+                if (hiddenSongs.isNotEmpty) ...[
+                  Text("Songs", style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ...hiddenSongs.map((song) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(globalSongNames[song.id] ?? song.title, style: TextStyle(color: AppTheme.textPrimary)),
+                    trailing: TextButton(
+                      onPressed: () => _unhideSong(song.id),
+                      child: const Text('Unhide', style: TextStyle(color: Colors.greenAccent)),
+                    ),
+                    onTap: () {
+                      // Music play karo
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AudioPlayerScreen(
+                        songs: hiddenSongs, 
+                        initialIndex: hiddenSongs.indexOf(song)
+                      )));
+                    },
+                  )),
+                ],
+              ],
+            ),
+    );
+  }
+}        
