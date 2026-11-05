@@ -1878,77 +1878,32 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 👈 Rig
               backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
               indicatorColor: AppTheme.primaryBlue.withOpacity(0.2),
               selectedIndex: _currentTab,
-              onDestinationSelected: (index) async {
-                if (index == 1) {
-  if (_recentUrl != null && _recentTitle != null) {
+                onDestinationSelected: (index) {
+    setState(() {
+      _currentTab = index;
+      // Selection mode reset karo
+      _isVideoSelectionMode = false;
+      _selectedVideoIds.clear();
+      _isSongSelectionMode = false;
+      _selectedSongIds.clear();
+    });
     
-    // 👇 NAYA CODE: Recent video ka index dhundo
-    final recentIndex = _visibleVideos.indexWhere((v) => v['url'] == _recentUrl);
-    
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RealVideoPlayer(
-          videoUrl: _recentUrl!,
-          title: _recentTitle!,
-          startPosition: _recentPosition,
-          // 👇 Ye do lines add karni hain
-          playlist: recentIndex >= 0 ? _visibleVideos : null,
-          currentIndex: recentIndex >= 0 ? recentIndex : 0,
-        ),
-      ),
-    );
-                    if (result != null && result is Map) {
-                      setState(() {
-                        _recentTitle = result['title'];
-                        _recentUrl = result['url'];
-                        _recentPosition = result['position'];
-                        _recentDuration = result['duration'];
-                      });
-                    } else {
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (mounted) _loadRecent();
-                    }
-                  } else if (visibleVideos.isNotEmpty) {
-                    final first = visibleVideos.first;
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RealVideoPlayer(
-                          videoUrl: first['url']!,
-                          title: first['title']!,
-                          playlist: visibleVideos,
-                          currentIndex: 0,
-                        ),
-                      ),
-                    );
-                    if (mounted) _loadRecent();
-                  } else {
-                    _toast("No videos found to play");
-                  }
-                  return;
-                }
-                setState(() {
-                  _currentTab = index;
-                  _isVideoSelectionMode = false;
-                  _selectedVideoIds.clear();
-                  _isSongSelectionMode = false;
-                  _selectedSongIds.clear();
-                });
-                if (index == 2) {
-                  _loadSongs();
-                }
-              },
-              destinations: const [
-                NavigationDestination(
-                    icon: Icon(Icons.video_library), label: "Videos"),
-                NavigationDestination(
-                    icon: Icon(Icons.play_circle_fill, size: 36),
-                    label: "Play"),
-                NavigationDestination(
-                    icon: Icon(Icons.music_note), label: "Music"),
-              ],
-            ),
+    // 👈 Index 1 ab Music tab hai
+    if (index == 1 && !_audioLoaded) {
+      _loadSongs();
+    }
+  },
+  destinations: const [
+    NavigationDestination(
+        icon: Icon(Icons.video_library), label: "Videos"),
+    // 👇 Center me Music aa gaya
+    NavigationDestination(
+        icon: Icon(Icons.music_note), label: "Music"),
+    // 👇 Right me Photos aa gaya
+    NavigationDestination(
+        icon: Icon(Icons.photo_library), label: "Photos"),
+  ],
+),
     ),
   );
 }
