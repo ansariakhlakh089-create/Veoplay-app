@@ -2258,12 +2258,13 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
 
   return GestureDetector(
     onTap: () async {
+      // 👇 1. Selection Mode Logic
       if (_isVideoSelectionMode) {
         _toggleVideoSelection(item['id'] ?? '');
         return;
       }
       
-      // Video Player kholne ka logic
+      // 👇 2. Video Player kholne ka logic
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -2276,7 +2277,7 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
         ),
       );
 
-      // 👇 Ye logic zaroori hai taaki Recent aur Progress update ho
+      // 👇 3. Recent aur Progress update karne ka logic
       if (result != null && result is Map) {
         setState(() {
           _recentTitle = result['title'];
@@ -2297,7 +2298,7 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
       }
     },
     
-    // 👇 Long press par select karne ka logic
+    // 👇 4. Long Press par select karne ka logic
     onLongPress: () {
       if (!_isVideoSelectionMode) {
         _toggleVideoSelectionMode();
@@ -2305,11 +2306,11 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
       }
     },
     
-    // 👇 VLC Jaisa Grid Design
+    // 👇 5. VLC Jaisa 2-Column Grid Design
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Thumbnail Area
+        // Thumbnail Area
         Expanded(
           child: Stack(
             children: [
@@ -2362,7 +2363,7 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
         ),
         const SizedBox(height: 8),
 
-        // 2. Video Title
+        // Video Title
         Text(
           item['title'] ?? 'No Title',
           style: TextStyle(color: AppTheme.textPrimary, fontSize: 13, fontWeight: FontWeight.w500),
@@ -2371,7 +2372,7 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
         ),
         const SizedBox(height: 2),
         
-        // 3. Info (Size, Resolution)
+        // Info (Size, Resolution)
         Row(
           children: [
             Expanded(
