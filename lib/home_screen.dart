@@ -4406,3 +4406,83 @@ class _VideoHistoryScreenState extends State<VideoHistoryScreen> {
     );
   }
 }
+
+// ==================== Full Screen Image Viewer ====================
+class ImageGalleryScreen extends StatefulWidget {
+  final List<AssetEntity> images;
+  final int initialIndex;
+
+  const ImageGalleryScreen({
+    super.key,
+    required this.images,
+    required this.initialIndex,
+  });
+
+  @override
+  State<ImageGalleryScreen> createState() => _ImageGalleryScreenState();
+}
+
+class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black.withOpacity(0.5),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          '${_currentIndex + 1} / ${widget.images.length}',
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.white),
+            onPressed: () {
+              // Share logic (aage add kar sakte hain)
+            },
+          ),
+        ],
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.images.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          final asset = widget.images[index];
+          return InteractiveViewer(
+            minScale: 1.0,
+            maxScale: 4.0, // 4x tak zoom kar sakte hain
+            child: Center(
+              child: AssetEntityImage(
+                asset,
+                isOriginal: true, // Full quality image
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
