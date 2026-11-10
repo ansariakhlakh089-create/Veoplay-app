@@ -3192,22 +3192,21 @@ if (_showControls)
                                 color: Colors.black.withOpacity(0.5),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                                                            child: const Icon(
                                 Icons.lock,
                                 color: Colors.amber,
                                 size: 22,
-                                                      ),
-                      ),
-                    ),
-                  ], // 👈 Inner Stack ke children band hue
-                ), // 👈 Inner Stack band hua
-              ), // 👈 GestureDetector band hua
-            ), // 👈 Listener close band hua
-            
-          ], // ✅ YEH NAYA ADD KAREIN (Outer Stack ke children band karne ke liye)
-        ), // ✅ YEH NAYA ADD KAREIN (Outer Stack ko band karne ke liye)
-        
-      ), // ✅ Ab yeh sahi tareeqe se Scaffold close karega
-    ); // ✅ Ab yeh sahi tareeqe se PopScope close karega
+                              ), // Icon close
+                            ), // Container close
+                          ), // GestureDetector close
+                        ), // 👈 YEH EK NAYA BRACKET ADD KAREIN (Positioned close karne ke liye)
+                      ], // Ab yeh Inner Stack ke children ko sahi se close karega
+                    ), // Inner Stack close
+                  ), // GestureDetector close
+                ), // Listener close
+          ], // Outer Stack ke children close
+        ), // Outer Stack close
+      ), // Scaffold close
+    ); // PopScope close
   } // _buildPlayer close
 } // Class close
