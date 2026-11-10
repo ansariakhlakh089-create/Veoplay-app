@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen>
 bool _imagesLoaded = false;
 bool _isImageSelectionMode = false;
 Set<String> _selectedImageIds = {};
+  String _photoFilter = "Recent"; // 👈 Default filter
 
   String? _recentTitle;
   String? _recentUrl;
