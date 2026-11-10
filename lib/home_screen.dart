@@ -3245,6 +3245,48 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
     );
   }
 
+void _showPhotoFilterMenu() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppTheme.isDark ? const Color(0xFF1E1E1E) : Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text("Filter By", style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+            ),
+            _filterOption("Recent", Icons.history),
+            _filterOption("Camera", Icons.camera_alt),
+            _filterOption("Albums", Icons.folder),
+            const SizedBox(height: 10),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _filterOption(String name, IconData icon) {
+  final isSelected = _photoFilter == name;
+  return ListTile(
+    leading: Icon(icon, color: isSelected ? AppTheme.primaryBlue : AppTheme.iconColor),
+    title: Text(name, style: TextStyle(color: isSelected ? AppTheme.primaryBlue : AppTheme.textPrimary, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+    trailing: isSelected ? Icon(Icons.check, color: AppTheme.primaryBlue) : null,
+    onTap: () {
+      setState(() {
+        _photoFilter = name;
+      });
+      Navigator.pop(context); // Menu band karo
+    },
+  );
+}
+  
 // 👇 YAHAN SE _buildPhotosTab PASTE KARO 👇
 Widget _buildPhotosTab() {
   if (!_imagesLoaded) {
