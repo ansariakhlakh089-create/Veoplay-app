@@ -1477,7 +1477,7 @@ Widget build(BuildContext context) {
                             physics: const AlwaysScrollableScrollPhysics(),
                             slivers: [
                               SliverPadding(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                                padding: const EdgeInsets.fromLTRB(13, 4, 13, 0),
                                 sliver: SliverToBoxAdapter(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
