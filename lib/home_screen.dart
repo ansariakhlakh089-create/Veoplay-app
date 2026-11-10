@@ -88,6 +88,7 @@ void initState() {
     _loadVideoPlaylists();
     _loadWatchProgress();
     _loadHiddenFolders();
+    _loadImages();
   });
   // 👆 YAHAN TAK NAYA CODE KHATAM 👆
 }
