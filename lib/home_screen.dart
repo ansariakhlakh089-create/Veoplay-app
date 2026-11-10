@@ -18,6 +18,10 @@ class _HomeScreenState extends State<HomeScreen>
   bool _audioLoaded = false;
   bool _audioPermissionDenied = false;
   bool _audioLoading = false;
+  List<AssetEntity> _images = [];
+bool _imagesLoaded = false;
+bool _isImageSelectionMode = false;
+Set<String> _selectedImageIds = {};
 
   String? _recentTitle;
   String? _recentUrl;
