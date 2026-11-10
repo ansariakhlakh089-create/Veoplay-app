@@ -3196,15 +3196,18 @@ if (_showControls)
                                 Icons.lock,
                                 color: Colors.amber,
                                 size: 22,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ], // Stack children
-                    ), // Stack
-                  ), // GestureDetector
-                ), // Listener close
-              ), // Scaffold close
-            ); // 👈 PopScope yahan close hua
-          } // _buildPlayer close
-        } // Class close
+                                                      ),
+                      ),
+                    ),
+                  ], // 👈 Inner Stack ke children band hue
+                ), // 👈 Inner Stack band hua
+              ), // 👈 GestureDetector band hua
+            ), // 👈 Listener close band hua
+            
+          ], // ✅ YEH NAYA ADD KAREIN (Outer Stack ke children band karne ke liye)
+        ), // ✅ YEH NAYA ADD KAREIN (Outer Stack ko band karne ke liye)
+        
+      ), // ✅ Ab yeh sahi tareeqe se Scaffold close karega
+    ); // ✅ Ab yeh sahi tareeqe se PopScope close karega
+  } // _buildPlayer close
+} // Class close
