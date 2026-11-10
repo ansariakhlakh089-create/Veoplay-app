@@ -2454,8 +2454,9 @@ Widget build(BuildContext context) {
                   child: CircularProgressIndicator(
                       color: AppTheme.primaryBlue),
                 )
-                : Stack( // 👈 Video aur Spinner ko ek saath rakhne ke liye Stack
+                 : Stack( // 👈 Video aur Spinner ko ek saath rakhne ke liye Stack
                   children: [
+                    // 1. Video ka main hissa (Listener)
               : Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerDown: _locked ? null : _onPointerDown,
@@ -3207,3 +3208,23 @@ if (_showControls)
             ); // 👈 PopScope yahan close hua
           } // _buildPlayer close
         } // Class close
+
+      // 2. Loading Spinner (Jab tak video screen pe nahi aati)
+    FutureBuilder(
+      future: Future.delayed(const Duration(milliseconds: 2500)), // 2.5 second tak spinner dikhega
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            color: Colors.black, // Black background taaki spinner saaf dikhe
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryBlue,
+              ),
+            ),
+          );
+        }
+        return const SizedBox.shrink(); // 2.5 sec baad spinner gayab ho jayega
+      },
+    ),
+  ],
+),
