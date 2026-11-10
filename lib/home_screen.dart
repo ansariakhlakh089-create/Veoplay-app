@@ -1037,6 +1037,31 @@ Future<void> _loadVideos() async {
   }
     }
 
+  Future<void> _loadImages() async {
+  if (_imagesLoaded) return;
+  
+  final perm = await PhotoManager.requestPermissionExtend();
+  if (!perm.hasAccess) return;
+
+  final albums = await PhotoManager.getAssetPathList(
+    type: RequestType.image,
+    onlyAll: true,
+  );
+  
+  if (albums.isNotEmpty) {
+    final album = albums.first;
+    final count = await album.assetCountAsync;
+    final assets = await album.getAssetListPaged(page: 0, size: count);
+    
+    if (mounted) {
+      setState(() {
+        _images = assets;
+        _imagesLoaded = true;
+      });
+    }
+  }
+  }
+
   Future<PermissionState>? _permFuture;
   Future<PermissionState> _askVideoPermission() {
     const opt = PermissionRequestOption(
