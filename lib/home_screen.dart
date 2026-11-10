@@ -3320,22 +3320,31 @@ Widget _buildPhotosTab() {
                 ),
                 itemCount: dateImages.length,
                 itemBuilder: (context, i) {
-                  final asset = dateImages[i];
-                  return GestureDetector(
-                    onTap: () {
-                      // Image open karne ka logic (aage batayenge)
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: AssetEntityImage(
-                        asset,
-                        isOriginal: false,
-                        thumbnailSize: const ThumbnailSize(200, 200),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  );
-                },
+  final asset = dateImages[i];
+  return GestureDetector(
+    onTap: () {
+      // 👇 Image Gallery Screen kholne ka logic
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImageGalleryScreen(
+            images: dateImages, // Sirf usi din ki images bhejo
+            initialIndex: i, // Jis photo par click kiya
+          ),
+        ),
+      );
+    },
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: AssetEntityImage(
+        asset,
+        isOriginal: false,
+        thumbnailSize: const ThumbnailSize(200, 200),
+        fit: BoxFit.cover,
+      ),
+    ),
+  );
+},
               ),
             ],
           );
