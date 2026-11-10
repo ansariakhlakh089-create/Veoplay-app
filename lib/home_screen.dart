@@ -3251,13 +3251,25 @@ Widget _buildPhotosTab() {
     return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue));
   }
 
-  // 👇 Date ke hisaab se images ko group karna
+  // 👇 1. FILTER LOGIC: Selected filter ke hisaab se images chhanto
+  List<AssetEntity> filteredImages = _images;
+  
+  if (_photoFilter == "Camera") {
+    filteredImages = _images.where((img) {
+      final path = img.relativePath?.toLowerCase() ?? "";
+      return path.contains('camera') || path.contains('dcim');
+    }).toList();
+  } 
+  // "Albums" ke liye filhal hum saari images dikha rahe hain, 
+  // par future mein isko folder-wise kar sakte hain.
+  
+  // 👇 2. Date ke hisaab se group karna (filtered images ka)
   final Map<String, List<AssetEntity>> groupedImages = {};
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final yesterday = today.subtract(const Duration(days: 1));
 
-  for (var img in _images) {
+  for (var img in filteredImages) {
     final date = img.createDateTime;
     final imgDate = DateTime(date.year, date.month, date.day);
     
@@ -3293,15 +3305,19 @@ Widget _buildPhotosTab() {
                     Text(dateKey, style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
                     if (dateKey == "New") ...[
                       const Spacer(),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(color: AppTheme.card, borderRadius: BorderRadius.circular(12)),
-                        child: Row(
-                          children: [
-                            Text("Photos", style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                            const SizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary, size: 16),
-                          ],
+                      // 👇 3. DYNAMIC FILTER TEXT: Ab yahan "Photos" ki jagah chuna hua filter dikhega
+                      GestureDetector(
+                        onTap: _showPhotoFilterMenu,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: AppTheme.card, borderRadius: BorderRadius.circular(12)),
+                          child: Row(
+                            children: [
+                              Text(_photoFilter, style: TextStyle(color: AppTheme.primaryBlue, fontSize: 12, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 4),
+                              Icon(Icons.arrow_drop_down, color: AppTheme.primaryBlue, size: 16),
+                            ],
+                          ),
                         ),
                       )
                     ]
@@ -3321,31 +3337,30 @@ Widget _buildPhotosTab() {
                 ),
                 itemCount: dateImages.length,
                 itemBuilder: (context, i) {
-  final asset = dateImages[i];
-  return GestureDetector(
-    onTap: () {
-      // 👇 Image Gallery Screen kholne ka logic
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ImageGalleryScreen(
-            images: dateImages, // Sirf usi din ki images bhejo
-            initialIndex: i, // Jis photo par click kiya
-          ),
-        ),
-      );
-    },
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: AssetEntityImage(
-        asset,
-        isOriginal: false,
-        thumbnailSize: const ThumbnailSize(200, 200),
-        fit: BoxFit.cover,
-      ),
-    ),
-  );
-},
+                  final asset = dateImages[i];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ImageGalleryScreen(
+                            images: dateImages, 
+                            initialIndex: i,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: AssetEntityImage(
+                        asset,
+                        isOriginal: false,
+                        thumbnailSize: const ThumbnailSize(200, 200),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           );
@@ -3386,10 +3401,10 @@ Widget _buildPhotosTab() {
                   child: Text("Edit", style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
                 ),
               ),
-              // Filter Button
+              // 👇 4. Filter Button (Jo aapne lines wala banaya tha)
               IconButton(
                 icon: const Icon(Icons.filter_list, color: Colors.white),
-                onPressed: () { /* Sort/Filter logic */ },
+                onPressed: _showPhotoFilterMenu, // Ab ye menu kholega
               ),
             ],
           ),
@@ -3397,7 +3412,7 @@ Widget _buildPhotosTab() {
       ),
     ],
   );
-}
+}              
 // 👆 YAHAN TAK _buildPhotosTab KHATAM 👆
 
   Widget _buildMusicTab() {
