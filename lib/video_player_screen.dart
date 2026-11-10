@@ -3209,22 +3209,52 @@ if (_showControls)
           } // _buildPlayer close
         } // Class close
 
-      // 2. Loading Spinner (Jab tak video screen pe nahi aati)
-    FutureBuilder(
-      future: Future.delayed(const Duration(milliseconds: 2500)), // 2.5 second tak spinner dikhega
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            color: Colors.black, // Black background taaki spinner saaf dikhe
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.primaryBlue,
-              ),
-            ),
-          );
-        }
-        return const SizedBox.shrink(); // 2.5 sec baad spinner gayab ho jayega
-      },
-    ),
-  ],
-),
+                             // ----- Lock Button -----
+                        if (_locked)
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 12,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: _toggleLock,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.lock,
+                                  color: Colors.amber,
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ], // Inner Stack children close
+                    ), // Inner Stack close
+                  ), // GestureDetector close
+                ), // Listener close
+
+                // 👇👇👇 2. Loading Spinner (Inner Stack aur Listener ke close hone ke THEEK BAAD)
+                FutureBuilder(
+                  future: Future.delayed(const Duration(milliseconds: 2500)), // 2.5 second tak spinner dikhega
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        color: Colors.black, // Black background taaki spinner saaf dikhe
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryBlue,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink(); // 2.5 sec baad spinner gayab ho jayega
+                  },
+                ),
+              ], // 👈 Outer Stack (Video + Spinner) ke children close
+            ), // Outer Stack close
+      ), // Scaffold close
+    ); // PopScope close
+  } // _buildPlayer method close
+} // _RealVideoPlayerState class close
