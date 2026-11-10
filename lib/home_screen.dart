@@ -3244,6 +3244,152 @@ Widget _buildVideoTile(BuildContext context, Map<String, String> item, int index
     );
   }
 
+// 👇 YAHAN SE _buildPhotosTab PASTE KARO 👇
+Widget _buildPhotosTab() {
+  if (!_imagesLoaded) {
+    return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBlue));
+  }
+
+  // 👇 Date ke hisaab se images ko group karna
+  final Map<String, List<AssetEntity>> groupedImages = {};
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+
+  for (var img in _images) {
+    final date = img.createDateTime;
+    final imgDate = DateTime(date.year, date.month, date.day);
+    
+    String key;
+    if (imgDate == today) {
+      key = "New";
+    } else if (imgDate == yesterday) {
+      key = "Yesterday";
+    } else {
+      key = "${date.day}/${date.month}/${date.year}";
+    }
+    groupedImages.putIfAbsent(key, () => []).add(img);
+  }
+
+  return Stack(
+    children: [
+      // 1. Photos Grid List
+      ListView.builder(
+        padding: const EdgeInsets.only(bottom: 80), // Bottom bar ke liye jagah
+        itemCount: groupedImages.keys.length,
+        itemBuilder: (context, index) {
+          final dateKey = groupedImages.keys.elementAt(index);
+          final dateImages = groupedImages[dateKey]!;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date Header (New / Yesterday)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Row(
+                  children: [
+                    Text(dateKey, style: TextStyle(color: AppTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
+                    if (dateKey == "New") ...[
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: AppTheme.card, borderRadius: BorderRadius.circular(12)),
+                        child: Row(
+                          children: [
+                            Text("Photos", style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Icon(Icons.arrow_drop_down, color: AppTheme.textSecondary, size: 16),
+                          ],
+                        ),
+                      )
+                    ]
+                  ],
+                ),
+              ),
+              
+              // 3-Column Grid
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 4,
+                  mainAxisSpacing: 4,
+                ),
+                itemCount: dateImages.length,
+                itemBuilder: (context, i) {
+                  final asset = dateImages[i];
+                  return GestureDetector(
+                    onTap: () {
+                      // Image open karne ka logic (aage batayenge)
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: AssetEntityImage(
+                        asset,
+                        isOriginal: false,
+                        thumbnailSize: const ThumbnailSize(200, 200),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+
+      // 2. Floating Bottom Action Bar
+      Positioned(
+        bottom: 16,
+        left: 16,
+        right: 16,
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: AppTheme.card,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // "+" Button
+              IconButton(
+                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () { /* Camera / Add logic */ },
+              ),
+              // "Edit" Button
+              GestureDetector(
+                onTap: () { /* Edit Mode ON */ },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.isDark ? Colors.white10 : Colors.black12,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text("Edit", style: TextStyle(color: AppTheme.textPrimary, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              // Filter Button
+              IconButton(
+                icon: const Icon(Icons.filter_list, color: Colors.white),
+                onPressed: () { /* Sort/Filter logic */ },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+// 👆 YAHAN TAK _buildPhotosTab KHATAM 👆
+
   Widget _buildMusicTab() {
     if (_audioLoading && _visibleSongs.isEmpty) {
       return Center(
