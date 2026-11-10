@@ -2454,6 +2454,8 @@ Widget build(BuildContext context) {
                   child: CircularProgressIndicator(
                       color: AppTheme.primaryBlue),
                 )
+                : Stack( // 👈 Video aur Spinner ko ek saath rakhne ke liye Stack
+                  children: [
               : Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerDown: _locked ? null : _onPointerDown,
