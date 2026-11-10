@@ -1414,14 +1414,8 @@ Widget build(BuildContext context) {
   child: _currentTab == 1 // 👈 Music tab
       ? _buildMusicTab()
       : _currentTab == 2 // 👈 Photos tab
-          ? Center(
-              child: Text(
-                "Photos & Gallery Coming Soon...",
-                style: TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 16),
-              ),
-            )
-          : _isLoading // 👈 Yahan Loading ka code add kiya hai
+    ? _buildPhotosTab() // 👈 Yahan function call kiya
+    : _isLoading // 👈 Yahan Loading ka code add kiya hai
               ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
