@@ -9,6 +9,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:audio_service/audio_service.dart' hide MediaItem;
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'dart:typed_data';
