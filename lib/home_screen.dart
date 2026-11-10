@@ -3286,6 +3286,31 @@ Widget _filterOption(String name, IconData icon) {
     },
   );
 }
+
+Future<void> loadPhotos() async {
+  // 1. Permission Maango
+  final PermissionState ps = await PhotoManager.requestPermissionExtend();
+  
+  if (ps.isAuth) { // Agar user ne Allow kar diya
+    // Ab photos fetch karo
+    final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList(
+      type: RequestType.image, // Ya RequestType.common for both
+    );
+    if (paths.isNotEmpty) {
+       final List<AssetEntity> photos = await paths.first.getAssetListPaged(page: 0, size: 100);
+       setState(() {
+         _photos = photos; // Apne list variable mein save karo
+         _isLoading = false;
+       });
+    }
+  } else {
+    // Permission nahi mili (Deny ho gayi)
+    setState(() {
+      _isLoading = false; 
+      _error = "Permission Denied. Please allow in settings.";
+    });
+  }
+}
   
 // 👇 YAHAN SE _buildPhotosTab PASTE KARO 👇
 Widget _buildPhotosTab() {
